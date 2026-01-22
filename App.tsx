@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { ViewState } from './types';
 import NoiseBackground from './components/NoiseBackground';
@@ -23,6 +22,7 @@ import { INITIAL_DATA } from './initialData';
 const App: React.FC = () => {
   const [hasEntered, setHasEntered] = useState(false);
   const [view, setView] = useState<ViewState>(ViewState.LANDING);
+  const [activeBreadcrumb, setActiveBreadcrumb] = useState<string | null>(null);
   const [isDarkMode, setIsDarkMode] = useState(true);
   
   // Seeding: Carrega dados do arquivo initialData.ts para o IndexedDB
@@ -76,6 +76,15 @@ const App: React.FC = () => {
     seedData();
   }, []);
 
+  // Deep Linking Check: Verifica se existe um parâmetro 'work' na URL para abrir a galeria diretamente
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.has('work')) {
+        setHasEntered(true); // Pula splash screen
+        setView(ViewState.MATERIA); // Vai direto para galeria
+    }
+  }, []);
+
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
       const x = (e.clientX / window.innerWidth) * 100;
@@ -98,12 +107,15 @@ const App: React.FC = () => {
 
   const toggleTheme = () => setIsDarkMode(!isDarkMode);
 
-  useEffect(() => {
+  // Wrapper para navegação que limpa o breadcrumb e scrolla para o topo
+  const handleNavigate = (newView: ViewState) => {
+    setView(newView);
+    setActiveBreadcrumb(null);
     const mainElement = document.getElementById('main-scroll');
     if (mainElement) {
       mainElement.scrollTo({ top: 0, behavior: 'smooth' });
     }
-  }, [view]);
+  };
 
   const handleEnter = () => {
     setHasEntered(true);
@@ -113,6 +125,7 @@ const App: React.FC = () => {
     sessionStorage.removeItem('ra_auth');
     setHasEntered(false);
     setView(ViewState.LANDING);
+    setActiveBreadcrumb(null);
   };
 
   if (!hasEntered) {
@@ -131,19 +144,19 @@ const App: React.FC = () => {
   const renderContent = () => {
     switch (view) {
       case ViewState.LANDING:
-        return <LandingPage onNavigate={setView} isDarkMode={isDarkMode} />;
+        return <LandingPage onNavigate={handleNavigate} isDarkMode={isDarkMode} />;
       case ViewState.MATERIA:
-        return <PageMateria isDarkMode={isDarkMode} />;
+        return <PageMateria isDarkMode={isDarkMode} setBreadcrumb={setActiveBreadcrumb} />;
       case ViewState.MANIFESTO:
         return <PageManifesto isDarkMode={isDarkMode} />;
       case ViewState.SINAIS:
-        return <PageSinais isDarkMode={isDarkMode} />;
+        return <PageSinais isDarkMode={isDarkMode} setBreadcrumb={setActiveBreadcrumb} />;
       case ViewState.INTERACTIVE: // Agora 'medição' (Oculto, mas renderizável se selecionado)
         return <PageSensor />;
       case ViewState.ABOUT: // Agora '👁👁'
-        return <PageAbout onNavigate={setView} />;
+        return <PageAbout onNavigate={handleNavigate} />;
       case ViewState.CONNECT:
-        return <PageConnect onNavigate={setView} />;
+        return <PageConnect onNavigate={handleNavigate} />;
       case ViewState.BACKOFFICE:
         return <PageBackoffice onLogout={handleBackofficeLogout} />;
       default:
@@ -165,7 +178,8 @@ const App: React.FC = () => {
       {view !== ViewState.BACKOFFICE && (
         <Navigation 
           currentView={view} 
-          onNavigate={setView} 
+          breadcrumb={activeBreadcrumb}
+          onNavigate={handleNavigate} 
           isDarkMode={isDarkMode} 
           onToggleTheme={toggleTheme} 
         />

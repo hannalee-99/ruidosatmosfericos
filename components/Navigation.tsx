@@ -10,6 +10,7 @@ interface NavigationProps {
   onNavigate: (view: ViewState) => void;
   isDarkMode: boolean;
   onToggleTheme: () => void;
+  breadcrumb?: string | null;
 }
 
 const Navigation: React.FC<NavigationProps> = ({ 
@@ -17,6 +18,7 @@ const Navigation: React.FC<NavigationProps> = ({
   onNavigate, 
   isDarkMode, 
   onToggleTheme,
+  breadcrumb
 }) => {
   const [showToast, setShowToast] = useState(false);
   const [isVisible, setIsVisible] = useState(true);
@@ -128,20 +130,21 @@ const Navigation: React.FC<NavigationProps> = ({
             >
               <Logo size={24} color={activeColor} className="md:w-[28px] md:h-[28px]" />
             </div>
-
-             {/* Breadcrumb Otimizado */}
-             <div 
-              onClick={triggerSecretStep}
-              className="font-vt text-lg tracking-[0.2em] opacity-60 hidden md:block lowercase cursor-pointer hover:opacity-100 transition-opacity leading-none"
-             >
-              ruídos / <span className="opacity-100 transition-colors duration-500" style={{ color: activeColor }}>{currentView}</span>
-            </div>
+            
+            {breadcrumb && (
+               <div className="hidden md:flex items-center gap-4 animate-in fade-in slide-in-from-left-4 duration-500">
+                  <div className="h-4 w-px bg-current opacity-20"></div>
+                  <span className="font-mono text-xs lowercase tracking-widest opacity-60 truncate max-w-[200px]" style={{ color: activeColor }}>
+                    {breadcrumb}
+                  </span>
+               </div>
+            )}
           </div>
           
           {/* RIGHT: Desktop Nav & Mobile Toggle */}
           <div className="flex justify-end items-center h-full z-50">
             
-            {/* DESKTOP MENU - Visible only on LG+ */}
+            {/* DESKTOP MENU - Visible only on LG+ - Fonte alterada para Electrolize */}
             <div className="hidden lg:flex gap-12 xl:gap-24 items-center pl-8">
               {items.map((item) => {
                 const isSelected = currentView === item;
@@ -150,7 +153,7 @@ const Navigation: React.FC<NavigationProps> = ({
                     key={item}
                     onClick={() => onNavigate(item)}
                     className={`
-                      font-vt text-lg tracking-[0.2em] pb-1 border-b leading-none whitespace-nowrap flex-shrink-0 lowercase
+                      font-electrolize text-lg pb-1 border-b leading-none whitespace-nowrap flex-shrink-0 lowercase tracking-wide
                       ${isSelected ? 'opacity-100 border-current' : 'opacity-40 border-transparent hover:opacity-100'}
                     `}
                     style={{ 

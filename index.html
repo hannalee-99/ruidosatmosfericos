@@ -7,8 +7,8 @@
     <title>ruídos atmosféricos</title>
     <meta name="description" content="sistemas vivos operam em desequilíbrio controlado. o vazio não é ausência, é condição de forma.">
     
-    <!-- Favicon SVG Generativo -->
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.5'/%3E%3CfeDisplacementMap in='SourceGraphic' scale='10'/%3E%3C/filter%3E%3Ccircle cx='50' cy='50' r='40' fill='%239ff85d' filter='url(%23n)'/%3E%3Ccircle cx='50' cy='50' r='20' fill='black'/%3E%3C/svg%3E">
+    <!-- Favicon SVG Estático (Glitch Eye) -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%23050505'/%3E%3Ccircle cx='32' cy='32' r='20' fill='%239ff85d' opacity='0.2'/%3E%3Ccircle cx='32' cy='32' r='14' fill='none' stroke='%239ff85d' stroke-width='3' stroke-dasharray='4 2'/%3E%3Ccircle cx='32' cy='32' r='6' fill='%239ff85d'/%3E%3C/svg%3E">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -41,9 +41,14 @@
       @font-palette-values --matrix-blue {
         font-family: Nabla;
         base-palette: 0;
-        /* Ajuste de legibilidade: Index 1 escurecido de #a3b0ff para #4b5ecc para contraste no fundo claro */
+        /* Ajuste Drástico para Contraste no Branco: Cores muito mais escuras e saturadas */
         override-colors:
-          0 #293fcf, 1 #4b5ecc, 2 #0d1a5e, 3 #293fcf, 4 #1a2a8c, 5 #0d1a5e;
+          0 #1a2a8c, /* Face principal mais escura */
+          1 #0d1a5e, /* Sombras profundas */
+          2 #000040, /* Contornos quase pretos */
+          3 #293fcf, /* Highlights reduzidos para azul médio */
+          4 #1a2a8c, 
+          5 #0d1a5e;
       }
 
       * {
@@ -88,6 +93,11 @@
         background: var(--accent);
         color: white;
       }
+      
+      /* Sombra adicional para Nabla no modo claro para simular inversão de luz */
+      body.light-mode .font-nabla {
+        filter: drop-shadow(2px 2px 0px rgba(0,0,0,0.2));
+      }
 
       body::before {
         content: "";
@@ -121,7 +131,7 @@
     "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
     "react/": "https://esm.sh/react@^19.2.3/",
     "react": "https://esm.sh/react@^19.2.3",
-    "@google/genai": "https://esm.sh/@google/genai@^1.34.0"
+    "@google/genai": "https://esm.sh/@google/genai@^1.38.0"
   }
 }
 </script>

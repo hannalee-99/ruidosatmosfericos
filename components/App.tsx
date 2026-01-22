@@ -1,184 +1,71 @@
 
-import React, { useState, useEffect, useRef } from 'react';
-import { ViewState } from './types';
-import NoiseBackground from './components/NoiseBackground';
-import Splash from './components/Splash';
-import LandingPage from './components/LandingPage';
-import Navigation from './components/Navigation';
-import PageMateria from './components/PageMateria';
-import PageManifesto from './components/PageManifesto';
-import PageSinais from './components/PageSinais';
-import PageSensor from './components/PageSensor';
-import PageAbout from './components/PageAbout';
-import PageConnect from './components/PageConnect';
-import PageBackoffice from './components/PageBackoffice';
-import CustomCursor from './components/CustomCursor';
-import ObserverEffect from './components/ObserverEffect';
-import GenerativeFavicon from './components/GenerativeFavicon';
-import Footer from './components/Footer';
-import { storage } from './components/storage';
-import { DEFAULT_IMAGE } from './constants';
+import React, { useState, useEffect } from 'react';
+import { ViewState } from '../types';
+import NoiseBackground from './NoiseBackground';
+import Splash from './Splash';
+import LandingPage from './LandingPage';
+import Navigation from './Navigation';
+import PageMateria from './PageMateria';
+import PageManifesto from './PageManifesto';
+import PageSinais from './PageSinais';
+import PageSensor from './PageSensor';
+import PageAbout from './PageAbout';
+import PageConnect from './PageConnect';
+import PageBackoffice from './PageBackoffice';
+import CustomCursor from './CustomCursor';
+import ObserverEffect from './ObserverEffect';
+import GenerativeFavicon from './GenerativeFavicon';
+import Footer from './Footer';
+import { storage } from './storage';
+import { INITIAL_DATA } from '../initialData';
 
 const App: React.FC = () => {
   const [hasEntered, setHasEntered] = useState(false);
   const [view, setView] = useState<ViewState>(ViewState.LANDING);
+  const [activeBreadcrumb, setActiveBreadcrumb] = useState<string | null>(null);
   const [isDarkMode, setIsDarkMode] = useState(true);
   
-  // Seeding: Adicionar obras, sinais e perfil iniciais
+  // Seeding: Carrega dados do arquivo initialData.ts para o IndexedDB
   useEffect(() => {
     const seedData = async () => {
       try {
         // --- 1. SEED OBRAS ---
         const existingWorks = await storage.getAll('works');
-        
-        const worksToSeed = [
-          {
-            title: 'ruídos de perto',
-            year: '2024',
-            month: '11', // Dezembro
-            technique: 'acrílica sobre painel',
-            dimensions: '50x50 cm',
-            imageUrl: 'https://64.media.tumblr.com/2469fc83feaecaf0b7a97fa55f6793d6/670f92e2b0934e32-bb/s2048x3072/3b1cf9f39410af90a8d0607d572f83c0024b2472.jpg',
-            isFeatured: true
-          },
-          {
-            title: 'essência na ionosfera',
-            year: '2025',
-            month: '2', // Março
-            technique: 'acrílica sobre tela',
-            dimensions: '70x60 cm',
-            imageUrl: 'https://64.media.tumblr.com/b66d6bd4a439ffdcc801f7dab1e05667/eed33f511f0fbd92-86/s2048x3072/d7031cbe671309845c127778c351178555843cc5.jpg',
-            isFeatured: true
-          },
-          {
-            title: 'frequência residual',
-            year: '2025',
-            month: '4', // Maio
-            technique: 'óleo sobre tela',
-            dimensions: '80x100 cm',
-            imageUrl: 'https://images.unsplash.com/photo-1541701494587-cb58502866ab?q=80&w=2070&auto=format&fit=crop',
-            isFeatured: false
-          },
-          {
-            title: 'eco magnético',
-            year: '2024',
-            month: '8', // Setembro
-            technique: 'mista sobre papel',
-            dimensions: '40x30 cm',
-            imageUrl: 'https://images.unsplash.com/photo-1550684848-fac1c5b4e853?q=80&w=2070&auto=format&fit=crop',
-            isFeatured: false
-          },
-          {
-            title: 'silêncio comprimido',
-            year: '2023',
-            month: '11', // Dezembro
-            technique: 'carvão e acrílica',
-            dimensions: '120x120 cm',
-            imageUrl: 'https://images.unsplash.com/photo-1507608616759-54f48f0af0ee?q=80&w=1974&auto=format&fit=crop',
-            isFeatured: true
-          }
-        ];
-
-        for (const seed of worksToSeed) {
-          const exists = existingWorks.some((w: any) => w.title === seed.title);
-          if (!exists) {
-            await storage.save('works', {
-              id: `seed-work-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`,
-              title: seed.title,
-              year: seed.year,
-              month: seed.month,
-              technique: seed.technique,
-              dimensions: seed.dimensions,
-              imageUrl: seed.imageUrl,
-              gallery: [],
-              status: 'disponível',
-              isVisible: true,
-              isFeatured: seed.isFeatured,
-              views: 0
-            });
-          }
+        if (existingWorks.length === 0 && INITIAL_DATA.works.length > 0) {
+            console.log("Seeding Works from Initial Data...");
+            for (const work of INITIAL_DATA.works) {
+                await storage.save('works', work);
+            }
         }
 
         // --- 2. SEED SINAIS (BLOG) ---
         const existingSignals = await storage.getAll('signals');
-        if (existingSignals.length === 0) {
-           const signalsToSeed = [
-             {
-               id: 'signal-macro-vision-v2', 
-               title: 'nunca esquecer',
-               subtitle: 'não perca a visão macro!!! a descida da consciência através das camadas da matéria.',
-               date: '13/03/2025',
-               status: 'publicado',
-               views: 12,
-               blocks: [
-                 {
-                   id: 'b-diagram',
-                   type: 'image',
-                   content: 'https://theosophy.wiki/en/images/thumb/7/7b/Diagram_of_Principles_1890.jpg/400px-Diagram_of_Principles_1890.jpg',
-                   caption: 'source > soul > mind > body > earth'
-                 },
-                 {
-                   id: 'b-calder',
-                   type: 'image',
-                   content: 'https://uploads4.wikiart.org/images/alexander-calder/balloons.jpg',
-                   caption: 'alexander calder: balloons'
-                 },
-                 {
-                   id: 'b-sonic',
-                   type: 'image',
-                   content: 'https://www.inhotim.org.br/uploads/2021/04/doug-aitken-sonic-pavilion-2009-inhotim-foto-daniela-paoliello.jpg',
-                   caption: 'doug aitken: sonic pavilion (inhotim)'
-                 },
-                 {
-                   id: 'b-noise',
-                   type: 'image',
-                   content: 'https://upload.wikimedia.org/wikipedia/commons/c/ce/WMAP_2010.png',
-                   caption: 'fundo cósmico de micro-ondas'
-                 }
-               ]
-             },
-             {
-               id: 'signal-tarsila-grid',
-               title: 'antropofagia',
-               subtitle: 'tarsila do amaral e a digestão do moderno.',
-               date: '14/03/2025',
-               status: 'publicado',
-               views: 4,
-               blocks: [
-                 {
-                    id: 'b-txt-1',
-                    type: 'text',
-                    content: 'a cor não é apenas superfície, é estrutura. o brasil digeriu o moderno e devolveu o tropical, o onírico e o monstruoso.'
-                 },
-                 {
-                   id: 'b-abaporu',
-                   type: 'image',
-                   content: 'https://upload.wikimedia.org/wikipedia/en/e/e8/Abaporu.jpg',
-                   caption: 'abaporu (1928)'
-                 },
-                 {
-                    id: 'b-txt-2',
-                    type: 'text',
-                    content: 'apenas a antropofagia nos une. socialmente. economicamente. filosoficamente.'
-                 }
-               ]
-             }
-           ];
-
-           for (const seed of signalsToSeed) {
-                // @ts-ignore
-                await storage.save('signals', seed);
-           }
+        if (existingSignals.length === 0 && INITIAL_DATA.signals.length > 0) {
+            console.log("Seeding Signals from Initial Data...");
+            for (const signal of INITIAL_DATA.signals) {
+                await storage.save('signals', signal);
+            }
         }
 
         // --- 3. SEED PERFIL (ABOUT) ---
         const currentProfile = await storage.get('about', 'profile');
-        if (!currentProfile) {
-            await storage.save('about', {
-                id: 'profile',
-                text: "não sou uma imagem única. sou uma coleção de fatias temporais, organizadas por uma estrutura orgânica que cresce sobre o digital.\n\nassim como as raízes verdes buscam caminho no azul profundo, minha consciência navega entre o ruído e a forma, costurando pedaços desconexos em uma identidade provisória.",
-                imageUrl: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=1000&auto=format&fit=crop"
-            });
+        if (!currentProfile && INITIAL_DATA.about.profile) {
+            console.log("Seeding Profile from Initial Data...");
+            await storage.save('about', INITIAL_DATA.about.profile);
+        }
+
+        // --- 4. SEED CONEXÕES ---
+        const currentConfig = await storage.get('about', 'connect_config');
+        if (!currentConfig && INITIAL_DATA.about.connect_config) {
+            console.log("Seeding Connections from Initial Data...");
+            await storage.save('about', INITIAL_DATA.about.connect_config);
+        }
+
+        // --- 5. SEED METRICAS DO SENSOR (OLHOS) ---
+        const currentSensor = await storage.get('about', 'sensor_metrics');
+        if (!currentSensor && INITIAL_DATA.about.sensor_metrics) {
+            console.log("Seeding Sensor Metrics from Initial Data...");
+            await storage.save('about', INITIAL_DATA.about.sensor_metrics);
         }
 
       } catch (e) {
@@ -187,6 +74,15 @@ const App: React.FC = () => {
     };
 
     seedData();
+  }, []);
+
+  // Deep Linking Check: Verifica se existe um parâmetro 'work' na URL para abrir a galeria diretamente
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.has('work')) {
+        setHasEntered(true); // Pula splash screen
+        setView(ViewState.MATERIA); // Vai direto para galeria
+    }
   }, []);
 
   useEffect(() => {
@@ -211,12 +107,15 @@ const App: React.FC = () => {
 
   const toggleTheme = () => setIsDarkMode(!isDarkMode);
 
-  useEffect(() => {
+  // Wrapper para navegação que limpa o breadcrumb e scrolla para o topo
+  const handleNavigate = (newView: ViewState) => {
+    setView(newView);
+    setActiveBreadcrumb(null);
     const mainElement = document.getElementById('main-scroll');
     if (mainElement) {
       mainElement.scrollTo({ top: 0, behavior: 'smooth' });
     }
-  }, [view]);
+  };
 
   const handleEnter = () => {
     setHasEntered(true);
@@ -226,6 +125,7 @@ const App: React.FC = () => {
     sessionStorage.removeItem('ra_auth');
     setHasEntered(false);
     setView(ViewState.LANDING);
+    setActiveBreadcrumb(null);
   };
 
   if (!hasEntered) {
@@ -244,19 +144,19 @@ const App: React.FC = () => {
   const renderContent = () => {
     switch (view) {
       case ViewState.LANDING:
-        return <LandingPage onNavigate={setView} isDarkMode={isDarkMode} />;
+        return <LandingPage onNavigate={handleNavigate} isDarkMode={isDarkMode} />;
       case ViewState.MATERIA:
-        return <PageMateria />;
+        return <PageMateria isDarkMode={isDarkMode} setBreadcrumb={setActiveBreadcrumb} />;
       case ViewState.MANIFESTO:
-        return <PageManifesto />;
+        return <PageManifesto isDarkMode={isDarkMode} />;
       case ViewState.SINAIS:
-        return <PageSinais />;
+        return <PageSinais isDarkMode={isDarkMode} setBreadcrumb={setActiveBreadcrumb} />;
       case ViewState.INTERACTIVE: // Agora 'medição' (Oculto, mas renderizável se selecionado)
         return <PageSensor />;
       case ViewState.ABOUT: // Agora '👁👁'
-        return <PageAbout onNavigate={setView} />;
+        return <PageAbout onNavigate={handleNavigate} />;
       case ViewState.CONNECT:
-        return <PageConnect />;
+        return <PageConnect onNavigate={handleNavigate} />;
       case ViewState.BACKOFFICE:
         return <PageBackoffice onLogout={handleBackofficeLogout} />;
       default:
@@ -278,7 +178,8 @@ const App: React.FC = () => {
       {view !== ViewState.BACKOFFICE && (
         <Navigation 
           currentView={view} 
-          onNavigate={setView} 
+          breadcrumb={activeBreadcrumb}
+          onNavigate={handleNavigate} 
           isDarkMode={isDarkMode} 
           onToggleTheme={toggleTheme} 
         />

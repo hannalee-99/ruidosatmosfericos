@@ -6,9 +6,9 @@ export const COLORS = {
   deepBlue: '#293fcf',
   red: '#b20501',
   offWhite: '#f0f0f0',
-  referenceBlue: '#0033cc',
-  referenceYellow: '#ffcc00',
-  referenceMagenta: '#ff0099',
+  referenceBlue: '#0000FF',
+  referenceYellow: '#FFFF00',
+  referenceMagenta: '#FF00FF'
 };
 
 export const MONTH_NAMES = [

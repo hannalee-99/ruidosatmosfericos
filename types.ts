@@ -19,6 +19,7 @@ export interface GalleryItem {
 export interface Work {
   id: string;
   title: string;
+  slug?: string; // URL personalizada para compartilhamento
   year: string;
   month: string;
   technique: string;
@@ -43,6 +44,9 @@ export interface Signal {
   id: string;
   title: string;
   subtitle?: string;
+  slug?: string;           // URL amigável
+  seoTitle?: string;       // Título para meta tags
+  seoDescription?: string; // Descrição para meta tags
   date: string;
   blocks: SignalBlock[];
   status: 'rascunho' | 'publicado';
