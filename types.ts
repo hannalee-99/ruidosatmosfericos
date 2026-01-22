@@ -67,6 +67,11 @@ export interface ConnectConfig {
   links: LinkItem[];
 }
 
+export interface SensorData {
+  id: string; // Geralmente 'sensor_metrics'
+  clicks: number;
+}
+
 // Deprecated type kept for migration safety if needed, but UI uses ConnectConfig
 export interface SocialLinks {
   id: string;

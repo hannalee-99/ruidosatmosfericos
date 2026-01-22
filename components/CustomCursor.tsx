@@ -1,8 +1,15 @@
 
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
+
+interface Ripple {
+  id: number;
+  x: number;
+  y: number;
+}
 
 const CustomCursor: React.FC = () => {
   const cursorRef = useRef<HTMLDivElement>(null);
+  const [ripples, setRipples] = useState<Ripple[]>([]);
 
   useEffect(() => {
     const moveCursor = (e: MouseEvent) => {
@@ -32,6 +39,22 @@ const CustomCursor: React.FC = () => {
     };
   }, []);
 
+  // Efeito de Ripple ao Clicar
+  useEffect(() => {
+    const handleClick = (e: MouseEvent) => {
+        const id = Date.now();
+        setRipples(prev => [...prev, { id, x: e.clientX, y: e.clientY }]);
+        
+        // Remove o ripple após a animação
+        setTimeout(() => {
+            setRipples(prev => prev.filter(r => r.id !== id));
+        }, 800);
+    };
+
+    window.addEventListener('mousedown', handleClick);
+    return () => window.removeEventListener('mousedown', handleClick);
+  }, []);
+
   return (
     <>
       {/* Esconde o cursor em mobile/touch devices para não atrapalhar */}
@@ -39,7 +62,28 @@ const CustomCursor: React.FC = () => {
         @media (hover: none) {
           .custom-cursor-container { display: none; }
         }
+        @keyframes ripple-expand {
+            0% { transform: scale(0.2); opacity: 1; border-width: 4px; }
+            100% { transform: scale(2.5); opacity: 0; border-width: 0px; }
+        }
       `}</style>
+
+      {/* Camada de Ripples (Feedback de Clique) */}
+      {ripples.map(r => (
+         <div
+            key={r.id}
+            className="fixed pointer-events-none z-[9999] rounded-full border border-[var(--accent)] box-border"
+            style={{
+                left: r.x,
+                top: r.y,
+                width: '40px',
+                height: '40px',
+                marginLeft: '-20px',
+                marginTop: '-20px',
+                animation: 'ripple-expand 0.6s cubic-bezier(0.215, 0.61, 0.355, 1) forwards'
+            }}
+         />
+      ))}
 
       <div 
         ref={cursorRef}

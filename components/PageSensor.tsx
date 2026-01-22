@@ -1,27 +1,48 @@
 
 import React, { useState, useEffect } from 'react';
-import { COLORS } from '../constants';
+import { storage } from './storage';
+import { SensorData } from '../types';
 
 const PageSensor: React.FC = () => {
   const [presence, setPresence] = useState(0);
   const [synced, setSynced] = useState(false);
+  const [clicks, setClicks] = useState(0);
 
+  // Carrega dados iniciais do banco
   useEffect(() => {
+    const loadMetrics = async () => {
+      try {
+        const data: SensorData = await storage.get('about', 'sensor_metrics');
+        if (data && typeof data.clicks === 'number') {
+          setClicks(data.clicks);
+        }
+      } catch (e) {
+        console.error("Erro ao carregar métricas do sensor", e);
+      }
+    };
+    loadMetrics();
+
     const interval = setInterval(() => {
       setPresence(prev => Math.max(0, prev - 0.005));
     }, 50);
     return () => clearInterval(interval);
   }, []);
 
-  const handleSync = () => {
+  const handleSync = async () => {
     if (synced) return;
     
-    // Salva a métrica no localStorage
-    const currentClicks = parseInt(localStorage.getItem('ra_sensor_clicks') || '0');
-    localStorage.setItem('ra_sensor_clicks', (currentClicks + 1).toString());
+    const newCount = clicks + 1;
+    setClicks(newCount);
+    
+    // Salva no IndexedDB
+    try {
+        await storage.save('about', { id: 'sensor_metrics', clicks: newCount });
+    } catch (e) {
+        console.error("Erro ao salvar métrica", e);
+    }
     
     setSynced(true);
-    setTimeout(() => setSynced(false), 2000); // Reset visual state after 2s
+    setTimeout(() => setSynced(false), 2000); 
   };
 
   return (
@@ -44,7 +65,6 @@ const PageSensor: React.FC = () => {
         <div 
           className="w-full h-[2px] bg-neutral-800 relative cursor-none overflow-hidden rounded-full [.light-mode_&]:bg-neutral-300"
           onMouseMove={(e) => {
-            const rect = e.currentTarget.getBoundingClientRect();
             setPresence(prev => Math.min(1, prev + 0.02));
           }}
         >
@@ -74,7 +94,7 @@ const PageSensor: React.FC = () => {
               borderColor: synced ? 'var(--accent)' : undefined
             }}
           >
-            {synced ? '[ sinal enviado ]' : 'registrar clique (métrica)'}
+            {synced ? `[ sinal ${clicks} ]` : 'registrar clique (métrica)'}
           </button>
         </div>
       </div>

@@ -362,6 +362,7 @@ const WorkModal: React.FC<WorkModalProps> = ({ work, onClose, onNext, onPrev }) 
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isGalleryOpen, setIsGalleryOpen] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [shareLabel, setShareLabel] = useState('compartilhar');
 
   const galleryItems = useMemo(() => {
     // Normaliza tudo para GalleryItem
@@ -384,13 +385,33 @@ const WorkModal: React.FC<WorkModalProps> = ({ work, onClose, onNext, onPrev }) 
     setIsGalleryOpen(false);
   }, [work]);
 
+  // Navegação interna da galeria (Slides)
+  const handleNextSlide = (e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    setCurrentSlide(prev => (prev + 1) % galleryItems.length);
+  };
+
+  const handlePrevSlide = (e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    setCurrentSlide(prev => (prev - 1 + galleryItems.length) % galleryItems.length);
+  };
+
+  const handleShare = () => {
+    const url = `${window.location.origin}?work=${work.id}`;
+    navigator.clipboard.writeText(url).then(() => {
+        setShareLabel('copiado!');
+        setTimeout(() => setShareLabel('compartilhar'), 2000);
+    });
+  };
+
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
-      if (isGalleryOpen || isFullscreen) {
-          if (e.key === 'Escape') {
-              setIsGalleryOpen(false);
-              setIsFullscreen(false);
-          }
+      if (isFullscreen) {
+         if (e.key === 'Escape') setIsFullscreen(false);
+         if (e.key === 'ArrowRight') handleNextSlide();
+         if (e.key === 'ArrowLeft') handlePrevSlide();
+      } else if (isGalleryOpen) {
+          if (e.key === 'Escape') setIsGalleryOpen(false);
       } else {
           if (e.key === 'Escape') onClose();
           if (e.key === 'ArrowRight') onNext();
@@ -399,11 +420,7 @@ const WorkModal: React.FC<WorkModalProps> = ({ work, onClose, onNext, onPrev }) 
     };
     window.addEventListener('keydown', handleKey);
     return () => window.removeEventListener('keydown', handleKey);
-  }, [isGalleryOpen, isFullscreen, onClose, onNext, onPrev]);
-
-  const nextSlide = () => {
-    setCurrentSlide(prev => (prev + 1) % galleryItems.length);
-  };
+  }, [isGalleryOpen, isFullscreen, onClose, onNext, onPrev, galleryItems.length]);
 
   const hasMultipleImages = galleryItems.length > 1;
   const currentItem = galleryItems[currentSlide];
@@ -448,7 +465,7 @@ const WorkModal: React.FC<WorkModalProps> = ({ work, onClose, onNext, onPrev }) 
              item={currentItem}
              alt={work.title}
              isActive={true}
-             onClick={hasMultipleImages ? nextSlide : undefined}
+             onClick={hasMultipleImages ? handleNextSlide : undefined}
           />
           
           {hasMultipleImages && (
@@ -468,7 +485,7 @@ const WorkModal: React.FC<WorkModalProps> = ({ work, onClose, onNext, onPrev }) 
 
               <div className="w-8 h-px bg-[var(--accent)]"></div>
               
-              <div className="flex gap-4">
+              <div className="flex flex-wrap gap-4">
                   <button 
                     onClick={() => setIsFullscreen(true)}
                     className="flex items-center gap-2 text-[10px] font-mono lowercase tracking-widest opacity-60 hover:opacity-100 transition-opacity border border-white/20 [.light-mode_&]:border-black/20 rounded-full px-4 py-2 hover:bg-white/5"
@@ -484,6 +501,13 @@ const WorkModal: React.FC<WorkModalProps> = ({ work, onClose, onNext, onPrev }) 
                       <span>+</span> ver galeria ({galleryItems.length})
                     </button>
                   )}
+
+                  <button 
+                    onClick={handleShare}
+                    className="flex items-center gap-2 text-[10px] font-mono lowercase tracking-widest opacity-60 hover:opacity-100 transition-opacity border border-white/20 [.light-mode_&]:border-black/20 rounded-full px-4 py-2 hover:bg-white/5"
+                  >
+                    <span>∞</span> {shareLabel}
+                  </button>
               </div>
 
               {work.description && (
@@ -539,6 +563,7 @@ const WorkModal: React.FC<WorkModalProps> = ({ work, onClose, onNext, onPrev }) 
                             onClick={() => {
                                 setCurrentSlide(idx);
                                 setIsGalleryOpen(false);
+                                setIsFullscreen(true);
                             }}
                         >
                             {type === 'image' ? (
@@ -584,6 +609,28 @@ const WorkModal: React.FC<WorkModalProps> = ({ work, onClose, onNext, onPrev }) 
                   [esc] fechar
               </button>
 
+              {hasMultipleImages && (
+                <>
+                  <button 
+                    onClick={handlePrevSlide}
+                    className="fixed left-2 md:left-8 top-1/2 -translate-y-1/2 z-[350] w-12 h-12 flex items-center justify-center bg-transparent text-white [.light-mode_&]:text-black hover:opacity-50 pointer-events-auto transition-opacity"
+                    title="anterior"
+                  >
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+                  </button>
+                  <button 
+                    onClick={handleNextSlide}
+                    className="fixed right-2 md:right-8 top-1/2 -translate-y-1/2 z-[350] w-12 h-12 flex items-center justify-center bg-transparent text-white [.light-mode_&]:text-black hover:opacity-50 pointer-events-auto transition-opacity"
+                    title="próxima"
+                  >
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+                  </button>
+                  <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-[350] font-mono text-xs opacity-50 text-white [.light-mode_&]:text-black">
+                     {currentSlide + 1} / {galleryItems.length}
+                  </div>
+                </>
+              )}
+
               <div 
                 className="relative w-full h-full p-0 flex items-center justify-center"
                 onClick={(e) => e.stopPropagation()} 
@@ -592,6 +639,7 @@ const WorkModal: React.FC<WorkModalProps> = ({ work, onClose, onNext, onPrev }) 
                      item={currentItem}
                      alt="visualização em tela cheia"
                      isActive={true}
+                     onClick={undefined} // Desativa clique para avançar, priorizando zoom/pan da ZoomableImage
                   />
               </div>
           </div>
@@ -607,7 +655,6 @@ interface PageMateriaProps {
 const PageMateria: React.FC<PageMateriaProps> = ({ isDarkMode = true }) => {
   const [allWorks, setAllWorks] = useState<Work[]>([]);
   const [selectedWork, setSelectedWork] = useState<Work | null>(null);
-  const [loadedGroups, setLoadedGroups] = useState<Set<string>>(new Set());
   const [focusedIndex, setFocusedIndex] = useState<number>(-1);
   
   const [filterYear, setFilterYear] = useState<string>('todos');
@@ -636,62 +683,27 @@ const PageMateria: React.FC<PageMateriaProps> = ({ isDarkMode = true }) => {
     return years;
   }, [allWorks]);
 
-  const groupedWorks = useMemo(() => {
-    const filtered = allWorks.filter(work => {
+  // Lista de Obras Filtrada e Ordenada
+  const displayedWorks = useMemo(() => {
+    let filtered = allWorks.filter(work => {
       const matchYear = filterYear === 'todos' || work.year === filterYear;
       const matchMonth = filterMonth === 'todos' || work.month === filterMonth;
       return matchYear && matchMonth;
     });
 
-    const groups: Record<string, Record<string, Work[]>> = {};
-    filtered.forEach(work => {
-      const year = work.year || 'sem data';
-      const month = work.month || '0';
-      if (!groups[year]) groups[year] = {};
-      if (!groups[year][month]) groups[year][month] = [];
-      groups[year][month].push(work);
-    });
-
-    Object.keys(groups).forEach(y => {
-      Object.keys(groups[y]).forEach(m => {
-        groups[y][m].sort((a, b) => Number(b.id) - Number(a.id));
-      });
-    });
-
-    return groups;
+    // Ordenação Padrão (Mais recente primeiro)
+    return filtered.sort((a, b) => Number(b.id) - Number(a.id));
   }, [allWorks, filterYear, filterMonth]);
-
-  const flatWorks = useMemo(() => {
-    const flat: Work[] = [];
-    const years = Object.keys(groupedWorks).sort((a, b) => Number(b) - Number(a));
-    years.forEach(year => {
-        const months = Object.keys(groupedWorks[year]).sort((a, b) => Number(b) - Number(a));
-        months.forEach(month => {
-            flat.push(...groupedWorks[year][month]);
-        });
-    });
-    return flat;
-  }, [groupedWorks]);
 
   useEffect(() => {
     setFocusedIndex(-1);
   }, [filterYear, filterMonth]);
 
   useEffect(() => {
-    const years = Object.keys(groupedWorks).sort((a, b) => Number(b) - Number(a));
-    setLoadedGroups(new Set());
-    years.forEach((year, i) => {
-      setTimeout(() => {
-        setLoadedGroups(prev => new Set([...prev, year]));
-      }, i * 150);
-    });
-  }, [groupedWorks]);
-
-  useEffect(() => {
     if (selectedWork) return;
 
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (flatWorks.length === 0) return;
+      if (displayedWorks.length === 0) return;
 
       let cols = 1;
       if (window.innerWidth >= 1024) cols = 3;
@@ -706,7 +718,7 @@ const PageMateria: React.FC<PageMateriaProps> = ({ isDarkMode = true }) => {
       switch (e.key) {
         case 'ArrowRight':
           e.preventDefault();
-          setFocusedIndex(prev => Math.min(prev + 1, flatWorks.length - 1));
+          setFocusedIndex(prev => Math.min(prev + 1, displayedWorks.length - 1));
           break;
         case 'ArrowLeft':
           e.preventDefault();
@@ -714,7 +726,7 @@ const PageMateria: React.FC<PageMateriaProps> = ({ isDarkMode = true }) => {
           break;
         case 'ArrowDown':
           e.preventDefault();
-          setFocusedIndex(prev => Math.min(prev + cols, flatWorks.length - 1));
+          setFocusedIndex(prev => Math.min(prev + cols, displayedWorks.length - 1));
           break;
         case 'ArrowUp':
           e.preventDefault();
@@ -722,8 +734,8 @@ const PageMateria: React.FC<PageMateriaProps> = ({ isDarkMode = true }) => {
           break;
         case 'Enter':
           e.preventDefault();
-          if (focusedIndex >= 0 && flatWorks[focusedIndex]) {
-            handleSelectWork(flatWorks[focusedIndex]);
+          if (focusedIndex >= 0 && displayedWorks[focusedIndex]) {
+            handleSelectWork(displayedWorks[focusedIndex]);
           }
           break;
       }
@@ -731,7 +743,7 @@ const PageMateria: React.FC<PageMateriaProps> = ({ isDarkMode = true }) => {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [selectedWork, flatWorks, focusedIndex]);
+  }, [selectedWork, displayedWorks, focusedIndex]);
 
   const handleSelectWork = async (work: Work) => {
     setSelectedWork(work);
@@ -740,17 +752,17 @@ const PageMateria: React.FC<PageMateriaProps> = ({ isDarkMode = true }) => {
   };
 
   const handleNextWork = () => {
-    if (!selectedWork || flatWorks.length === 0) return;
-    const currentIndex = flatWorks.findIndex(w => w.id === selectedWork.id);
-    const nextIndex = (currentIndex + 1) % flatWorks.length;
-    handleSelectWork(flatWorks[nextIndex]);
+    if (!selectedWork || displayedWorks.length === 0) return;
+    const currentIndex = displayedWorks.findIndex(w => w.id === selectedWork.id);
+    const nextIndex = (currentIndex + 1) % displayedWorks.length;
+    handleSelectWork(displayedWorks[nextIndex]);
   };
 
   const handlePrevWork = () => {
-    if (!selectedWork || flatWorks.length === 0) return;
-    const currentIndex = flatWorks.findIndex(w => w.id === selectedWork.id);
-    const prevIndex = (currentIndex - 1 + flatWorks.length) % flatWorks.length;
-    handleSelectWork(flatWorks[prevIndex]);
+    if (!selectedWork || displayedWorks.length === 0) return;
+    const currentIndex = displayedWorks.findIndex(w => w.id === selectedWork.id);
+    const prevIndex = (currentIndex - 1 + displayedWorks.length) % displayedWorks.length;
+    handleSelectWork(displayedWorks[prevIndex]);
   };
 
   const clearFilters = () => {
@@ -770,13 +782,12 @@ const PageMateria: React.FC<PageMateriaProps> = ({ isDarkMode = true }) => {
     );
   }
 
-  const sortedYears = Object.keys(groupedWorks).sort((a, b) => Number(b) - Number(a));
-
   return (
     <div className="pt-32 md:pt-40 px-6 md:px-16 pb-32 min-h-screen max-w-[1800px] mx-auto">
       <BackToTop targetId="main-scroll" />
 
-      <div className="sticky top-20 md:top-24 z-40 mb-20 md:mb-32 flex flex-wrap items-center gap-4 md:gap-6 bg-transparent mix-blend-exclusion [.light-mode_&]:mix-blend-normal">
+      {/* FILTROS */}
+      <div className="sticky top-20 md:top-24 z-40 mb-12 md:mb-16 flex flex-wrap items-center gap-4 md:gap-6 bg-transparent mix-blend-exclusion [.light-mode_&]:mix-blend-normal">
         <div className="flex items-center gap-3">
           <select 
             value={filterYear}
@@ -809,82 +820,65 @@ const PageMateria: React.FC<PageMateriaProps> = ({ isDarkMode = true }) => {
         )}
       </div>
 
-      <div className="space-y-24 md:space-y-32">
-        {sortedYears.map((year) => {
-          const yearMonthsDesc = Object.keys(groupedWorks[year]).sort((a, b) => Number(b) - Number(a));
-          const allWorksInYear = yearMonthsDesc.flatMap(m => groupedWorks[year][m]);
+      {/* GALERIA MASONRY (MUSEUM WALL) */}
+      {/* CSS Columns para criar o efeito de mosaico vertical */}
+      <div className="columns-1 md:columns-2 lg:columns-3 gap-8 space-y-8 animate-in fade-in duration-1000">
+        {displayedWorks.map((work) => {
+          const coverImage = getWorkCover(work);
+          const isGradient = coverImage.includes('gradient');
+          const globalIndex = displayedWorks.findIndex(w => w.id === work.id);
+          const isFocused = globalIndex === focusedIndex;
+          const monthName = MONTH_NAMES[parseInt(work.month)];
 
           return (
-            <section key={year} className={`transition-all duration-1000 transform ${loadedGroups.has(year) ? 'opacity-100' : 'opacity-0'}`}>
-              <div className="mb-12 md:mb-16">
-                 <h2 
-                   className={`font-nabla text-6xl md:text-9xl tracking-tighter leading-none opacity-100`} 
-                   style={{ fontPalette: isDarkMode ? '--matrix' : '--matrix-blue' }}
-                 >
-                   {year}
-                 </h2>
+            <div 
+              key={work.id}
+              id={`work-card-${globalIndex}`}
+              className={`
+                  group relative cursor-pointer break-inside-avoid mb-8
+                  transition-all duration-500 ease-out 
+                  ${isFocused ? 'opacity-100' : 'opacity-100 hover:opacity-100'}
+              `}
+              onClick={() => {
+                  setFocusedIndex(globalIndex);
+                  handleSelectWork(work);
+              }}
+            >
+              {/* Imagem Container - Sem Aspect Ratio fixo, altura automática */}
+              <div className="relative w-full bg-[#050505] overflow-hidden rounded-2xl [.light-mode_&]:bg-neutral-100 shadow-2xl transition-transform duration-700 group-hover:-translate-y-2 border border-white/5 [.light-mode_&]:border-black/5 group-hover:border-white/20 [.light-mode_&]:group-hover:border-black/20">
+                {isGradient ? (
+                    <div className="w-full aspect-square" style={{ background: coverImage }}></div>
+                ) : (
+                    // Ajuste na LazyImage para h-auto
+                    <LazyImage 
+                      src={coverImage} 
+                      alt={work.title}
+                      className="w-full h-auto object-cover" 
+                    />
+                )}
               </div>
 
-              {/* GRID UNIFICADO */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-10 lg:gap-16">
-                {allWorksInYear.map((work) => {
-                  const coverImage = getWorkCover(work);
-                  const isGradient = coverImage.includes('gradient');
-                  const globalIndex = flatWorks.findIndex(w => w.id === work.id);
-                  const isFocused = globalIndex === focusedIndex;
-                  const monthName = MONTH_NAMES[parseInt(work.month)];
-
-                  return (
-                    <div 
-                      key={work.id}
-                      id={`work-card-${globalIndex}`}
-                      className={`
-                          group relative cursor-pointer flex flex-col gap-4 
-                          transition-all duration-500 ease-out 
-                          ${isFocused ? 'opacity-100' : 'opacity-100 hover:opacity-100'}
-                      `}
-                      onClick={() => {
-                          setFocusedIndex(globalIndex);
-                          handleSelectWork(work);
-                      }}
-                    >
-                      <div className="flex justify-between items-center px-1">
-                          {/* Nome do Mês - Ajuste de Contraste para Light Mode */}
-                          <span className="font-mono text-[10px] lowercase opacity-40 group-hover:opacity-100 transition-opacity tracking-widest text-white [.light-mode_&]:text-black/60">
-                            {monthName}
-                          </span>
-                      </div>
-
-                      <div className="relative w-full aspect-[4/5] bg-[#050505] overflow-hidden rounded-2xl [.light-mode_&]:bg-neutral-100 shadow-2xl transition-transform duration-700 group-hover:-translate-y-2 border border-white/5 [.light-mode_&]:border-black/5 group-hover:border-white/20 [.light-mode_&]:group-hover:border-black/20">
-                        {isGradient ? (
-                            <div className="w-full h-full" style={{ background: coverImage }}></div>
-                        ) : (
-                            // Imagem sem opacidade
-                            <LazyImage 
-                            src={coverImage} 
-                            alt={work.title}
-                            />
-                        )}
-                      </div>
-
-                      <div className="px-1 flex justify-between items-start">
-                          <h4 className={`font-electrolize text-lg leading-tight transition-colors ${isFocused ? 'text-[var(--accent)]' : 'group-hover:text-[var(--accent)]'}`}>
-                              {work.title}
-                          </h4>
-                          <span className="text-[var(--accent)] opacity-0 group-hover:opacity-100 -translate-x-2 group-hover:translate-x-0 transition-all duration-300">
-                             →
-                          </span>
-                      </div>
-                    </div>
-                  );
-                })}
+              {/* Informações da Obra (Minimalista) */}
+              <div className="mt-4 px-1 flex flex-col gap-1">
+                  <div className="flex justify-between items-start">
+                      <h4 className={`font-electrolize text-lg leading-tight transition-colors ${isFocused ? 'text-[var(--accent)]' : 'group-hover:text-[var(--accent)]'}`}>
+                          {work.title}
+                      </h4>
+                      <span className="text-[var(--accent)] opacity-0 group-hover:opacity-100 -translate-x-2 group-hover:translate-x-0 transition-all duration-300">
+                         →
+                      </span>
+                  </div>
+                  <div className="flex justify-between items-center opacity-40 text-[10px] font-mono tracking-widest lowercase group-hover:opacity-80 transition-opacity">
+                      <span>{work.year}</span>
+                      <span>{monthName}</span>
+                  </div>
               </div>
-            </section>
+            </div>
           );
         })}
       </div>
 
-      {sortedYears.length === 0 && (
+      {displayedWorks.length === 0 && (
         <div className="flex flex-col items-center justify-center py-40 gap-6 opacity-20">
           <span className="font-vt tracking-[0.4em] lowercase">vazio.</span>
         </div>

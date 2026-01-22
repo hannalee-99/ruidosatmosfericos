@@ -1,11 +1,15 @@
 
-import { Work, Signal, AboutData, ConnectConfig } from './types';
+import { Work, Signal, AboutData, ConnectConfig, SensorData } from './types';
 
-// INSTRUÇÕES DE ATUALIZAÇÃO:
-// 1. No Backoffice > Sincronia, clique em "Exportar Tudo".
-// 2. Abra o arquivo .json baixado.
-// 3. Copie o conteúdo e substitua o objeto abaixo.
-// 4. Mantenha a estrutura "export const INITIAL_DATA = ...".
+// ==============================================================================
+// INSTRUÇÕES DE ATUALIZAÇÃO (LEIA COM ATENÇÃO):
+// ==============================================================================
+// 1. Acesse seu site (online ou local) e vá para a aba "Fluxo" (Backoffice).
+// 2. Vá na aba "Sincronia" e clique em "Exportar Tudo".
+// 3. Abra o arquivo .json que foi baixado no seu computador.
+// 4. Copie TODO o conteúdo desse arquivo .json.
+// 5. Cole o conteúdo substituindo o objeto após o sinal de igual (=) abaixo.
+// ==============================================================================
 
 export const INITIAL_DATA: {
   works: Work[];
@@ -13,6 +17,7 @@ export const INITIAL_DATA: {
   about: {
     profile: AboutData | null;
     connect_config: ConnectConfig | null;
+    sensor_metrics: SensorData | null;
   };
 } = {
   "works": [
@@ -99,6 +104,10 @@ export const INITIAL_DATA: {
           "url": "https://instagram.com"
         }
       ]
+    },
+    "sensor_metrics": {
+      "id": "sensor_metrics",
+      "clicks": 0
     }
   }
 };

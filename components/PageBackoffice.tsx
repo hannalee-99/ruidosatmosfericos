@@ -1,7 +1,8 @@
 
+// ... (imports mantidos)
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { storage } from './storage';
-import { Work, Signal, SignalBlock, AboutData, ConnectConfig, LinkItem, GalleryItem } from '../types';
+import { Work, Signal, SignalBlock, AboutData, ConnectConfig, LinkItem, GalleryItem, SensorData } from '../types';
 import { MONTH_NAMES, DEFAULT_IMAGE, COLORS } from '../constants';
 
 const formatImageUrl = (url: string): string => {
@@ -34,10 +35,6 @@ const Icons = {
   More: () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/></svg>
 };
 
-// ... [MANTÉM TODO O CÓDIGO DOS DIÁLOGOS, EMBED HELPERS E MODALS IGUAL AO ANTERIOR] ...
-// ... [CÓDIGO OMITIDO PARA BREVIDADE, MAS O XML FINAL DEVE CONTER O ARQUIVO COMPLETO. VOU REPETIR APENAS A PARTE DA FUNÇÃO EXPORTDATA E RENDER COMPLETO ABAIXO] ...
-
-// [REPETINDO HELPERS E COMPONENTES PARA CONTEXTO DO ARQUIVO]
 const ToolbarDivider = () => <div className="w-px h-5 bg-white/10 mx-2"></div>;
 
 const ToolbarButton: React.FC<{ 
@@ -57,10 +54,6 @@ const ToolbarButton: React.FC<{
     {children}
   </button>
 );
-
-// ... [LinkDialog, EmbedDialog, getEmbedUrl, PublishSettingsModal, Preview Components iguais] ...
-// PARA POUPAR LINHAS NO XML DE SAÍDA, VOU INSERIR APENAS AS MUDANÇAS RELEVANTES E MANTER O RESTO.
-// MAS COMO O XML EXIGE O CONTEÚDO COMPLETO, VOU REPRODUZIR O ARQUIVO INTEIRO COM A CORREÇÃO NO exportData.
 
 // Diálogo de Link
 const LinkDialog: React.FC<{
@@ -152,20 +145,28 @@ const EmbedDialog: React.FC<{
 const getEmbedUrl = (input: string): string | null => {
   if (!input) return null;
   const cleanInput = input.trim();
-  if (cleanInput.includes('<iframe')) {
+
+  // 1. Validar Iframe
+  if (cleanInput.startsWith('<iframe')) {
       const srcMatch = cleanInput.match(/src=["']([^"']+)["']/);
       if (srcMatch && srcMatch[1]) {
           let url = srcMatch[1];
+          // Correção específica para Spotify dentro de src
           if (url.includes('open.spotify.com') && !url.includes('/embed/')) {
               url = url.replace('spotify.com/', 'spotify.com/embed/');
           }
           return url;
       }
+      return null;
   }
+
+  // 2. Validar YouTube (Standard, Short, Embed, Shorts)
   if (cleanInput.includes('youtube.com') || cleanInput.includes('youtu.be')) {
-    const videoId = cleanInput.match(/(?:youtu\.be\/|youtube\.com\/(?:.*v=|.*\/)([\w-]{11}))/)?.[1];
+    const videoId = cleanInput.match(/(?:youtu\.be\/|youtube\.com\/(?:.*v=|.*\/|shorts\/|embed\/)([\w-]{11}))/)?.[1];
     if (videoId) return `https://www.youtube.com/embed/${videoId}`;
   }
+
+  // 3. Validar Spotify
   if (cleanInput.includes('spotify.com')) {
     if (!cleanInput.includes('/embed/')) {
         const baseUrl = cleanInput.split('?')[0];
@@ -173,7 +174,14 @@ const getEmbedUrl = (input: string): string | null => {
     }
     return cleanInput;
   }
-  if (cleanInput.startsWith('http')) return cleanInput;
+
+  // 4. Validar Vimeo
+  if (cleanInput.includes('vimeo.com')) {
+      const videoId = cleanInput.match(/(?:vimeo\.com\/|video\/)(\d+)/)?.[1];
+      if (videoId) return `https://player.vimeo.com/video/${videoId}`;
+  }
+
+  // Se não for nenhum dos acima, retorna null (inválido para embed)
   return null;
 };
 
@@ -441,11 +449,18 @@ const PageBackoffice: React.FC<PageBackofficeProps> = ({ onLogout }) => {
   };
 
   const handleCreateLink = (text: string, url: string) => { insertFormatting(`[${text}](${url})`, ''); setShowLinkDialog(false); };
+  
+  // Atualização da função de Embed com feedback de erro
   const handleConfirmEmbed = (input: string) => {
       const embedUrl = getEmbedUrl(input);
-      if (embedUrl) addBlock('embed', embedUrl); else addBlock('text', input);
-      setShowEmbedDialog(false);
+      if (embedUrl) {
+          addBlock('embed', embedUrl);
+          setShowEmbedDialog(false);
+      } else {
+          showStatus("link não suportado (youtube/spotify/vimeo)");
+      }
   };
+
   const autoResizeTextarea = (e: React.FormEvent<HTMLTextAreaElement>) => {
     e.currentTarget.style.height = 'auto';
     e.currentTarget.style.height = `${e.currentTarget.scrollHeight}px`;
@@ -524,21 +539,22 @@ const PageBackoffice: React.FC<PageBackofficeProps> = ({ onLogout }) => {
   const addConnectLink = () => { setConnectConfig(prev => ({ ...prev, links: [...prev.links, { id: Math.random().toString(36).substr(2,9), label: '', url: '' }] })); };
   const removeConnectLink = (id: string) => { setConnectConfig(prev => ({ ...prev, links: prev.links.filter(l => l.id !== id) })); };
 
-  // --- FUNÇÃO DE EXPORTAÇÃO ATUALIZADA ---
+  // --- FUNÇÃO DE EXPORTAÇÃO ---
   const exportData = async () => {
     try {
       const worksData = await storage.getAll('works');
       const signalsData = await storage.getAll('signals');
       const profileData = await storage.get('about', 'profile');
       const connectData = await storage.get('about', 'connect_config');
+      const sensorData = await storage.get('about', 'sensor_metrics');
 
-      // Estrutura que corresponde exatamente ao INITIAL_DATA
       const exportObj = {
         works: worksData,
         signals: signalsData,
         about: {
             profile: profileData,
-            connect_config: connectData
+            connect_config: connectData,
+            sensor_metrics: sensorData || null
         }
       };
 
@@ -568,6 +584,7 @@ const PageBackoffice: React.FC<PageBackofficeProps> = ({ onLogout }) => {
               if (json.about) {
                   if (json.about.profile) await storage.save('about', json.about.profile);
                   if (json.about.connect_config) await storage.save('about', json.about.connect_config);
+                  if (json.about.sensor_metrics) await storage.save('about', json.about.sensor_metrics);
               }
               await loadAllData();
               showStatus("dados importados");
@@ -576,12 +593,8 @@ const PageBackoffice: React.FC<PageBackofficeProps> = ({ onLogout }) => {
       reader.readAsText(file);
   };
 
-  // [RESTO DA RENDERIZAÇÃO MANTIDA IGUAL - OMITIDO AQUI MAS O ARQUIVO FINAL DEVE TER TUDO]
-  // Para garantir que o arquivo não fique incompleto, vou renderizar a parte final do componente.
-  
   if (editingSignal) {
       // ... [EDITOR SIGNAL CODE] ... 
-      // (Devido ao limite de tokens, estou assumindo que o editor de sinal está aqui conforme o anterior)
       return (
           <div className="fixed inset-0 z-[100] bg-[#191919] text-white flex flex-col font-sans overflow-hidden">
               <div className="h-16 flex justify-between items-center px-4 border-b border-white/5 bg-[#191919] z-50 select-none">

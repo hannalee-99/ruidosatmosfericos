@@ -61,6 +61,13 @@ const App: React.FC = () => {
             await storage.save('about', INITIAL_DATA.about.connect_config);
         }
 
+        // --- 5. SEED METRICAS DO SENSOR (OLHOS) ---
+        const currentSensor = await storage.get('about', 'sensor_metrics');
+        if (!currentSensor && INITIAL_DATA.about.sensor_metrics) {
+            console.log("Seeding Sensor Metrics from Initial Data...");
+            await storage.save('about', INITIAL_DATA.about.sensor_metrics);
+        }
+
       } catch (e) {
         console.error("Erro ao verificar dados iniciais:", e);
       }
