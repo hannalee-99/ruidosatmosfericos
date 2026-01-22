@@ -375,9 +375,21 @@ const WorkModal: React.FC<WorkModalProps> = ({ work, onClose, onNext, onPrev }) 
       } else if (isGalleryOpen) {
           if (e.key === 'Escape') setIsGalleryOpen(false);
       } else {
-          if (e.key === 'Escape') onClose();
-          if (e.key === 'ArrowRight') onNext();
-          if (e.key === 'ArrowLeft') onPrev();
+          // Modal Aberto (View Padrão)
+          if (e.key === 'Escape') {
+              onClose();
+          } 
+          // Se tiver galeria e o usuário quiser navegar nela (ex: setas)
+          // MAS se o usuário quiser trocar de obra, podemos usar lógica condicional?
+          // UX Padrão: Setas no modal principal navegam OBRAS, a menos que se foque na imagem.
+          // Como não temos foco explícito, vamos priorizar Navegação de OBRAS no modal principal,
+          // e Navegação de IMAGEM no fullscreen.
+          else if (e.key === 'ArrowRight') {
+              onNext();
+          }
+          else if (e.key === 'ArrowLeft') {
+              onPrev();
+          }
       }
     };
     window.addEventListener('keydown', handleKey);
@@ -398,8 +410,8 @@ const WorkModal: React.FC<WorkModalProps> = ({ work, onClose, onNext, onPrev }) 
 
       {!isGalleryOpen && !isFullscreen && (
         <>
-          <button onClick={onPrev} className="fixed top-1/2 left-2 md:left-4 -translate-y-1/2 z-[250] w-8 h-8 flex items-center justify-center bg-transparent transition-opacity hover:opacity-50 text-white [.light-mode_&]:text-black pointer-events-auto" title="obra anterior"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button>
-          <button onClick={onNext} className="fixed top-1/2 right-2 md:right-4 -translate-y-1/2 z-[250] w-8 h-8 flex items-center justify-center bg-transparent transition-opacity hover:opacity-50 text-white [.light-mode_&]:text-black pointer-events-auto" title="próxima obra"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18l6-6-6-6"/></svg></button>
+          <button onClick={onPrev} className="fixed top-1/2 left-2 md:left-4 -translate-y-1/2 z-[250] w-8 h-8 flex items-center justify-center bg-transparent transition-opacity hover:opacity-50 text-white [.light-mode_&]:text-black pointer-events-auto" title="obra anterior [seta esquerda]"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button>
+          <button onClick={onNext} className="fixed top-1/2 right-2 md:right-4 -translate-y-1/2 z-[250] w-8 h-8 flex items-center justify-center bg-transparent transition-opacity hover:opacity-50 text-white [.light-mode_&]:text-black pointer-events-auto" title="próxima obra [seta direita]"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18l6-6-6-6"/></svg></button>
         </>
       )}
 
@@ -571,6 +583,7 @@ const PageMateria: React.FC<PageMateriaProps> = ({ isDarkMode = true, setBreadcr
     return displayedWorks.slice(0, visibleCount);
   }, [displayedWorks, visibleCount]);
 
+  // Teclado para Grade (Quando Modal fechado)
   useEffect(() => {
     if (selectedWork) return;
 
@@ -685,10 +698,10 @@ const PageMateria: React.FC<PageMateriaProps> = ({ isDarkMode = true, setBreadcr
             <div 
               key={work.id}
               id={`work-card-${index}`}
-              className={`group relative cursor-pointer break-inside-avoid mb-8 transition-all duration-500 ease-out ${isFocused ? 'opacity-100' : 'opacity-100 hover:opacity-100'}`}
+              className={`group relative cursor-pointer break-inside-avoid mb-8 transition-all duration-300 ease-out ${isFocused ? 'opacity-100 scale-[1.02] z-10' : 'opacity-100 hover:opacity-100'}`}
               onClick={() => { setFocusedIndex(index); handleSelectWork(work); }}
             >
-              <div className="relative w-full bg-[#050505] overflow-hidden rounded-2xl [.light-mode_&]:bg-neutral-100 shadow-2xl transition-transform duration-700 group-hover:-translate-y-2 border border-white/5 [.light-mode_&]:border-black/5 group-hover:border-white/20 [.light-mode_&]:group-hover:border-black/20">
+              <div className={`relative w-full bg-[#050505] overflow-hidden rounded-2xl [.light-mode_&]:bg-neutral-100 shadow-2xl transition-all duration-700 border ${isFocused ? 'border-[var(--accent)] shadow-[0_0_15px_rgba(159,248,93,0.3)]' : 'border-white/5 [.light-mode_&]:border-black/5 group-hover:border-white/20 [.light-mode_&]:group-hover:border-black/20 group-hover:-translate-y-2'}`}>
                 {isGradient ? (
                     <div className="w-full aspect-square" style={{ background: coverImage }}></div>
                 ) : (
@@ -698,7 +711,7 @@ const PageMateria: React.FC<PageMateriaProps> = ({ isDarkMode = true, setBreadcr
               <div className="mt-4 px-1 flex flex-col gap-1">
                   <div className="flex justify-between items-start">
                       <h4 className={`font-electrolize text-lg leading-tight transition-colors ${isFocused ? 'text-[var(--accent)]' : 'group-hover:text-[var(--accent)]'}`}>{safeString(work.title)}</h4>
-                      <span className="text-[var(--accent)] opacity-0 group-hover:opacity-100 -translate-x-2 group-hover:translate-x-0 transition-all duration-300">→</span>
+                      <span className={`text-[var(--accent)] transition-all duration-300 ${isFocused ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0'}`}>→</span>
                   </div>
                   <div className="flex justify-between items-center opacity-40 text-[10px] font-mono tracking-widest lowercase group-hover:opacity-80 transition-opacity">
                       <span>{safeString(work.year)}</span>
