@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { storage } from './storage';
 import { Work, Signal, SignalBlock, AboutData, ConnectConfig, LinkItem, GalleryItem, SensorData } from '../types';
-import { MONTH_NAMES, DEFAULT_IMAGE } from '../constants';
+import { MONTH_NAMES, DEFAULT_IMAGE, AUTH_HASH } from '../constants';
 
 const formatImageUrl = (url: string): string => {
   if (!url || url.trim() === '') return DEFAULT_IMAGE;
@@ -354,15 +354,27 @@ const PageBackoffice: React.FC<PageBackofficeProps> = ({ onLogout }) => {
     }
   }, [isAuthenticated]);
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
       e.preventDefault();
-      if (passwordInput === 'Gengibre2026#') {
-          setIsAuthenticated(true);
-          sessionStorage.setItem('ra_auth', 'true');
-          setAuthError(false);
-      } else {
+      try {
+          // Gerar Hash SHA-256 da senha digitada
+          const encoder = new TextEncoder();
+          const data = encoder.encode(passwordInput);
+          const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+          const hashArray = Array.from(new Uint8Array(hashBuffer));
+          const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+
+          if (hashHex === AUTH_HASH) {
+              setIsAuthenticated(true);
+              sessionStorage.setItem('ra_auth', 'true');
+              setAuthError(false);
+          } else {
+              setAuthError(true);
+              setPasswordInput('');
+          }
+      } catch (error) {
+          console.error("Erro ao processar login", error);
           setAuthError(true);
-          setPasswordInput('');
       }
   };
 
