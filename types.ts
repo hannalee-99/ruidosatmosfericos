@@ -76,6 +76,14 @@ export interface SensorData {
   clicks: number;
 }
 
+export interface SiteConfig {
+  id: string; // Geralmente 'site_config'
+  siteTitle: string;
+  siteDescription: string;
+  faviconUrl?: string; // Se vazio, usa o generativo
+  ogImageUrl?: string; // Imagem padrão para compartilhamento
+}
+
 // Deprecated type kept for migration safety if needed, but UI uses ConnectConfig
 export interface SocialLinks {
   id: string;

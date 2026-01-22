@@ -4,6 +4,7 @@ import { storage } from './storage';
 import LazyImage from './LazyImage';
 import { Work, GalleryItem } from '../types';
 import { MONTH_NAMES, DEFAULT_IMAGE } from '../constants';
+import { Analytics } from './analytics';
 
 // --- CONSTANTES ---
 const RUIDOS_OFFICIAL_IMG = 'https://64.media.tumblr.com/2469fc83feaecaf0b7a97fa55f6793d6/670f92e2b0934e32-bb/s2048x3072/3b1cf9f39410af90a8d0607d572f83c0024b2472.jpg';
@@ -361,6 +362,7 @@ const WorkModal: React.FC<WorkModalProps> = ({ work, onClose, onNext, onPrev }) 
     navigator.clipboard.writeText(url).then(() => {
         setShareLabel('copiado!');
         setTimeout(() => setShareLabel('compartilhar'), 2000);
+        Analytics.track('Work Shared', { work: work.title });
     });
   };
 
@@ -599,6 +601,14 @@ const PageMateria: React.FC<PageMateriaProps> = ({ isDarkMode = true, setBreadcr
     if (!work) return;
     try {
         setSelectedWork(work);
+        
+        // Track Analytics
+        Analytics.track('Work Viewed', { 
+            title: work.title, 
+            id: work.id, 
+            technique: work.technique 
+        });
+
         const updated = { ...work, views: (work.views || 0) + 1 };
         storage.save('works', updated).catch(console.error);
     } catch (e) {

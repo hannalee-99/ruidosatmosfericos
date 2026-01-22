@@ -22,6 +22,10 @@ export const NEOBRUTALIST_SHADOW = '4px 4px 0px 0px #000000';
 // Placeholder Atmosférico Permanente
 export const DEFAULT_IMAGE = "https://images.unsplash.com/photo-1533105079780-92b9be482077?q=80&w=2574&auto=format&fit=crop";
 
-// Hash SHA-256 da senha 'Gengibre2026#'
-// Isso permite verificar a senha sem escrevê-la no código fonte.
-export const AUTH_HASH = "5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8";
+// SENHA DO BACKOFFICE (Texto Simples)
+// Edite aqui para alterar sua senha.
+export const BACKOFFICE_PASSWORD = "Gengibre2026#";
+
+// MIXPANEL TOKEN
+// Substitua 'SEU_TOKEN_AQUI' pelo token do seu projeto Mixpanel.
+export const MIXPANEL_TOKEN = "8cfdbdd06c994726e27988cbe0818d4c";

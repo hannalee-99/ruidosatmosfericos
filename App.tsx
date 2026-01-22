@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { ViewState } from './types';
 import NoiseBackground from './components/NoiseBackground';
@@ -13,11 +14,12 @@ import PageConnect from './components/PageConnect';
 import PageBackoffice from './components/PageBackoffice';
 import CustomCursor from './components/CustomCursor';
 import ObserverEffect from './components/ObserverEffect';
-import GenerativeFavicon from './components/GenerativeFavicon';
+import SiteMetadata from './components/SiteMetadata';
 import Footer from './components/Footer';
 import { storage } from './components/storage';
 import { DEFAULT_IMAGE } from './constants';
 import { INITIAL_DATA } from './initialData';
+import { Analytics } from './components/analytics';
 
 const App: React.FC = () => {
   const [hasEntered, setHasEntered] = useState(false);
@@ -25,6 +27,21 @@ const App: React.FC = () => {
   const [activeBreadcrumb, setActiveBreadcrumb] = useState<string | null>(null);
   const [isDarkMode, setIsDarkMode] = useState(true);
   
+  // Inicializa Analytics
+  useEffect(() => {
+    Analytics.init();
+  }, []);
+
+  // Rastreia navegação (Page Views)
+  useEffect(() => {
+    if (hasEntered) {
+        Analytics.track('Page View', {
+            page: view,
+            theme: isDarkMode ? 'dark' : 'light'
+        });
+    }
+  }, [view, hasEntered]);
+
   // Seeding: Carrega dados do arquivo initialData.ts para o IndexedDB
   useEffect(() => {
     const seedData = async () => {
@@ -105,7 +122,11 @@ const App: React.FC = () => {
     }
   }, [isDarkMode]);
 
-  const toggleTheme = () => setIsDarkMode(!isDarkMode);
+  const toggleTheme = () => {
+      const newMode = !isDarkMode;
+      setIsDarkMode(newMode);
+      Analytics.track('Theme Changed', { mode: newMode ? 'dark' : 'light' });
+  };
 
   // Wrapper para navegação que limpa o breadcrumb e scrolla para o topo
   const handleNavigate = (newView: ViewState) => {
@@ -119,6 +140,7 @@ const App: React.FC = () => {
 
   const handleEnter = () => {
     setHasEntered(true);
+    Analytics.track('Site Entered');
   };
 
   const handleBackofficeLogout = () => {
@@ -131,7 +153,7 @@ const App: React.FC = () => {
   if (!hasEntered) {
     return (
       <div className="relative w-full h-screen bg-black overflow-hidden">
-        <GenerativeFavicon />
+        <SiteMetadata />
         <CustomCursor />
         <div className="opacity-0">
            <NoiseBackground opacity={0} muted={true} /> 
@@ -166,7 +188,7 @@ const App: React.FC = () => {
 
   return (
     <div className={`relative w-full h-screen overflow-hidden flex flex-col ${isDarkMode ? 'bg-black text-white' : 'bg-offWhite text-black'} transition-colors duration-1000 animate-in fade-in duration-1000`}>
-      <GenerativeFavicon />
+      <SiteMetadata />
       <CustomCursor />
       <ObserverEffect />
       

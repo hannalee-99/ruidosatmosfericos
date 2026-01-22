@@ -3,6 +3,7 @@ import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { storage } from './storage';
 import { Signal, SignalBlock } from '../types';
 import { MONTH_NAMES } from '../constants';
+import { Analytics } from './analytics';
 
 const formatImageUrl = (url: string): string => {
   if (!url) return '';
@@ -392,6 +393,11 @@ const PageSinais: React.FC<PageSinaisProps> = ({ isDarkMode = true, setBreadcrum
 
   const handleOpenPost = async (post: Signal) => {
     setSelectedPost(post);
+    // Track Analytics
+    Analytics.track('Signal Read', { 
+        title: post.title, 
+        id: post.id 
+    });
     const updated = { ...post, views: (post.views || 0) + 1 };
     await storage.save('signals', updated);
   };
