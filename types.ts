@@ -78,10 +78,12 @@ export interface SensorData {
 
 export interface SiteConfig {
   id: string; // Geralmente 'site_config'
-  siteTitle: string;
-  siteDescription: string;
-  faviconUrl?: string; // Se vazio, usa o generativo
-  ogImageUrl?: string; // Imagem padrão para compartilhamento
+  siteTitle: string;       // <title>
+  siteName: string;        // og:site_name
+  siteDescription: string; // meta description & og:description
+  siteKeywords: string;    // meta keywords
+  faviconUrl?: string;     // Se vazio, usa o generativo
+  ogImageUrl?: string;     // og:image (Imagem padrão para compartilhamento)
 }
 
 // Deprecated type kept for migration safety if needed, but UI uses ConnectConfig

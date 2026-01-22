@@ -22,38 +22,56 @@ const SiteMetadata = () => {
     loadConfig();
   }, []);
 
-  // Aplica SEO Global (Título e Descrição)
+  // Helper para atualizar tags com segurança
+  const setMeta = (property: string, content: string, attributeName: 'name' | 'property' = 'property') => {
+    if (!content) return;
+    
+    let tag = document.querySelector(`meta[${attributeName}="${property}"]`);
+    if (!tag) {
+        tag = document.createElement('meta');
+        tag.setAttribute(attributeName, property);
+        document.head.appendChild(tag);
+    }
+    tag.setAttribute('content', content);
+  };
+
+  // Aplica SEO e Open Graph
   useEffect(() => {
     if (!config) return;
 
-    // Atualiza Título se não estiver em uma página específica (lógica de página específica sobrescreve isso depois)
+    // --- BASE SEO ---
+    // Atualiza Título apenas se não estiver em página específica (evita sobrescrever títulos de posts muito rápido)
     if (document.title === 'ruídos atmosféricos' && config.siteTitle) {
       document.title = config.siteTitle;
     }
 
-    // Atualiza Meta Description
-    const metaDesc = document.querySelector("meta[name='description']");
-    if (metaDesc && config.siteDescription) {
-      metaDesc.setAttribute("content", config.siteDescription);
-    } else if (!metaDesc && config.siteDescription) {
-      const meta = document.createElement('meta');
-      meta.name = "description";
-      meta.content = config.siteDescription;
-      document.head.appendChild(meta);
+    // Meta Description
+    setMeta('description', config.siteDescription || '', 'name');
+    
+    // Meta Keywords
+    if (config.siteKeywords) {
+        setMeta('keywords', config.siteKeywords, 'name');
     }
 
-    // Atualiza OG Image Global
-    if (config.ogImageUrl) {
-       let ogImage = document.querySelector("meta[property='og:image']");
-       if (!ogImage) {
-          ogImage = document.createElement('meta');
-          ogImage.setAttribute("property", "og:image");
-          document.head.appendChild(ogImage);
-       }
-       // Só atualiza se não for um deep link de obra/sinal (que já setam a imagem)
-       if (!window.location.search.includes('?')) {
-           ogImage.setAttribute("content", config.ogImageUrl);
-       }
+    // --- PROTOCOLO OPEN GRAPH (FB, LinkedIn, WhatsApp) ---
+    setMeta('og:type', 'website');
+    setMeta('og:url', window.location.href);
+    setMeta('og:site_name', config.siteName || config.siteTitle || 'ruídos atmosféricos');
+    setMeta('og:title', config.siteTitle || 'ruídos atmosféricos');
+    setMeta('og:description', config.siteDescription || '');
+
+    // OG Image Global (só define se não tiver query string, para não sobrescrever card de obras)
+    if (config.ogImageUrl && !window.location.search.includes('?')) {
+        setMeta('og:image', config.ogImageUrl);
+    }
+
+    // --- TWITTER CARDS ---
+    setMeta('twitter:card', 'summary_large_image', 'name');
+    setMeta('twitter:title', config.siteTitle || 'ruídos atmosféricos', 'name');
+    setMeta('twitter:description', config.siteDescription || '', 'name');
+    
+    if (config.ogImageUrl && !window.location.search.includes('?')) {
+        setMeta('twitter:image', config.ogImageUrl, 'name');
     }
 
   }, [config]);
@@ -72,7 +90,6 @@ const SiteMetadata = () => {
       }
 
       // CASO 2: Favicon Generativo (Padrão do Sistema)
-      // Gera valores aleatórios para garantir que cada sessão tenha uma "assinatura" única
       const seed = Math.floor(Math.random() * 1000);
       const turbulenceFreq = 0.15 + Math.random() * 0.25;
       const displacementScale = 8 + Math.random() * 12;

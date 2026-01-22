@@ -5,6 +5,7 @@ import { storage } from './storage';
 import { Work, Signal, SignalBlock, AboutData, ConnectConfig, LinkItem, GalleryItem, SensorData, SiteConfig } from '../types';
 import { MONTH_NAMES, DEFAULT_IMAGE, BACKOFFICE_PASSWORD } from '../constants';
 
+// ... (helpers e componentes auxiliares mantidos até PageBackoffice)
 const formatImageUrl = (url: string): string => {
   if (!url || url.trim() === '') return DEFAULT_IMAGE;
   if (url.startsWith('data:image')) return url;
@@ -38,8 +39,6 @@ const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>, callback: (bas
     // Limpa o input para permitir selecionar o mesmo arquivo novamente se necessário
     e.target.value = '';
 };
-
-// ... (restante dos componentes auxiliares: Icons, ToolbarButton, Dialogs mantidos iguais até o componente PageBackoffice)
 
 // --- ICONS (SVG) ---
 const Icons = {
@@ -80,7 +79,8 @@ const ToolbarButton: React.FC<{
   </button>
 );
 
-// ... (Dialogs mantidos)
+// ... (restante dos dialogs e helpers de preview mantidos)
+// ... (código do modal de preview mantido)
 const LinkDialog: React.FC<{
   isOpen: boolean;
   onClose: () => void;
@@ -166,7 +166,6 @@ const EmbedDialog: React.FC<{
   );
 };
 
-// ... (getEmbedUrl, PublishSettingsModal, PreviewMarkdownRenderer, PreviewModal mantidos sem alterações)
 const getEmbedUrl = (input: string): string | null => {
   if (!input) return null;
   const cleanInput = input.trim();
@@ -204,15 +203,53 @@ const PublishSettingsModal: React.FC<{
   onClose: () => void;
   onSaveDraft: () => void;
   onPublish: () => void;
-}> = ({ signal, onClose, onSaveDraft, onPublish }) => {
+  onUpdateSignal: (field: string, value: any) => void;
+}> = ({ signal, onClose, onSaveDraft, onPublish, onUpdateSignal }) => {
   return (
-    <div className="fixed inset-0 z-[200] bg-black/80 backdrop-blur-sm flex items-center justify-center animate-in fade-in duration-300">
-      <div className="bg-[#1a1a1a] border border-white/10 rounded-xl w-full max-w-md p-8 shadow-2xl relative flex flex-col gap-6">
+    <div className="fixed inset-0 z-[200] bg-black/80 backdrop-blur-sm flex items-center justify-center animate-in fade-in duration-300 overflow-y-auto p-4">
+      <div className="bg-[#1a1a1a] border border-white/10 rounded-xl w-full max-w-lg p-8 shadow-2xl relative flex flex-col gap-6">
         <button onClick={onClose} className="absolute top-6 right-6 text-2xl opacity-40 hover:opacity-100 transition-opacity">×</button>
         <div>
             <h2 className="font-sans text-xl font-bold mb-2">Publicar sinal</h2>
             <p className="text-sm opacity-60 font-mono leading-relaxed">{signal.status === 'publicado' ? 'este sinal já está visível publicamente.' : 'o sinal ficará visível na frequência pública.'}</p>
         </div>
+
+        {/* SEO & URL Settings - Moved here */}
+        <div className="bg-black/20 rounded-lg p-4 border border-white/5 space-y-4">
+            <h3 className="text-xs font-bold uppercase tracking-widest text-[#9ff85d] opacity-80 mb-2">Configurações de SEO & URL</h3>
+            
+            <div>
+                <label className="block text-[10px] font-bold uppercase tracking-widest opacity-40 mb-1">slug (url amigável)</label>
+                <input 
+                    value={signal.slug || ''} 
+                    onChange={(e) => onUpdateSignal('slug', e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '-'))}
+                    placeholder="ex: meu-post-incrivel" 
+                    className="w-full bg-black/20 border border-white/10 rounded px-3 py-2 text-xs text-white font-mono outline-none focus:border-[#9ff85d]" 
+                />
+                <div className="text-[9px] opacity-30 mt-1">se vazio, usa o id. usado na url ao compartilhar.</div>
+            </div>
+            
+            <div>
+                <label className="block text-[10px] font-bold uppercase tracking-widest opacity-40 mb-1">título seo (meta title)</label>
+                <input 
+                    value={signal.seoTitle || ''} 
+                    onChange={(e) => onUpdateSignal('seoTitle', e.target.value)}
+                    placeholder={signal.title || "Título para Google/Social..."} 
+                    className="w-full bg-black/20 border border-white/10 rounded px-3 py-2 text-sm text-white outline-none focus:border-[#9ff85d]" 
+                />
+            </div>
+            
+            <div>
+                <label className="block text-[10px] font-bold uppercase tracking-widest opacity-40 mb-1">descrição seo (meta description)</label>
+                <textarea 
+                    value={signal.seoDescription || ''} 
+                    onChange={(e) => onUpdateSignal('seoDescription', e.target.value)}
+                    placeholder="Breve resumo que aparece no Google e compartilhamentos..." 
+                    className="w-full bg-black/20 border border-white/10 rounded px-3 py-2 text-sm text-white outline-none focus:border-[#9ff85d] resize-none h-20" 
+                />
+            </div>
+        </div>
+
         <div className="flex flex-col gap-3 mt-2">
              <button onClick={onSaveDraft} className="w-full bg-white/5 border border-white/10 text-white px-6 py-3 rounded-lg font-medium text-sm hover:bg-white/10 transition-all uppercase tracking-wide">salvar rascunho</button>
              <button onClick={onPublish} className="w-full bg-[#9ff85d] text-black px-6 py-3 rounded-lg font-bold text-sm hover:scale-[1.02] active:scale-95 transition-all shadow-[0_0_15px_rgba(159,248,93,0.3)] uppercase tracking-wide">{signal.status === 'publicado' ? 'atualizar publicação' : 'publicar agora'}</button>
@@ -304,7 +341,14 @@ const PageBackoffice: React.FC<PageBackofficeProps> = ({ onLogout }) => {
   const [signals, setSignals] = useState<Signal[]>([]);
   const [aboutData, setAboutData] = useState<AboutData | null>(null);
   const [connectConfig, setConnectConfig] = useState<ConnectConfig>({ id: 'connect_config', email: '', links: [] });
-  const [siteConfig, setSiteConfig] = useState<SiteConfig>({ id: 'site_config', siteTitle: 'ruídos atmosféricos', siteDescription: 'sistemas vivos operam em desequilíbrio controlado.' });
+  const [siteConfig, setSiteConfig] = useState<SiteConfig>({ 
+      id: 'site_config', 
+      siteTitle: 'ruídos atmosféricos', 
+      siteDescription: 'sistemas vivos operam em desequilíbrio controlado.',
+      siteName: '',
+      siteKeywords: ''
+  });
+  const [sensorData, setSensorData] = useState<SensorData | null>(null);
   
   const [editingWork, setEditingWork] = useState<Work | null>(null);
   const [editingSignal, setEditingSignal] = useState<Signal | null>(null);
@@ -379,7 +423,7 @@ const PageBackoffice: React.FC<PageBackofficeProps> = ({ onLogout }) => {
       );
   }
 
-  // ... (Restante do arquivo mantido sem alterações)
+  // ... (Restante das funções: loadAllData, showStatus, pushToHistory... mantidas até o return principal)
   const loadAllData = async () => {
     try {
       const w = await storage.getAll('works');
@@ -387,17 +431,32 @@ const PageBackoffice: React.FC<PageBackofficeProps> = ({ onLogout }) => {
       const a = await storage.get('about', 'profile');
       const conf = await storage.get('about', 'connect_config');
       const site = await storage.get('about', 'site_config');
+      const sensors = await storage.get('about', 'sensor_metrics');
       setWorks(w);
       setSignals(s);
+      
+      // Default fallback for profile
       if (a) setAboutData(a);
+      else setAboutData({ id: 'profile', text: '', imageUrl: '' });
+
       if (conf) setConnectConfig(conf);
       if (site) setSiteConfig(site);
+      if (sensors) setSensorData(sensors);
     } catch (e) { console.error(e); }
   };
 
   const showStatus = (msg: string) => {
     setSaveStatus(msg);
     setTimeout(() => setSaveStatus(null), 3000);
+  };
+
+  const handleResetSensor = async () => {
+      if (window.confirm("Zerar contador de cliques do sensor?")) {
+          const newData = { id: 'sensor_metrics', clicks: 0 };
+          await storage.save('about', newData);
+          setSensorData(newData);
+          showStatus("sensor resetado");
+      }
   };
 
   // Funções Recriadas para contexto
@@ -695,10 +754,13 @@ export const INITIAL_DATA: {
       reader.readAsText(file);
   };
 
+  // ... (Edição de Signal e Work mantidos)
   if (editingSignal) {
+      // (mesmo código do bloco de edição de sinais)
       return (
           <div className="fixed inset-0 z-[100] bg-[#191919] text-white flex flex-col font-sans overflow-hidden">
               <div className="h-16 flex justify-between items-center px-4 border-b border-white/5 bg-[#191919] z-50 select-none">
+                  {/* ... Header Signal Edit */}
                   <div className="flex items-center gap-4 min-w-[200px]">
                       <button onClick={() => setEditingSignal(null)} className="opacity-60 hover:opacity-100 p-2 rounded hover:bg-white/5 transition-all text-gray-400"><Icons.Back /></button>
                       <div className="flex items-center gap-2 px-3 py-1 bg-white/5 rounded-full border border-white/5">
@@ -736,54 +798,15 @@ export const INITIAL_DATA: {
               <div className="flex-grow overflow-y-auto custom-scrollbar bg-[#191919]" onClick={() => { setShowLinkDialog(false); setShowEmbedDialog(false); setShowStyleMenu(false); }}>
                   <div className="w-full max-w-[720px] mx-auto px-6 py-12 flex flex-col min-h-full">
                       {/* Título e Subtítulo */}
-                      <textarea placeholder="Título" value={editingSignal.title} onChange={(e) => { handleSignalChange('title', e.target.value); autoResizeTextarea(e); }} onInput={autoResizeTextarea} className="w-full bg-transparent outline-none text-5xl font-bold placeholder:text-gray-600 text-white resize-none overflow-hidden leading-tight mb-4 tracking-tight font-sans" rows={1} />
+                      <textarea placeholder="Título" value={editingSignal.title} onChange={(e) => { handleSignalChange('title', e.target.value); autoResizeTextarea(e); }} onInput={autoResizeTextarea} className="w-full bg-transparent outline-none text-5xl font-bold placeholder:text-gray-600 text-[#9ff85d] resize-none overflow-hidden leading-tight mb-4 tracking-tight font-sans" rows={1} />
                       <textarea placeholder="Adicione um subtítulo..." value={editingSignal.subtitle || ''} onChange={(e) => { handleSignalChange('subtitle', e.target.value); autoResizeTextarea(e); }} onInput={autoResizeTextarea} className="w-full bg-transparent outline-none text-xl text-gray-400 placeholder:text-gray-600 resize-none overflow-hidden leading-relaxed mb-4 font-sans" rows={1} />
                       
-                      {/* Configurações de SEO & Slug */}
-                      <div className="mb-12 border-b border-white/5 pb-8">
-                          <button onClick={() => setShowSeoSettings(!showSeoSettings)} className="text-xs font-mono opacity-40 hover:opacity-100 flex items-center gap-2 mb-4">
-                              <span>{showSeoSettings ? '[-]' : '[+]'}</span> configurações de compartilhamento (seo & url)
-                          </button>
-                          
-                          {showSeoSettings && (
-                              <div className="space-y-4 p-4 bg-white/5 border border-white/5 rounded-lg animate-in fade-in slide-in-from-top-2">
-                                  <div>
-                                      <label className="block text-[10px] font-bold uppercase tracking-widest opacity-40 mb-1">slug (url amigável)</label>
-                                      <input 
-                                          value={editingSignal.slug || ''} 
-                                          onChange={(e) => handleSignalChange('slug', e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '-'))}
-                                          placeholder="ex: meu-post-incrivel" 
-                                          className="w-full bg-black/20 border border-white/10 rounded px-3 py-2 text-xs text-white font-mono outline-none focus:border-[var(--accent)]" 
-                                      />
-                                      <div className="text-[9px] opacity-30 mt-1">se vazio, usa o id. usado na url ao compartilhar.</div>
-                                  </div>
-                                  <div>
-                                      <label className="block text-[10px] font-bold uppercase tracking-widest opacity-40 mb-1">título seo (meta title)</label>
-                                      <input 
-                                          value={editingSignal.seoTitle || ''} 
-                                          onChange={(e) => handleSignalChange('seoTitle', e.target.value)}
-                                          placeholder={editingSignal.title || "Título para Google/Social..."} 
-                                          className="w-full bg-black/20 border border-white/10 rounded px-3 py-2 text-sm text-white outline-none focus:border-[var(--accent)]" 
-                                      />
-                                  </div>
-                                  <div>
-                                      <label className="block text-[10px] font-bold uppercase tracking-widest opacity-40 mb-1">descrição seo (meta description)</label>
-                                      <textarea 
-                                          value={editingSignal.seoDescription || ''} 
-                                          onChange={(e) => handleSignalChange('seoDescription', e.target.value)}
-                                          placeholder="Breve resumo que aparece no Google e compartilhamentos..." 
-                                          className="w-full bg-black/20 border border-white/10 rounded px-3 py-2 text-sm text-white outline-none focus:border-[var(--accent)] resize-none h-20" 
-                                      />
-                                  </div>
-                              </div>
-                          )}
-                      </div>
-
+                      {/* Blocks Loop */}
                       <div className="space-y-4 pb-40">
                           {editingSignal.blocks.map((block, idx) => (
                               <div key={block.id} className="relative group/block">
                                   <div className="absolute -left-12 top-1.5 opacity-0 group-hover/block:opacity-100 transition-opacity"><button onClick={() => removeBlock(block.id)} className="p-1 text-gray-600 hover:text-red-500"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button></div>
-                                  {block.type === 'text' && (<textarea id={`textarea-${block.id}`} value={block.content} onChange={(e) => { updateBlock(block.id, e.target.value); autoResizeTextarea(e); }} onInput={autoResizeTextarea} onFocus={(e) => { autoResizeTextarea(e); setActiveBlockId(block.id); }} placeholder="Comece a escrever..." className="w-full bg-transparent outline-none text-[19px] leading-[1.6] font-serif text-gray-200 placeholder:text-gray-600 resize-none overflow-hidden min-h-[1.6em]" />)}
+                                  {block.type === 'text' && (<textarea id={`textarea-${block.id}`} value={block.content} onChange={(e) => { updateBlock(block.id, e.target.value); autoResizeTextarea(e); }} onInput={autoResizeTextarea} onFocus={(e) => { autoResizeTextarea(e); setActiveBlockId(block.id); }} placeholder="Comece a escrever..." className="w-full bg-transparent outline-none text-[19px] leading-[1.6] font-serif text-[#9ff85d] placeholder:text-gray-600 resize-none overflow-hidden min-h-[1.6em]" />)}
                                   {block.type === 'image' && (
                                     <div className="relative my-4">
                                         {block.content ? (
@@ -812,13 +835,21 @@ export const INITIAL_DATA: {
                       </div>
                   </div>
               </div>
-              {showPublishModal && (<PublishSettingsModal signal={editingSignal} onClose={() => setShowPublishModal(false)} onSaveDraft={handleSaveDraft} onPublish={handlePublish} />)}
+              {showPublishModal && (
+                  <PublishSettingsModal 
+                      signal={editingSignal} 
+                      onClose={() => setShowPublishModal(false)} 
+                      onSaveDraft={handleSaveDraft} 
+                      onPublish={handlePublish}
+                      onUpdateSignal={handleSignalChange} 
+                  />
+              )}
               {showPreview && (<PreviewModal signal={editingSignal} onClose={() => setShowPreview(false)} />)}
           </div>
       );
   }
 
-  // (Renderização do editor de Obras - Mantida igual)
+  // (Renderização do editor de Obras - mantido sem alterações lógicas profundas, apenas a parte SEO já existente)
   if (editingWork) {
     return (
       <div className="fixed inset-0 z-[100] bg-[#0a0a0a] text-white flex flex-col animate-in fade-in duration-300 overflow-y-auto">
@@ -830,14 +861,66 @@ export const INITIAL_DATA: {
           </div>
         </header>
         <div className="max-w-2xl mx-auto w-full p-8 space-y-8 pb-32">
-          {/* ... Inputs de obra ... */}
-          {/* (Código mantido, simplificado aqui apenas para visualização) */}
+          
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+             {/* Form Fields for Work... */}
              <div className="md:col-span-2">
                 <label className="block text-[10px] font-bold uppercase tracking-widest opacity-40 mb-2">título</label>
                 <input value={editingWork.title} onChange={e => setEditingWork({...editingWork, title: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-lg p-3 outline-none focus:border-[var(--accent)]" />
              </div>
-             {/* ... Mais campos ... */}
+
+             <div>
+                <label className="block text-[10px] font-bold uppercase tracking-widest opacity-40 mb-2">ano</label>
+                <input value={editingWork.year} onChange={e => setEditingWork({...editingWork, year: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-lg p-3 outline-none focus:border-[var(--accent)]" />
+             </div>
+
+             <div>
+                <label className="block text-[10px] font-bold uppercase tracking-widest opacity-40 mb-2">mês</label>
+                <select value={editingWork.month} onChange={e => setEditingWork({...editingWork, month: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-lg p-3 outline-none focus:border-[var(--accent)] appearance-none">
+                    {MONTH_NAMES.map((m, i) => <option key={i} value={i.toString()} className="bg-black">{m}</option>)}
+                </select>
+             </div>
+
+             <div className="md:col-span-2">
+                <label className="block text-[10px] font-bold uppercase tracking-widest opacity-40 mb-2">técnica</label>
+                <input value={editingWork.technique} onChange={e => setEditingWork({...editingWork, technique: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-lg p-3 outline-none focus:border-[var(--accent)]" />
+             </div>
+
+             <div className="md:col-span-2">
+                <label className="block text-[10px] font-bold uppercase tracking-widest opacity-40 mb-2">dimensões</label>
+                <input value={editingWork.dimensions} onChange={e => setEditingWork({...editingWork, dimensions: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-lg p-3 outline-none focus:border-[var(--accent)]" />
+             </div>
+
+             <div className="md:col-span-2">
+                <label className="block text-[10px] font-bold uppercase tracking-widest opacity-40 mb-2">descrição (opcional)</label>
+                <textarea value={editingWork.description || ''} onChange={e => setEditingWork({...editingWork, description: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-lg p-3 outline-none focus:border-[var(--accent)] h-32 resize-none" />
+             </div>
+
+             <div className="md:col-span-2">
+                <label className="block text-[10px] font-bold uppercase tracking-widest opacity-40 mb-2">imagem de capa (url)</label>
+                <div className="flex gap-4">
+                    <input value={editingWork.imageUrl} onChange={e => setEditingWork({...editingWork, imageUrl: e.target.value})} className="flex-grow bg-white/5 border border-white/10 rounded-lg p-3 outline-none focus:border-[var(--accent)]" placeholder="https://..." />
+                    <label className="cursor-pointer bg-white/10 hover:bg-white/20 px-4 rounded-lg flex items-center justify-center transition-colors">
+                        <Icons.Upload />
+                        <input type="file" className="hidden" accept="image/*" onChange={(e) => handleFileUpload(e, (b64) => setEditingWork({...editingWork, imageUrl: b64}))} />
+                    </label>
+                </div>
+                {editingWork.imageUrl && <img src={formatImageUrl(editingWork.imageUrl)} className="mt-4 w-32 h-32 object-cover rounded-lg border border-white/10" />}
+             </div>
+             
+             {/* Slug / SEO */}
+             <div className="md:col-span-2 border-t border-white/10 pt-6 mt-2">
+                 <button onClick={() => setShowSeoSettings(!showSeoSettings)} className="text-xs font-mono opacity-40 hover:opacity-100 flex items-center gap-2 mb-4">
+                     <span>{showSeoSettings ? '[-]' : '[+]'}</span> configurações avançadas (url/slug)
+                 </button>
+                 {showSeoSettings && (
+                     <div>
+                        <label className="block text-[10px] font-bold uppercase tracking-widest opacity-40 mb-2">slug (url amigável)</label>
+                        <input value={editingWork.slug || ''} onChange={e => setEditingWork({...editingWork, slug: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '-')})} className="w-full bg-white/5 border border-white/10 rounded-lg p-3 outline-none focus:border-[var(--accent)] font-mono text-sm" placeholder="ex: minha-obra-incrivel" />
+                     </div>
+                 )}
+             </div>
+
              {/* Galeria Multimídia */}
              <div className="md:col-span-2 border-t border-white/10 pt-6 mt-2">
                 <label className="block text-[10px] font-bold uppercase tracking-widest opacity-40 mb-4">galeria multimídia</label>
@@ -888,9 +971,21 @@ export const INITIAL_DATA: {
       <main className="p-8 max-w-[1400px] mx-auto w-full flex-grow">
         {activeTab === 'painel' && (
           <div className="flex flex-col gap-12 animate-in fade-in duration-500">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="p-8 bg-black/40 [.light-mode_&]:bg-white border border-white/5 [.light-mode_&]:border-black/5 rounded-3xl backdrop-blur-sm transition-colors shadow-sm"><div className="opacity-40 mb-2 lowercase tracking-tighter text-sm">obras no acervo</div><div className="text-6xl font-light tracking-tighter">{works.length}</div></div>
               <div className="p-8 bg-black/40 [.light-mode_&]:bg-white border border-white/5 [.light-mode_&]:border-black/5 rounded-3xl backdrop-blur-sm transition-colors shadow-sm"><div className="opacity-40 mb-2 lowercase tracking-tighter text-sm">sinais captados</div><div className="text-6xl font-light tracking-tighter">{signals.length}</div></div>
+              
+              {/* CONFIGURAÇÃO DA PÁGINA DE OLHOS (SENSOR) */}
+              <div className="p-8 bg-black/40 [.light-mode_&]:bg-white border border-white/5 [.light-mode_&]:border-black/5 rounded-3xl backdrop-blur-sm transition-colors shadow-sm group">
+                  <div className="flex justify-between items-start">
+                      <div className="opacity-40 mb-2 lowercase tracking-tighter text-sm">cliques no sensor (olhos)</div>
+                      <button onClick={handleResetSensor} className="opacity-20 hover:opacity-100 transition-opacity text-xs border border-white/20 px-2 rounded">zerar</button>
+                  </div>
+                  <div className="text-6xl font-light tracking-tighter flex items-center gap-2">
+                      {sensorData?.clicks || 0}
+                      <span className="text-lg opacity-20">pulsos</span>
+                  </div>
+              </div>
             </div>
           </div>
         )}
@@ -898,7 +993,7 @@ export const INITIAL_DATA: {
         {activeTab === 'perfil' && aboutData && (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 animate-in fade-in slide-in-from-bottom-2 duration-500 pb-20">
                 <div className="space-y-8">
-                    <h2 className="text-base opacity-40 lowercase tracking-widest mb-4">dados de identidade</h2>
+                    <h2 className="text-base opacity-40 lowercase tracking-widest mb-4">dados de identidade (esse eu)</h2>
                     <div className="p-6 bg-black/20 [.light-mode_&]:bg-white border border-white/5 [.light-mode_&]:border-black/5 rounded-3xl space-y-6">
                         <div>
                             <label className="block text-[10px] font-bold uppercase tracking-widest opacity-40 mb-2">imagem de perfil</label>
@@ -956,6 +1051,33 @@ export const INITIAL_DATA: {
                             </div>
                         </div>
 
+                        {/* OPEN GRAPH PROTOCOL */}
+                        <div className="space-y-6 pt-6">
+                            <h3 className="text-sm font-bold text-[var(--accent)] lowercase tracking-wide border-b border-white/10 pb-2">Protocolo Open Graph (Social Cards)</h3>
+                            
+                            <div>
+                                <label className="block text-[10px] font-bold uppercase tracking-widest opacity-40 mb-2">Nome do Site (og:site_name)</label>
+                                <input 
+                                    value={siteConfig.siteName || ''} 
+                                    onChange={e => setSiteConfig({...siteConfig, siteName: e.target.value})} 
+                                    placeholder="Ex: ruídos.art"
+                                    className="w-full bg-black/20 border border-white/10 rounded-lg p-4 text-sm outline-none focus:border-[var(--accent)]" 
+                                />
+                                <p className="text-[10px] opacity-30 mt-2">nome da marca que aparece nos cards do facebook/linkedin.</p>
+                            </div>
+
+                            <div>
+                                <label className="block text-[10px] font-bold uppercase tracking-widest opacity-40 mb-2">Palavras-chave (Meta Keywords)</label>
+                                <textarea 
+                                    value={siteConfig.siteKeywords || ''} 
+                                    onChange={e => setSiteConfig({...siteConfig, siteKeywords: e.target.value})} 
+                                    placeholder="arte generativa, design, ruídos, atmosfera..."
+                                    className="w-full bg-black/20 border border-white/10 rounded-lg p-4 text-sm outline-none focus:border-[var(--accent)] h-20 resize-none" 
+                                />
+                                <p className="text-[10px] opacity-30 mt-2">palavras separadas por vírgula para indexação secundária.</p>
+                            </div>
+                        </div>
+
                         {/* FAVICON */}
                         <div className="space-y-6 pt-6">
                             <h3 className="text-sm font-bold text-[var(--accent)] lowercase tracking-wide border-b border-white/10 pb-2">Favicon (Ícone da Aba)</h3>
@@ -1004,7 +1126,7 @@ export const INITIAL_DATA: {
 
                         {/* SOCIAL SHARE IMAGE */}
                         <div className="space-y-6 pt-6">
-                            <h3 className="text-sm font-bold text-[var(--accent)] lowercase tracking-wide border-b border-white/10 pb-2">Imagem de Compartilhamento (Social)</h3>
+                            <h3 className="text-sm font-bold text-[var(--accent)] lowercase tracking-wide border-b border-white/10 pb-2">Imagem de Compartilhamento (og:image)</h3>
                             
                             <div className="flex gap-6 items-start">
                                 <div className="w-32 aspect-video bg-black border border-white/10 rounded-lg flex items-center justify-center overflow-hidden flex-shrink-0">
@@ -1043,7 +1165,6 @@ export const INITIAL_DATA: {
         )}
 
         {/* ... (Resto do conteúdo da aba Sinais, Sync, etc. mantido) */}
-        {/* Assumindo que o restante do arquivo não mudou */}
         {activeTab === 'sinais' && (<div className="space-y-6"><div className="animate-in fade-in slide-in-from-bottom-2 duration-500"><div className="flex justify-between items-center mb-8"><h2 className="text-base opacity-40 lowercase tracking-widest">fluxo de sinais</h2><button onClick={() => { const newSignal: Signal = { id: Date.now().toString(), title: '', subtitle: '', date: new Date().toLocaleDateString('pt-BR'), blocks: [{ id: 'init-1', type: 'text', content: '' }], status: 'rascunho', views: 0 }; setEditingSignal(newSignal); }} className="bg-white [.light-mode_&]:bg-black text-black [.light-mode_&]:text-white px-6 py-2 rounded-full font-bold lowercase tracking-widest hover:bg-[var(--accent)] [.light-mode_&]:hover:bg-[var(--accent)] hover:text-black transition-colors shadow-lg active:scale-95 flex items-center gap-2">+ novo sinal</button></div><div className="grid gap-2">{signals.map(s => (<div key={s.id} className="p-5 bg-black/20 [.light-mode_&]:bg-white border border-white/5 [.light-mode_&]:border-black/5 rounded-3xl flex items-center gap-6 group hover:border-white/20 [.light-mode_&]:hover:border-black/20 transition-all shadow-sm"><div className="flex-grow"><div className="font-bold opacity-80 text-base">{s.title || 'sem título'}</div><div className="opacity-30 text-xs lowercase tracking-widest mt-1">{s.date} // {s.blocks.length} blocos</div></div><div className={`text-[10px] lowercase px-3 py-1 border rounded-full ${s.status === 'publicado' ? 'border-green-900 text-green-500 bg-green-500/5' : 'border-yellow-900 text-yellow-500 bg-yellow-500/5'}`}>{s.status}</div><div className="flex gap-2"><button onClick={() => handleDeleteSignal(s.id)} className="opacity-40 hover:opacity-100 hover:text-red-500 px-4 py-2 transition-all lowercase text-xs">apagar</button><button onClick={() => setEditingSignal(s)} className="opacity-40 group-hover:opacity-100 px-4 py-2 hover:bg-white/5 [.light-mode_&]:hover:bg-black/5 rounded-full transition-all lowercase text-xs">editar</button></div></div>))}</div></div></div>)}
         {activeTab === 'sync' && (
              <div className="max-w-4xl mx-auto space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-500 py-12">
@@ -1073,7 +1194,7 @@ export const INITIAL_DATA: {
           </div>
         )}
       </main>
-      <footer className="p-6 text-center opacity-10 lowercase tracking-[0.4em] text-[10px] border-t border-white/5 [.light-mode_&]:border-black/5">ruídos atmosféricos // sistema de gestão existencial // v3.2</footer>
+      <footer className="p-6 text-center opacity-10 lowercase tracking-[0.4em] text-[10px] border-t border-white/5 [.light-mode_&]:border-black/5">ruídos atmosféricos // sistema de gestão existencial // v.1</footer>
     </div>
   );
 };
