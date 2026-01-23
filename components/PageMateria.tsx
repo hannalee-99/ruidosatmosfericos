@@ -4,7 +4,6 @@ import { storage } from './storage';
 import LazyImage from './LazyImage';
 import { Work, GalleryItem } from '../types';
 import { MONTH_NAMES, DEFAULT_IMAGE } from '../constants';
-import { Analytics } from './analytics';
 
 // --- CONSTANTES ---
 const RUIDOS_OFFICIAL_IMG = 'https://64.media.tumblr.com/2469fc83feaecaf0b7a97fa55f6793d6/670f92e2b0934e32-bb/s2048x3072/3b1cf9f39410af90a8d0607d572f83c0024b2472.jpg';
@@ -180,7 +179,6 @@ const ZoomableImage: React.FC<ZoomableImageProps> = ({ src, alt, className, onCl
       if (transform.current.scale === 1) { transform.current.x = 0; transform.current.y = 0; } else { clampPosition(); }
       updateTransform(); e.stopPropagation();
     } else if (e.touches.length === 1 && isDragging.current && transform.current.scale > 1) {
-      // touch-action: none handles prevention of scroll, so we can skip preventDefault to avoid passive listener warning
       e.stopPropagation();
       transform.current.x = e.touches[0].clientX - startPan.current.x;
       transform.current.y = e.touches[0].clientY - startPan.current.y;
@@ -267,7 +265,9 @@ const updateMetaTags = (work: Work | null) => {
         return;
     }
     
-    document.title = `${safeString(work.title || 'obra').toLowerCase()} // ruídos atmosféricos`;
+    // Título: Prioriza SEO Title, depois Título da Obra
+    const pageTitle = work.seoTitle || `${safeString(work.title || 'obra').toLowerCase()} // ruídos atmosféricos`;
+    document.title = pageTitle;
     
     try {
         const setMeta = (property: string, content: string) => {
@@ -280,10 +280,12 @@ const updateMetaTags = (work: Work | null) => {
             tag.setAttribute('content', content);
         };
 
-        setMeta('og:title', safeString(work.title).toLowerCase());
-        setMeta('og:description', safeString(work.description) || 'sistemas vivos operam em desequilíbrio controlado.');
+        // Open Graph
+        setMeta('og:title', work.seoTitle || safeString(work.title).toLowerCase());
+        setMeta('og:description', work.seoDescription || safeString(work.description) || 'sistemas vivos operam em desequilíbrio controlado.');
         setMeta('og:image', getWorkCover(work));
         
+        // URL Update
         const workSlug = safeString(work.slug);
         const shareId = workSlug || safeString(work.id);
         const newUrl = `${window.location.pathname}?work=${encodeURIComponent(shareId)}`;
@@ -362,7 +364,9 @@ const WorkModal: React.FC<WorkModalProps> = ({ work, onClose, onNext, onPrev }) 
     navigator.clipboard.writeText(url).then(() => {
         setShareLabel('copiado!');
         setTimeout(() => setShareLabel('compartilhar'), 2000);
-        Analytics.track('Work Shared', { work: work.title });
+        if (window.mixpanel) {
+            window.mixpanel.track('Work Shared', { work: work.title });
+        }
     });
   };
 
@@ -379,11 +383,6 @@ const WorkModal: React.FC<WorkModalProps> = ({ work, onClose, onNext, onPrev }) 
           if (e.key === 'Escape') {
               onClose();
           } 
-          // Se tiver galeria e o usuário quiser navegar nela (ex: setas)
-          // MAS se o usuário quiser trocar de obra, podemos usar lógica condicional?
-          // UX Padrão: Setas no modal principal navegam OBRAS, a menos que se foque na imagem.
-          // Como não temos foco explícito, vamos priorizar Navegação de OBRAS no modal principal,
-          // e Navegação de IMAGEM no fullscreen.
           else if (e.key === 'ArrowRight') {
               onNext();
           }
@@ -616,11 +615,13 @@ const PageMateria: React.FC<PageMateriaProps> = ({ isDarkMode = true, setBreadcr
         setSelectedWork(work);
         
         // Track Analytics
-        Analytics.track('Work Viewed', { 
-            title: work.title, 
-            id: work.id, 
-            technique: work.technique 
-        });
+        if (window.mixpanel) {
+            window.mixpanel.track('Work Viewed', { 
+                title: work.title, 
+                id: work.id, 
+                technique: work.technique 
+            });
+        }
 
         const updated = { ...work, views: (work.views || 0) + 1 };
         storage.save('works', updated).catch(console.error);

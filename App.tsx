@@ -19,7 +19,6 @@ import Footer from './components/Footer';
 import { storage } from './components/storage';
 import { DEFAULT_IMAGE } from './constants';
 import { INITIAL_DATA } from './initialData';
-import { Analytics } from './components/analytics';
 
 const App: React.FC = () => {
   const [hasEntered, setHasEntered] = useState(false);
@@ -27,15 +26,17 @@ const App: React.FC = () => {
   const [activeBreadcrumb, setActiveBreadcrumb] = useState<string | null>(null);
   const [isDarkMode, setIsDarkMode] = useState(true);
   
-  // Inicializa Analytics
+  // Inicializa Analytics (Agora automático via index.html, mas verificamos aqui)
   useEffect(() => {
-    Analytics.init();
+    if (!window.mixpanel) {
+        console.warn('Mixpanel não carregado via HTML');
+    }
   }, []);
 
   // Rastreia navegação (Page Views)
   useEffect(() => {
-    if (hasEntered) {
-        Analytics.track('Page View', {
+    if (hasEntered && window.mixpanel) {
+        window.mixpanel.track('Page View', {
             page: view,
             theme: isDarkMode ? 'dark' : 'light'
         });
@@ -125,7 +126,9 @@ const App: React.FC = () => {
   const toggleTheme = () => {
       const newMode = !isDarkMode;
       setIsDarkMode(newMode);
-      Analytics.track('Theme Changed', { mode: newMode ? 'dark' : 'light' });
+      if (window.mixpanel) {
+        window.mixpanel.track('Theme Changed', { mode: newMode ? 'dark' : 'light' });
+      }
   };
 
   // Wrapper para navegação que limpa o breadcrumb e scrolla para o topo
@@ -140,7 +143,9 @@ const App: React.FC = () => {
 
   const handleEnter = () => {
     setHasEntered(true);
-    Analytics.track('Site Entered');
+    if (window.mixpanel) {
+        window.mixpanel.track('Site Entered');
+    }
   };
 
   const handleBackofficeLogout = () => {

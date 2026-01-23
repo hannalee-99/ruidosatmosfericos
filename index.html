@@ -19,14 +19,29 @@
     <meta property="twitter:title" content="ruídos atmosféricos">
     <meta property="twitter:description" content="sistemas vivos operam em desequilíbrio controlado. o vazio não é ausência, é condição de forma.">
 
-    <!-- Favicon SVG Estático (Glitch Eye) -->
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%23050505'/%3E%3Ccircle cx='32' cy='32' r='20' fill='%239ff85d' opacity='0.2'/%3E%3Ccircle cx='32' cy='32' r='14' fill='none' stroke='%239ff85d' stroke-width='3' stroke-dasharray='4 2'/%3E%3Ccircle cx='32' cy='32' r='6' fill='%239ff85d'/%3E%3C/svg%3E">
+    <!-- Favicon Placeholders (Gerado via JS no App) -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%23050505'/%3E%3C/svg%3E">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Nabla&family=Electrolize&family=VT323&family=IBM+Plex+Mono:wght@400;700&display=swap" rel="stylesheet">
+    
+    <!-- Mixpanel Snippet -->
+    <script type="text/javascript">
+      (function(f,b){if(!b.__SV){var e,g,i,h;window.mixpanel=b;b._i=[];b.init=function(a,e,d){function f(b,h){var a=h.split(".");2==a.length&&(b=b[a[0]],h=a[1]);b[h]=function(){b.push([h].concat(Array.prototype.slice.call(arguments,0)))}}var c=b;"undefined"!==typeof d?c=b[d]=[]:d="mixpanel";c.people=c.people||[];c.toString=function(b){var a="mixpanel";"mixpanel"!==d&&(a+="."+d);b||(a+=" (stub)");return a};c.people.toString=function(){return c.toString(1)+".people (stub)"};i="disable time_event track track_pageview track_links track_forms register register_once alias unregister identify name_tag set_config reset people.set people.set_once people.unset people.increment people.append people.union people.track_charge people.clear_charges people.delete_user".split(" ");
+      for(h=0;h<i.length;h++)f(c,i[h]);b._i.push([a,e,d])};b.__SV=1.2;e=f.createElement("script");e.type="text/javascript";e.async=!0;e.src="https://cdn.mxpnl.com/libs/mixpanel-2-latest.min.js";g=f.getElementsByTagName("script")[0];g.parentNode.insertBefore(e,g)}})(document,window.mixpanel||[]);
+
+      // INICIALIZAÇÃO MIXPANEL
+      // Substitua '8cfdbdd06c994726e27988cbe0818d4c' pelo token que o Mixpanel te forneceu
+      // Se você usa o constants.ts, pode manter manual aqui para garantir carregamento imediato
+      mixpanel.init("8cfdbdd06c994726e27988cbe0818d4c", { 
+        debug: false, 
+        track_pageview: true, 
+        persistence: 'localStorage' 
+      });
+    </script>
     
     <style>
       :root {
@@ -53,22 +68,16 @@
       @font-palette-values --matrix-blue {
         font-family: Nabla;
         base-palette: 0;
-        /* Ajuste Drástico para Contraste no Branco: Cores muito mais escuras e saturadas */
+        /* Ajuste Drástico para Contraste no Branco */
         override-colors:
-          0 #1a2a8c, /* Face principal mais escura */
-          1 #0d1a5e, /* Sombras profundas */
-          2 #000040, /* Contornos quase pretos */
-          3 #293fcf, /* Highlights reduzidos para azul médio */
-          4 #1a2a8c, 
-          5 #0d1a5e;
+          0 #1a2a8c, 1 #0d1a5e, 2 #000040, 3 #293fcf, 4 #1a2a8c, 5 #0d1a5e;
       }
 
       * {
-        text-transform: lowercase !important; /* Força lowercase globalmente */
+        text-transform: lowercase !important;
         cursor: none;
       }
 
-      /* Garante que inputs e placeholders também respeitem o lowercase */
       input, textarea, button, select, option, ::placeholder {
         text-transform: lowercase !important;
       }
@@ -95,8 +104,6 @@
       body.light-mode {
         background-color: #f2f2f2;
         color: #0a0a0a;
-        
-        /* Cor de destaque Light Mode - Deep Blue */
         --accent: #293fcf;
         --btn-text: #ffffff;
       }
@@ -106,7 +113,6 @@
         color: white;
       }
       
-      /* Sombra adicional para Nabla no modo claro para simular inversão de luz */
       body.light-mode .font-nabla {
         filter: drop-shadow(2px 2px 0px rgba(0,0,0,0.2));
       }
@@ -143,8 +149,7 @@
     "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
     "react/": "https://esm.sh/react@^19.2.3/",
     "react": "https://esm.sh/react@^19.2.3",
-    "@google/genai": "https://esm.sh/@google/genai@^1.38.0",
-    "mixpanel-browser": "https://esm.sh/mixpanel-browser@2.55.0"
+    "@google/genai": "https://esm.sh/@google/genai@^1.38.0"
   }
 }
 </script>
@@ -167,4 +172,3 @@
     <div id="root"></div>
 </body>
 </html>
-    

@@ -3,7 +3,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import { COLORS } from '../constants';
 import { storage } from './storage';
 import { ConnectConfig, ViewState } from '../types';
-import { Analytics } from './analytics';
 
 interface TerminalLine {
   id: string;
@@ -176,12 +175,14 @@ const PageConnect: React.FC<PageConnectProps> = ({ onNavigate }) => {
     // COMANDO SINAL (EMAIL)
     if (cleanCmd === 'sinal') {
       setTimeout(() => {
+        if (window.mixpanel) {
+           window.mixpanel.track('Contact Link Clicked', { type: 'email' });
+        }
         addLine(
           <div className="flex flex-col gap-2 p-4 border border-dashed border-white/20 [.light-mode_&]:border-black/20 rounded-lg bg-white/5 [.light-mode_&]:bg-black/5 mt-2">
             <span className="opacity-60">canal de comunicação aberto:</span>
             <a 
               href={`mailto:${connectConfig.email}`}
-              onClick={() => Analytics.track('Contact Link Clicked', { type: 'email' })}
               className="text-xl md:text-2xl font-bold hover:bg-[var(--accent)] hover:text-black [.light-mode_&]:hover:text-white transition-colors px-2 py-1 -ml-2 w-fit"
             >
               {connectConfig.email}
@@ -206,7 +207,11 @@ const PageConnect: React.FC<PageConnectProps> = ({ onNavigate }) => {
                         href={link.url} 
                         target="_blank" 
                         rel="noopener noreferrer"
-                        onClick={() => Analytics.track('Contact Link Clicked', { type: 'social', label: link.label })}
+                        onClick={() => {
+                            if (window.mixpanel) {
+                                window.mixpanel.track('Contact Link Clicked', { type: 'social', label: link.label });
+                            }
+                        }}
                         className="flex items-center gap-3 p-3 border border-white/10 [.light-mode_&]:border-black/10 rounded-lg hover:bg-white/10 [.light-mode_&]:hover:bg-black/5 hover:border-white/30 [.light-mode_&]:hover:border-black/30 transition-all group"
                     >
                         <div className="text-white/60 [.light-mode_&]:text-black/60 group-hover:text-[var(--accent)] transition-colors">

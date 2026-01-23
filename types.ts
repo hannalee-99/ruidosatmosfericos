@@ -1,4 +1,10 @@
 
+declare global {
+  interface Window {
+    mixpanel?: any;
+  }
+}
+
 export enum ViewState {
   LANDING = 'entrada',
   MATERIA = 'matéria',
@@ -20,6 +26,8 @@ export interface Work {
   id: string;
   title: string;
   slug?: string; // URL personalizada para compartilhamento
+  seoTitle?: string;       // Título específico para metatags
+  seoDescription?: string; // Descrição específica para metatags
   year: string;
   month: string;
   technique: string;

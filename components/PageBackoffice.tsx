@@ -370,7 +370,7 @@ const PageBackoffice: React.FC<PageBackofficeProps> = ({ onLogout }) => {
   const [showStyleMenu, setShowStyleMenu] = useState(false);
   const styleButtonRef = useRef<HTMLButtonElement>(null);
   const [saveStatus, setSaveStatus] = useState<string | null>(null);
-  const [showSeoSettings, setShowSeoSettings] = useState(false);
+  const [showSeoSettings, setShowSeoSettings] = useState(true); // Default open for ease of use
 
   useEffect(() => {
     // Check session storage
@@ -849,7 +849,7 @@ export const INITIAL_DATA: {
       );
   }
 
-  // (Renderização do editor de Obras - mantido sem alterações lógicas profundas, apenas a parte SEO já existente)
+  // (Renderização do editor de Obras)
   if (editingWork) {
     return (
       <div className="fixed inset-0 z-[100] bg-[#0a0a0a] text-white flex flex-col animate-in fade-in duration-300 overflow-y-auto">
@@ -908,17 +908,50 @@ export const INITIAL_DATA: {
                 {editingWork.imageUrl && <img src={formatImageUrl(editingWork.imageUrl)} className="mt-4 w-32 h-32 object-cover rounded-lg border border-white/10" />}
              </div>
              
-             {/* Slug / SEO */}
-             <div className="md:col-span-2 border-t border-white/10 pt-6 mt-2">
-                 <button onClick={() => setShowSeoSettings(!showSeoSettings)} className="text-xs font-mono opacity-40 hover:opacity-100 flex items-center gap-2 mb-4">
-                     <span>{showSeoSettings ? '[-]' : '[+]'}</span> configurações avançadas (url/slug)
-                 </button>
-                 {showSeoSettings && (
+             {/* Slug / SEO & Compartilhamento - Expandido */}
+             <div className="md:col-span-2 bg-white/5 border border-white/10 rounded-xl p-6 mt-4">
+                 <div className="flex justify-between items-center mb-4">
+                    <h3 className="text-xs font-bold text-[var(--accent)] uppercase tracking-widest">SEO & Compartilhamento</h3>
+                 </div>
+                 
+                 <div className="space-y-4">
                      <div>
-                        <label className="block text-[10px] font-bold uppercase tracking-widest opacity-40 mb-2">slug (url amigável)</label>
-                        <input value={editingWork.slug || ''} onChange={e => setEditingWork({...editingWork, slug: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '-')})} className="w-full bg-white/5 border border-white/10 rounded-lg p-3 outline-none focus:border-[var(--accent)] font-mono text-sm" placeholder="ex: minha-obra-incrivel" />
+                        <label className="block text-[10px] font-bold uppercase tracking-widest opacity-40 mb-1">slug (url personalizada)</label>
+                        <input value={editingWork.slug || ''} onChange={e => setEditingWork({...editingWork, slug: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '-')})} className="w-full bg-black/20 border border-white/10 rounded-lg p-3 outline-none focus:border-[var(--accent)] font-mono text-sm" placeholder="ex: minha-obra-incrivel" />
+                        <p className="text-[9px] opacity-30 mt-1">Identificador único na URL.</p>
                      </div>
-                 )}
+
+                     <div>
+                        <label className="block text-[10px] font-bold uppercase tracking-widest opacity-40 mb-1">título SEO (opcional)</label>
+                        <input value={editingWork.seoTitle || ''} onChange={e => setEditingWork({...editingWork, seoTitle: e.target.value})} className="w-full bg-black/20 border border-white/10 rounded-lg p-3 outline-none focus:border-[var(--accent)] text-sm" placeholder={editingWork.title || "Título para aparecer no Google/Social..."} />
+                        <p className="text-[9px] opacity-30 mt-1">Se vazio, usa o título da obra.</p>
+                     </div>
+
+                     <div>
+                        <label className="block text-[10px] font-bold uppercase tracking-widest opacity-40 mb-1">descrição SEO (opcional)</label>
+                        <textarea value={editingWork.seoDescription || ''} onChange={e => setEditingWork({...editingWork, seoDescription: e.target.value})} className="w-full bg-black/20 border border-white/10 rounded-lg p-3 outline-none focus:border-[var(--accent)] text-sm h-20 resize-none" placeholder={editingWork.description || "Descrição para aparecer no Google/Social..."} />
+                        <p className="text-[9px] opacity-30 mt-1">Se vazio, usa a descrição da obra.</p>
+                     </div>
+
+                     {/* Link Preview Helper */}
+                     <div className="pt-4 border-t border-white/10">
+                        <label className="block text-[10px] font-bold uppercase tracking-widest opacity-40 mb-2">Link Final para Compartilhar</label>
+                        <div className="flex gap-2 items-center bg-black/40 border border-white/10 rounded-lg p-3">
+                            <code className="text-xs font-mono text-[var(--accent)] truncate flex-grow">
+                                {window.location.origin}/?work={editingWork.slug || editingWork.id}
+                            </code>
+                            <button 
+                                onClick={() => {
+                                    navigator.clipboard.writeText(`${window.location.origin}/?work=${editingWork.slug || editingWork.id}`);
+                                    showStatus("link copiado");
+                                }}
+                                className="text-[10px] uppercase font-bold px-3 py-1 bg-white/10 hover:bg-white/20 rounded transition-colors"
+                            >
+                                copiar
+                            </button>
+                        </div>
+                     </div>
+                 </div>
              </div>
 
              {/* Galeria Multimídia */}
