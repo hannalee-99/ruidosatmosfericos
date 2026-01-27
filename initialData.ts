@@ -1,4 +1,3 @@
-
 import { Work, Signal, AboutData, ConnectConfig, SensorData, SiteConfig } from './types';
 
 export const INITIAL_DATA: {
