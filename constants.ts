@@ -6,9 +6,9 @@ export const COLORS = {
   deepBlue: '#293fcf',
   red: '#b20501',
   offWhite: '#f0f0f0',
-  referenceBlue: '#0000FF',
-  referenceYellow: '#FFFF00',
-  referenceMagenta: '#FF00FF'
+  referenceBlue: '#0033cc',
+  referenceYellow: '#ffcc00',
+  referenceMagenta: '#ff0099',
 };
 
 export const MONTH_NAMES = [
@@ -20,12 +20,5 @@ export const NEOBRUTALIST_BORDER = '2px solid #000000';
 export const NEOBRUTALIST_SHADOW = '4px 4px 0px 0px #000000';
 
 // Placeholder Atmosférico Permanente
+// Substitua esta URL pela imagem que você "subiu" se tiver o link direto ou base64
 export const DEFAULT_IMAGE = "https://images.unsplash.com/photo-1533105079780-92b9be482077?q=80&w=2574&auto=format&fit=crop";
-
-// SENHA DO BACKOFFICE (Texto Simples)
-// Edite aqui para alterar sua senha.
-export const BACKOFFICE_PASSWORD = "Gengibre2026#";
-
-// MIXPANEL TOKEN
-// Substitua 'SEU_TOKEN_AQUI' pelo token do seu projeto Mixpanel.
-export const MIXPANEL_TOKEN = "8cfdbdd06c994726e27988cbe0818d4c";

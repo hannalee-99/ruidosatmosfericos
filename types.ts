@@ -1,10 +1,4 @@
 
-declare global {
-  interface Window {
-    mixpanel?: any;
-  }
-}
-
 export enum ViewState {
   LANDING = 'entrada',
   MATERIA = 'matéria',
@@ -25,9 +19,6 @@ export interface GalleryItem {
 export interface Work {
   id: string;
   title: string;
-  slug?: string; // URL personalizada para compartilhamento
-  seoTitle?: string;       // Título específico para metatags
-  seoDescription?: string; // Descrição específica para metatags
   year: string;
   month: string;
   technique: string;
@@ -52,9 +43,6 @@ export interface Signal {
   id: string;
   title: string;
   subtitle?: string;
-  slug?: string;           // URL amigável
-  seoTitle?: string;       // Título para meta tags
-  seoDescription?: string; // Descrição para meta tags
   date: string;
   blocks: SignalBlock[];
   status: 'rascunho' | 'publicado';
@@ -82,16 +70,6 @@ export interface ConnectConfig {
 export interface SensorData {
   id: string; // Geralmente 'sensor_metrics'
   clicks: number;
-}
-
-export interface SiteConfig {
-  id: string; // Geralmente 'site_config'
-  siteTitle: string;       // <title>
-  siteName: string;        // og:site_name
-  siteDescription: string; // meta description & og:description
-  siteKeywords: string;    // meta keywords
-  faviconUrl?: string;     // Se vazio, usa o generativo
-  ogImageUrl?: string;     // og:image (Imagem padrão para compartilhamento)
 }
 
 // Deprecated type kept for migration safety if needed, but UI uses ConnectConfig

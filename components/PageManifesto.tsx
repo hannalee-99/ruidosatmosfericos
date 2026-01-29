@@ -209,8 +209,8 @@ const PageManifesto: React.FC<PageManifestoProps> = ({ isDarkMode = true }) => {
             </div>
         </section>
 
-        {/* BLOCO 05: FALTA (Anteriormente Centralizado -> Agora Alinhado à Esquerda) */}
-        <section className="flex flex-col items-start text-left py-16">
+        {/* BLOCO 05: FALTA (Centralizado e Minimal) */}
+        <section className="flex flex-col items-center text-center py-16">
              <SectionIndex num="04" label="error_handling" />
              
              <div className="max-w-2xl space-y-8">
@@ -220,8 +220,7 @@ const PageManifesto: React.FC<PageManifestoProps> = ({ isDarkMode = true }) => {
                    className="font-electrolize text-2xl md:text-4xl block leading-tight text-white [.light-mode_&]:text-black"
                  />
                  
-                 {/* Removeu mx-auto */}
-                 <div className="h-px w-20 bg-[var(--accent)] opacity-50"></div>
+                 <div className="h-px w-20 bg-[var(--accent)] mx-auto opacity-50"></div>
                  
                  <div className="font-mono text-sm opacity-60 space-y-2">
                     <DecodedText text="projetamos cenários para suportar o indeterminado" delay={9300} className="block" />

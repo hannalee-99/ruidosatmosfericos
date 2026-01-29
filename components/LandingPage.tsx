@@ -13,12 +13,14 @@ const Typewriter: React.FC<{
   speed?: number; 
   isDarkMode: boolean;
   onComplete?: () => void;
+  shrinkI?: boolean;
 }> = ({ 
   text, 
   delay = 0, 
   speed = 45, 
   isDarkMode,
-  onComplete
+  onComplete,
+  shrinkI = false
 }) => {
   const [displayedText, setDisplayedText] = useState('');
   const [started, setStarted] = useState(false);
@@ -48,7 +50,23 @@ const Typewriter: React.FC<{
 
   return (
     <span>
-      {displayedText}
+      {displayedText.split('').map((char, index) => {
+        if (shrinkI && ['i', 'í', 'I', 'Í'].includes(char)) {
+          return (
+            <span 
+              key={index} 
+              style={{ 
+                fontSize: '0.75em', 
+                display: 'inline-block',
+                verticalAlign: '0.05em'
+              }}
+            >
+              {char}
+            </span>
+          );
+        }
+        return <span key={index}>{char}</span>;
+      })}
       {displayedText.length < text.length && started && (
         <span 
           className="inline-block w-1.5 h-4 ml-1 animate-pulse align-middle bg-[var(--accent)]"
@@ -176,7 +194,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onNavigate, isDarkMode }) => 
                 }`} 
                 style={{ fontPalette: isDarkMode ? '--matrix' : '--matrix-blue' }}
               >
-                {/* Mobile: Stacked but big */}
+                {/* Mobile: Stacked but big - text-5xl is safe for 'atmosféricos' */}
                 <div className="flex flex-col md:hidden leading-[0.9] w-full">
                     <span>
                       <Typewriter 
@@ -184,6 +202,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onNavigate, isDarkMode }) => 
                         speed={80} 
                         delay={400} 
                         isDarkMode={isDarkMode} 
+                        shrinkI={true}
                       />
                     </span>
                     <span className="-mt-1">
@@ -192,6 +211,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onNavigate, isDarkMode }) => 
                         speed={80} 
                         delay={1000} 
                         isDarkMode={isDarkMode} 
+                        shrinkI={true}
                       />
                     </span>
                 </div>
@@ -202,6 +222,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onNavigate, isDarkMode }) => 
                     speed={80} 
                     delay={400} 
                     isDarkMode={isDarkMode} 
+                    shrinkI={true}
                   />
                 </div>
               </h1>
@@ -213,12 +234,12 @@ const LandingPage: React.FC<LandingPageProps> = ({ onNavigate, isDarkMode }) => 
                     <div className="w-1.5 h-1.5 bg-green-500 rounded-full"></div>
                     <div className="w-1.5 h-1.5 bg-green-500 rounded-full absolute top-0 left-0 animate-ping opacity-50"></div>
                   </div>
-                  <span className="font-vt text-sm tracking-[0.2em] text-[var(--accent)] font-bold">
+                  <span className="font-vt text-[10px] tracking-[0.2em] text-[var(--accent)]">
                     sinal estável
                   </span>
                 </div>
                 <div className="flex flex-col items-start md:items-end opacity-40 gap-1">
-                    <div className="tracking-widest text-sm">ciclo 21</div>
+                    <div className="tracking-widest">ciclo 21</div>
                 </div>
             </div>
           </div>
@@ -307,25 +328,17 @@ const LandingPage: React.FC<LandingPageProps> = ({ onNavigate, isDarkMode }) => 
                             <div 
                                 key={i} 
                                 onClick={() => onNavigate(ViewState.SINAIS)}
-                                className="flex flex-col border-b border-white/5 py-4 group-hover:border-white/20 transition-colors [.light-mode_&]:border-black/5 [.light-mode_&]:group-hover:border-black/20 cursor-pointer gap-2"
+                                className="flex justify-between items-center border-b border-white/5 py-3 group-hover:border-white/20 transition-colors [.light-mode_&]:border-black/5 [.light-mode_&]:group-hover:border-black/20 cursor-pointer"
                             >
-                                <div className="flex justify-between items-center w-full">
+                                <div className="flex items-center gap-2 overflow-hidden">
                                     <span className="font-vt text-[10px] tracking-widest text-[var(--accent)] opacity-80 flex-shrink-0">
                                         {formatSignalDate(sinal.date)}
                                     </span>
-                                </div>
-                                <div className="flex justify-between items-end w-full gap-4">
-                                    <span 
-                                      className="font-mono text-sm opacity-80 leading-tight group-hover:opacity-100 transition-opacity lowercase truncate flex-1 min-w-0" 
-                                      title={sinal.title}
-                                    >
+                                    <span className="font-mono text-xs opacity-60 truncate group-hover:opacity-100 transition-opacity lowercase">
                                         {sinal.title}
                                     </span>
-                                    <div className="flex items-center gap-1 font-mono text-[9px] text-[var(--accent)] tracking-widest opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap flex-shrink-0 ml-2">
-                                        <span>ler mais</span>
-                                        <span>→</span>
-                                    </div>
                                 </div>
+                                <span className="font-vt text-[10px] opacity-30">></span>
                             </div>
                         ))}
                         

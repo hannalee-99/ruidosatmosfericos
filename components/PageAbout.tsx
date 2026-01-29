@@ -16,24 +16,6 @@ const PageAbout: React.FC<PageAboutProps> = ({ onNavigate }) => {
     imageUrl: DEFAULT_IMAGE
   });
   const [isLoaded, setIsLoaded] = useState(false);
-  // Detectar modo escuro para aplicar a paleta correta na fonte Nabla
-  const [isDarkMode, setIsDarkMode] = useState(true);
-
-  useEffect(() => {
-    // Check inicial
-    setIsDarkMode(!document.body.classList.contains('light-mode'));
-    
-    // Observer para mudanças de classe no body
-    const observer = new MutationObserver((mutations) => {
-        mutations.forEach((mutation) => {
-            if (mutation.attributeName === 'class') {
-                setIsDarkMode(!document.body.classList.contains('light-mode'));
-            }
-        });
-    });
-    observer.observe(document.body, { attributes: true });
-    return () => observer.disconnect();
-  }, []);
 
   useEffect(() => {
     const loadData = async () => {
@@ -93,10 +75,7 @@ const PageAbout: React.FC<PageAboutProps> = ({ onNavigate }) => {
         <div className="md:col-span-7 flex flex-col text-left space-y-10 order-2 md:order-1 relative">
            
            <header className="space-y-4">
-             <h1 
-                className="font-nabla text-5xl md:text-8xl lowercase text-white [.light-mode_&]:text-black tracking-tighter leading-[0.9]"
-                style={{ fontPalette: isDarkMode ? '--matrix' : '--matrix-blue' }}
-             >
+             <h1 className="font-electrolize text-5xl md:text-8xl lowercase text-white [.light-mode_&]:text-black tracking-tighter leading-[0.9]">
                esse<br/>eu
              </h1>
            </header>

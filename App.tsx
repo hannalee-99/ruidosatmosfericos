@@ -14,7 +14,7 @@ import PageConnect from './components/PageConnect';
 import PageBackoffice from './components/PageBackoffice';
 import CustomCursor from './components/CustomCursor';
 import ObserverEffect from './components/ObserverEffect';
-import SiteMetadata from './components/SiteMetadata';
+import GenerativeFavicon from './components/GenerativeFavicon';
 import Footer from './components/Footer';
 import { storage } from './components/storage';
 import { DEFAULT_IMAGE } from './constants';
@@ -23,26 +23,8 @@ import { INITIAL_DATA } from './initialData';
 const App: React.FC = () => {
   const [hasEntered, setHasEntered] = useState(false);
   const [view, setView] = useState<ViewState>(ViewState.LANDING);
-  const [activeBreadcrumb, setActiveBreadcrumb] = useState<string | null>(null);
   const [isDarkMode, setIsDarkMode] = useState(true);
   
-  // Inicializa Analytics (Agora automático via index.html, mas verificamos aqui)
-  useEffect(() => {
-    if (!window.mixpanel) {
-        console.warn('Mixpanel não carregado via HTML');
-    }
-  }, []);
-
-  // Rastreia navegação (Page Views)
-  useEffect(() => {
-    if (hasEntered && window.mixpanel) {
-        window.mixpanel.track('Page View', {
-            page: view,
-            theme: isDarkMode ? 'dark' : 'light'
-        });
-    }
-  }, [view, hasEntered]);
-
   // Seeding: Carrega dados do arquivo initialData.ts para o IndexedDB
   useEffect(() => {
     const seedData = async () => {
@@ -94,15 +76,6 @@ const App: React.FC = () => {
     seedData();
   }, []);
 
-  // Deep Linking Check: Verifica se existe um parâmetro 'work' na URL para abrir a galeria diretamente
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    if (params.has('work')) {
-        setHasEntered(true); // Pula splash screen
-        setView(ViewState.MATERIA); // Vai direto para galeria
-    }
-  }, []);
-
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
       const x = (e.clientX / window.innerWidth) * 100;
@@ -123,42 +96,29 @@ const App: React.FC = () => {
     }
   }, [isDarkMode]);
 
-  const toggleTheme = () => {
-      const newMode = !isDarkMode;
-      setIsDarkMode(newMode);
-      if (window.mixpanel) {
-        window.mixpanel.track('Theme Changed', { mode: newMode ? 'dark' : 'light' });
-      }
-  };
+  const toggleTheme = () => setIsDarkMode(!isDarkMode);
 
-  // Wrapper para navegação que limpa o breadcrumb e scrolla para o topo
-  const handleNavigate = (newView: ViewState) => {
-    setView(newView);
-    setActiveBreadcrumb(null);
+  useEffect(() => {
     const mainElement = document.getElementById('main-scroll');
     if (mainElement) {
       mainElement.scrollTo({ top: 0, behavior: 'smooth' });
     }
-  };
+  }, [view]);
 
   const handleEnter = () => {
     setHasEntered(true);
-    if (window.mixpanel) {
-        window.mixpanel.track('Site Entered');
-    }
   };
 
   const handleBackofficeLogout = () => {
     sessionStorage.removeItem('ra_auth');
     setHasEntered(false);
     setView(ViewState.LANDING);
-    setActiveBreadcrumb(null);
   };
 
   if (!hasEntered) {
     return (
       <div className="relative w-full h-screen bg-black overflow-hidden">
-        <SiteMetadata />
+        <GenerativeFavicon />
         <CustomCursor />
         <div className="opacity-0">
            <NoiseBackground opacity={0} muted={true} /> 
@@ -171,19 +131,19 @@ const App: React.FC = () => {
   const renderContent = () => {
     switch (view) {
       case ViewState.LANDING:
-        return <LandingPage onNavigate={handleNavigate} isDarkMode={isDarkMode} />;
+        return <LandingPage onNavigate={setView} isDarkMode={isDarkMode} />;
       case ViewState.MATERIA:
-        return <PageMateria isDarkMode={isDarkMode} setBreadcrumb={setActiveBreadcrumb} />;
+        return <PageMateria isDarkMode={isDarkMode} />;
       case ViewState.MANIFESTO:
         return <PageManifesto isDarkMode={isDarkMode} />;
       case ViewState.SINAIS:
-        return <PageSinais isDarkMode={isDarkMode} setBreadcrumb={setActiveBreadcrumb} />;
+        return <PageSinais isDarkMode={isDarkMode} />;
       case ViewState.INTERACTIVE: // Agora 'medição' (Oculto, mas renderizável se selecionado)
         return <PageSensor />;
       case ViewState.ABOUT: // Agora '👁👁'
-        return <PageAbout onNavigate={handleNavigate} />;
+        return <PageAbout onNavigate={setView} />;
       case ViewState.CONNECT:
-        return <PageConnect onNavigate={handleNavigate} />;
+        return <PageConnect onNavigate={setView} />;
       case ViewState.BACKOFFICE:
         return <PageBackoffice onLogout={handleBackofficeLogout} />;
       default:
@@ -193,7 +153,7 @@ const App: React.FC = () => {
 
   return (
     <div className={`relative w-full h-screen overflow-hidden flex flex-col ${isDarkMode ? 'bg-black text-white' : 'bg-offWhite text-black'} transition-colors duration-1000 animate-in fade-in duration-1000`}>
-      <SiteMetadata />
+      <GenerativeFavicon />
       <CustomCursor />
       <ObserverEffect />
       
@@ -205,8 +165,7 @@ const App: React.FC = () => {
       {view !== ViewState.BACKOFFICE && (
         <Navigation 
           currentView={view} 
-          breadcrumb={activeBreadcrumb}
-          onNavigate={handleNavigate} 
+          onNavigate={setView} 
           isDarkMode={isDarkMode} 
           onToggleTheme={toggleTheme} 
         />

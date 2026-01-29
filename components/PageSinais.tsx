@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { storage } from './storage';
 import { Signal, SignalBlock } from '../types';
-import { MONTH_NAMES } from '../constants';
+import { COLORS, MONTH_NAMES } from '../constants';
 
 const formatImageUrl = (url: string): string => {
   if (!url) return '';
@@ -21,24 +21,26 @@ const MarkdownRenderer: React.FC<{ content: string }> = ({ content }) => {
   const lines = content.split('\n');
   
   return (
-    <div className="space-y-4 text-left font-sans text-lg md:text-xl font-light leading-[1.8] opacity-80 text-neutral-300 [.light-mode_&]:text-neutral-800">
+    // Alteração de Tipografia: font-sans -> font-mono
+    // Ajuste de Tamanho: text-base md:text-lg (Aumentado para legibilidade)
+    <div className="space-y-6 text-left font-mono text-base md:text-lg font-normal leading-[1.8] opacity-80 text-neutral-300 [.light-mode_&]:text-neutral-800">
       {lines.map((line, index) => {
         const trimmed = line.trim();
         
         // H1 (# )
         if (trimmed.startsWith('# ')) {
-          return <h2 key={index} className="font-electrolize text-3xl md:text-4xl text-white [.light-mode_&]:text-black mt-8 mb-4 opacity-100 lowercase">{trimmed.substring(2)}</h2>;
+          return <h2 key={index} className="font-electrolize text-3xl md:text-4xl text-white [.light-mode_&]:text-black mt-10 mb-6 opacity-100 lowercase">{trimmed.substring(2)}</h2>;
         }
         
         // H2 (## )
         if (trimmed.startsWith('## ')) {
-          return <h3 key={index} className="font-electrolize text-2xl md:text-3xl text-white [.light-mode_&]:text-black mt-6 mb-3 opacity-90 lowercase">{trimmed.substring(3)}</h3>;
+          return <h3 key={index} className="font-electrolize text-2xl md:text-3xl text-white [.light-mode_&]:text-black mt-8 mb-4 opacity-90 lowercase">{trimmed.substring(3)}</h3>;
         }
         
         // Blockquote (> )
         if (trimmed.startsWith('> ')) {
           return (
-            <blockquote key={index} className="border-l-4 border-[var(--accent)] pl-6 py-2 my-6 italic opacity-70 bg-white/5 [.light-mode_&]:bg-black/5 rounded-r-lg">
+            <blockquote key={index} className="border-l-2 border-[var(--accent)] pl-6 py-2 my-8 italic opacity-70 bg-white/5 [.light-mode_&]:bg-black/5 rounded-r-lg">
               {parseInline(trimmed.substring(2))}
             </blockquote>
           );
@@ -88,7 +90,7 @@ const parseInline = (text: string) => {
   return parts.map((part, i) => {
     if (part.type === 'link') {
       return (
-        <a key={i} href={part.url} target="_blank" rel="noopener noreferrer" className="text-[var(--accent)] underline hover:no-underline font-mono text-[0.9em]">
+        <a key={i} href={part.url} target="_blank" rel="noopener noreferrer" className="text-[var(--accent)] underline hover:no-underline font-bold">
           {part.content}
         </a>
       );
@@ -200,44 +202,6 @@ const BackToTop = ({ targetId }: { targetId?: string }) => {
   );
 };
 
-// --- HELPER PARA ATUALIZAR METADADOS ---
-const updateSignalMetaTags = (signal: Signal | null) => {
-    if (!signal) {
-        document.title = 'ruídos atmosféricos';
-        return;
-    }
-    
-    // Usa Título SEO ou o título padrão
-    const title = signal.seoTitle || signal.title;
-    document.title = `${title} // ruídos atmosféricos`;
-    
-    const setMeta = (property: string, content: string) => {
-        let tag = document.querySelector(`meta[property="${property}"]`);
-        if (!tag) {
-            tag = document.createElement('meta');
-            tag.setAttribute('property', property);
-            document.head.appendChild(tag);
-        }
-        tag.setAttribute('content', content);
-    };
-
-    setMeta('og:title', title);
-    setMeta('og:description', signal.seoDescription || signal.subtitle || 'sinal captado na frequência atmosférica.');
-    
-    // Tenta encontrar a primeira imagem para usar como capa se não houver uma definida
-    const firstImage = signal.blocks.find(b => b.type === 'image');
-    if (firstImage) {
-        setMeta('og:image', formatImageUrl(firstImage.content));
-    }
-    
-    // Atualiza URL
-    const shareId = signal.slug || signal.id;
-    const newUrl = `${window.location.pathname}?post=${encodeURIComponent(shareId)}`;
-    try {
-        window.history.pushState({ path: newUrl }, '', newUrl);
-    } catch(e) { console.warn("History push failed", e); }
-};
-
 type RenderGroup = 
   | { type: 'text'; id: string; content: string }
   | { type: 'gallery'; id: string; images: SignalBlock[] }
@@ -245,10 +209,9 @@ type RenderGroup =
 
 interface PageSinaisProps {
     isDarkMode?: boolean;
-    setBreadcrumb?: (value: string | null) => void;
 }
 
-const PageSinais: React.FC<PageSinaisProps> = ({ isDarkMode = true, setBreadcrumb }) => {
+const PageSinais: React.FC<PageSinaisProps> = ({ isDarkMode = true }) => {
   const [posts, setPosts] = useState<Signal[]>([]);
   const [selectedPost, setSelectedPost] = useState<Signal | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -258,19 +221,7 @@ const PageSinais: React.FC<PageSinaisProps> = ({ isDarkMode = true, setBreadcrum
   useEffect(() => {
     const fetchData = async () => {
       const all: Signal[] = await storage.getAll('signals');
-      const loadedPosts = all.filter((p: Signal) => p.status === 'publicado').sort((a,b) => Number(b.id) - Number(a.id));
-      setPosts(loadedPosts);
-
-      // Deep Linking Check for Posts
-      const params = new URLSearchParams(window.location.search);
-      const postParam = params.get('post');
-      if (postParam && !selectedPost) {
-          const found = loadedPosts.find(p => p.id === postParam || p.slug === postParam);
-          if (found) {
-              setSelectedPost(found);
-              updateSignalMetaTags(found);
-          }
-      }
+      setPosts(all.filter((p: Signal) => p.status === 'publicado').sort((a,b) => Number(b.id) - Number(a.id)));
     };
     fetchData();
   }, []);
@@ -311,26 +262,6 @@ const PageSinais: React.FC<PageSinaisProps> = ({ isDarkMode = true, setBreadcrum
       setContainerHeight(containerRef.current.scrollHeight);
     }
   }, [posts]);
-
-  // Atualiza metadados quando o post selecionado muda
-  useEffect(() => {
-      if (selectedPost) {
-          updateSignalMetaTags(selectedPost);
-      } else {
-          document.title = 'ruídos atmosféricos';
-          // Limpa URL ao fechar
-          try {
-             window.history.pushState({ path: window.location.pathname }, '', window.location.pathname);
-          } catch(e) {}
-      }
-  }, [selectedPost]);
-
-  // Update breadcrumb when selectedPost changes
-  useEffect(() => {
-    if (setBreadcrumb) {
-        setBreadcrumb(selectedPost ? (selectedPost.title || 'sinal') : null);
-    }
-  }, [selectedPost, setBreadcrumb]);
 
   const groupedPosts = useMemo(() => {
     const groups: Record<string, Signal[]> = {};
@@ -392,13 +323,6 @@ const PageSinais: React.FC<PageSinaisProps> = ({ isDarkMode = true, setBreadcrum
 
   const handleOpenPost = async (post: Signal) => {
     setSelectedPost(post);
-    // Track Analytics
-    if (window.mixpanel) {
-        window.mixpanel.track('Signal Read', { 
-            title: post.title, 
-            id: post.id 
-        });
-    }
     const updated = { ...post, views: (post.views || 0) + 1 };
     await storage.save('signals', updated);
   };
@@ -455,7 +379,8 @@ const PageSinais: React.FC<PageSinaisProps> = ({ isDarkMode = true, setBreadcrum
                </h1>
                
                {selectedPost.subtitle && (
-                 <p className="text-lg md:text-2xl font-light opacity-60 leading-relaxed font-sans max-w-2xl border-l-2 border-[var(--accent)] pl-6 py-1 lowercase">
+                 // Subtítulo agora também usa font-mono para consistência
+                 <p className="text-xs md:text-sm font-mono opacity-60 leading-relaxed max-w-2xl border-l-2 border-[var(--accent)] pl-6 py-2 lowercase">
                    {selectedPost.subtitle}
                  </p>
                )}
@@ -634,9 +559,7 @@ const PageSinais: React.FC<PageSinaisProps> = ({ isDarkMode = true, setBreadcrum
 
         <div className="flex-1 md:pl-24 md:pr-12 relative z-10">
           <div className="mb-12 md:mb-20 mt-8 md:mt-0">
-             <h2 className="font-nabla text-5xl md:text-7xl lowercase" style={{ fontPalette: isDarkMode ? '--matrix' : '--matrix-blue' }}>
-               sinais
-             </h2>
+             <h2 className="font-nabla text-5xl md:text-7xl lowercase" style={{ fontPalette: isDarkMode ? '--matrix' : '--matrix-blue' }}>sinais</h2>
              <p className="font-vt text-sm opacity-40 tracking-[0.3em] mt-2 lowercase">timeline de ruídos</p>
           </div>
 

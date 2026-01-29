@@ -10,7 +10,6 @@ interface NavigationProps {
   onNavigate: (view: ViewState) => void;
   isDarkMode: boolean;
   onToggleTheme: () => void;
-  breadcrumb?: string | null;
 }
 
 const Navigation: React.FC<NavigationProps> = ({ 
@@ -18,11 +17,9 @@ const Navigation: React.FC<NavigationProps> = ({
   onNavigate, 
   isDarkMode, 
   onToggleTheme,
-  breadcrumb
 }) => {
   const [showToast, setShowToast] = useState(false);
-  const [isVisible, setIsVisible] = useState(true);
-  const [lastScrollY, setLastScrollY] = useState(0);
+  const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   
   // Estado para a "porta dos fundos" (Backoffice Secreto)
@@ -38,21 +35,12 @@ const Navigation: React.FC<NavigationProps> = ({
       if (!mainScroll) return;
       const currentScrollY = mainScroll.scrollTop;
       
-      if (isMobileMenuOpen) {
-          setIsVisible(true);
-          return;
-      }
-      
-      if (currentScrollY < 10) {
-        setIsVisible(true);
+      // Ativa o estado "Scrolled" se passar de 20px
+      if (currentScrollY > 20) {
+        setIsScrolled(true);
       } else {
-        if (currentScrollY > lastScrollY && currentScrollY > 50) {
-           setIsVisible(false);
-        } else {
-           setIsVisible(true);
-        }
+        setIsScrolled(false);
       }
-      setLastScrollY(currentScrollY);
     };
 
     if (mainScroll) {
@@ -63,7 +51,7 @@ const Navigation: React.FC<NavigationProps> = ({
         mainScroll.removeEventListener('scroll', handleScroll);
       }
     };
-  }, [lastScrollY, isMobileMenuOpen]);
+  }, []);
 
   const items = Object.values(ViewState).filter(item => 
     item !== ViewState.BACKOFFICE && 
@@ -108,18 +96,29 @@ const Navigation: React.FC<NavigationProps> = ({
   return (
     <>
       <nav 
-        className={`fixed top-0 left-0 w-full z-[100] transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] ${isVisible ? 'translate-y-0' : '-translate-y-full'}`}
+        className="fixed top-0 left-0 w-full z-[100] transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] translate-y-0"
       >
+        {/* Camada 1: Gradiente Atmosférico (Visível apenas no topo) */}
         <div 
-          className="absolute inset-0 pointer-events-none transition-colors duration-1000"
+          className={`absolute inset-0 pointer-events-none transition-opacity duration-700 ease-out ${isScrolled ? 'opacity-0' : 'opacity-100'}`}
           style={{ 
             background: `linear-gradient(to bottom, ${gradientStart} 0%, ${gradientMid} 60%, transparent 100%)`,
-            backdropFilter: 'blur(12px)',
-            WebkitBackdropFilter: 'blur(12px)'
+            backdropFilter: 'blur(4px)',
+            WebkitBackdropFilter: 'blur(4px)'
           }}
         ></div>
 
-        {/* Container Principal - Padding e Max-Width ajustados para alinhar com o conteúdo da página */}
+        {/* Camada 2: Barra Sólida com Sombra (Fade in ao rolar) */}
+        <div 
+           className={`
+             absolute inset-0 pointer-events-none transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)]
+             ${isScrolled 
+               ? 'opacity-100 bg-black/80 [.light-mode_&]:bg-white/80 backdrop-blur-md shadow-[0_4px_30px_rgba(0,0,0,0.3)] [.light-mode_&]:shadow-[0_4px_30px_rgba(0,0,0,0.05)] border-b border-white/5 [.light-mode_&]:border-black/5' 
+               : 'opacity-0 bg-transparent backdrop-blur-none shadow-none border-transparent'}
+           `}
+        ></div>
+
+        {/* Container Principal */}
         <div className="relative px-4 md:px-8 h-20 lg:h-24 flex justify-between items-center max-w-[1800px] mx-auto w-full">
           
           {/* LEFT: Logo & Breadcrumb */}
@@ -130,22 +129,21 @@ const Navigation: React.FC<NavigationProps> = ({
             >
               <Logo size={24} color={activeColor} className="md:w-[28px] md:h-[28px]" />
             </div>
-            
-            {breadcrumb && (
-               <div className="hidden md:flex items-center gap-4 animate-in fade-in slide-in-from-left-4 duration-500">
-                  <div className="h-4 w-px bg-current opacity-20"></div>
-                  <span className="font-mono text-xs lowercase tracking-widest opacity-60 truncate max-w-[200px]" style={{ color: activeColor }}>
-                    {breadcrumb}
-                  </span>
-               </div>
-            )}
+
+             {/* Breadcrumb Otimizado - Fonte alterada para Electrolize */}
+             <div 
+              onClick={triggerSecretStep}
+              className="font-electrolize text-base tracking-widest opacity-60 hidden md:block lowercase cursor-pointer hover:opacity-100 transition-opacity leading-none"
+             >
+              ruídos / <span className="opacity-100 transition-colors duration-500" style={{ color: activeColor }}>{currentView}</span>
+            </div>
           </div>
           
           {/* RIGHT: Desktop Nav & Mobile Toggle */}
           <div className="flex justify-end items-center h-full z-50">
             
-            {/* DESKTOP MENU - Visible only on LG+ - Fonte alterada para Electrolize */}
-            <div className="hidden lg:flex gap-12 xl:gap-24 items-center pl-8">
+            {/* DESKTOP MENU - Visible only on LG+ */}
+            <div className="hidden lg:flex gap-10 xl:gap-20 items-center pl-8">
               {items.map((item) => {
                 const isSelected = currentView === item;
                 return (
@@ -153,7 +151,7 @@ const Navigation: React.FC<NavigationProps> = ({
                     key={item}
                     onClick={() => onNavigate(item)}
                     className={`
-                      font-electrolize text-lg pb-1 border-b leading-none whitespace-nowrap flex-shrink-0 lowercase tracking-wide
+                      font-electrolize text-base tracking-widest pb-1 border-b leading-none whitespace-nowrap flex-shrink-0 lowercase
                       ${isSelected ? 'opacity-100 border-current' : 'opacity-40 border-transparent hover:opacity-100'}
                     `}
                     style={{ 

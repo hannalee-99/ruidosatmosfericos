@@ -15,8 +15,10 @@ const NoiseBackground: React.FC<NoiseBackgroundProps> = ({ opacity = 0.5, muted 
   }, []);
 
   return (
-    <div className="fixed inset-0 w-full h-full -z-10 overflow-hidden pointer-events-none">
+    <div className="fixed inset-0 w-full h-full -z-10 overflow-hidden pointer-events-none select-none">
       <div className="absolute inset-0 bg-black"></div>
+      
+      {/* Camada de Vídeo (Opcional - Mantida, mas com CSS otimizado) */}
       <video
         key={videoSrc}
         autoPlay
@@ -26,8 +28,8 @@ const NoiseBackground: React.FC<NoiseBackgroundProps> = ({ opacity = 0.5, muted 
         className="w-full h-full object-cover mix-blend-screen brightness-[0.85] contrast-[1.2]"
         style={{ 
           opacity,
-          filter: 'blur(4px) saturate(0.5) url(#distortionFilter)',
-          transform: 'scale(1.02)'
+          // Removido o filtro URL pesado. Mantém apenas transformações de composição simples.
+          willChange: 'opacity'
         }}
       >
         <source src={videoSrc} type="video/mp4" />
@@ -40,26 +42,36 @@ const NoiseBackground: React.FC<NoiseBackgroundProps> = ({ opacity = 0.5, muted 
         }}
       ></div>
       
-      <div className="absolute inset-0 opacity-[0.08] mix-blend-overlay bg-[url('https://grainy-gradients.vercel.app/noise.svg')]"></div>
+      {/* 
+         OTIMIZAÇÃO DE PERFORMANCE:
+         Substituição do filtro SVG <feTurbulence> (CPU Heavy) por animação CSS de background (GPU Friendly).
+         Usa uma imagem de ruído minúscula e move ela rapidamente.
+      */}
+      <div 
+        className="absolute inset-0 w-[200%] h-[200%] pointer-events-none mix-blend-overlay z-20 opacity-[0.15]"
+        style={{
+            backgroundImage: "url('https://grainy-gradients.vercel.app/noise.svg')",
+            animation: "noiseAnimation 0.4s steps(3) infinite",
+            top: '-50%',
+            left: '-50%'
+        }}
+      ></div>
 
-      <svg className="hidden">
-        <filter id="distortionFilter">
-          <feTurbulence 
-            type="fractalNoise" 
-            baseFrequency="0.01" 
-            numOctaves="2" 
-            result="noise" 
-          >
-            <animate 
-              attributeName="baseFrequency" 
-              values="0.01;0.015;0.01" 
-              dur="15s" 
-              repeatCount="indefinite" 
-            />
-          </feTurbulence>
-          <feDisplacementMap in="SourceGraphic" in2="noise" scale="8" />
-        </filter>
-      </svg>
+      <style>{`
+        @keyframes noiseAnimation {
+          0% { transform: translate(0, 0); }
+          10% { transform: translate(-5%, -5%); }
+          20% { transform: translate(-10%, 5%); }
+          30% { transform: translate(5%, -10%); }
+          40% { transform: translate(-5%, 15%); }
+          50% { transform: translate(-10%, 5%); }
+          60% { transform: translate(15%, 0); }
+          70% { transform: translate(0, 10%); }
+          80% { transform: translate(-15%, 0); }
+          90% { transform: translate(10%, 5%); }
+          100% { transform: translate(5%, 0); }
+        }
+      `}</style>
     </div>
   );
 };

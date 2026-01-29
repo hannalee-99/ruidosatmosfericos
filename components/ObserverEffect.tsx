@@ -28,26 +28,19 @@ const ObserverEffect: React.FC = () => {
       distanceTraveled.current += dist;
       lastPos.current = { x: clientX, y: clientY };
 
-      // Lógica de Spawn:
-      // A cada X pixels percorridos, joga um dado.
-      // Quanto mais rápido o movimento, menor a chance (para não poluir).
-      // Se parar ou mover devagar, a chance aumenta.
+      // Spawn rate ajustado
       if (distanceTraveled.current > 300) {
-        // Chance de 15% de aparecer um olho a cada 300px viajados
         if (Math.random() < 0.15) {
             spawnEye(clientX, clientY);
-            distanceTraveled.current = 0; // Reset
+            distanceTraveled.current = 0; 
         } else {
-            // Se falhou, diminui um pouco o contador para tentar logo em seguida
             distanceTraveled.current = 150; 
         }
       }
     };
 
-    // Spawnar ao clicar também (interatividade extra)
     const handleClick = (e: MouseEvent) => {
         clickCount.current += 1;
-        // A cada 3 cliques, garante um olho
         if (clickCount.current % 3 === 0 || Math.random() > 0.5) {
             spawnEye(e.clientX, e.clientY);
         }
@@ -55,8 +48,8 @@ const ObserverEffect: React.FC = () => {
 
     const spawnEye = (x: number, y: number) => {
       const id = Date.now() + Math.random();
-      const sizeRandom = 0.5 + Math.random() * 0.8; // Escala entre 0.5 e 1.3
-      const rotationRandom = (Math.random() - 0.5) * 30; // Rotação sutil
+      const sizeRandom = 0.5 + Math.random() * 0.8; 
+      const rotationRandom = (Math.random() - 0.5) * 30; 
 
       const newEye: EyeEntity = {
         id,
@@ -68,7 +61,6 @@ const ObserverEffect: React.FC = () => {
 
       setEyes(prev => [...prev, newEye]);
 
-      // Remove o olho após a animação (2.5s)
       setTimeout(() => {
         setEyes(prev => prev.filter(e => e.id !== id));
       }, 2500);
@@ -88,7 +80,7 @@ const ObserverEffect: React.FC = () => {
       {eyes.map((eye) => (
         <div
           key={eye.id}
-          className="absolute w-12 h-8 flex items-center justify-center"
+          className="absolute w-12 h-8 flex items-center justify-center will-change-transform"
           style={{
             left: eye.x,
             top: eye.y,
@@ -99,19 +91,16 @@ const ObserverEffect: React.FC = () => {
             viewBox="0 0 100 60"
             className="w-full h-full overflow-visible drop-shadow-[0_0_8px_rgba(159,248,93,0.5)] [.light-mode_&]:drop-shadow-[0_0_8px_rgba(41,63,207,0.5)]"
           >
-             <defs>
-               <filter id="glitch-eye">
-                 <feTurbulence type="fractalNoise" baseFrequency="0.1" numOctaves="1" result="noise">
-                    <animate attributeName="baseFrequency" values="0.1;0.5;0.1" dur="2s" repeatCount="indefinite" />
-                 </feTurbulence>
-                 <feDisplacementMap in="SourceGraphic" in2="noise" scale="3" />
-               </filter>
-             </defs>
+             {/* 
+                OTIMIZAÇÃO: 
+                Filtro <feTurbulence> removido. 
+                Isso reduz drasticamente o uso da CPU quando múltiplos olhos estão na tela.
+             */}
 
              {/* Animação de Entrada e Saída */}
              <g className="animate-[eyeBrief_2.5s_ease-in-out_forwards] origin-center">
                 
-                {/* Esclera (Parte Branca do Olho) - Estilo Wireframe/Digital */}
+                {/* Esclera */}
                 <path 
                   d="M 0 30 Q 50 -10 100 30 Q 50 70 0 30 Z" 
                   fill="black" 
@@ -126,12 +115,10 @@ const ObserverEffect: React.FC = () => {
                       <animate attributeName="r" values="14;12;14" dur="3s" repeatCount="indefinite" />
                    </circle>
                    <circle cx="50" cy="30" r="8" fill="var(--accent)" className="[.light-mode_&]:fill-black" />
-                   
-                   {/* Brilho na pupila */}
                    <circle cx="53" cy="27" r="2" fill="white" />
                 </g>
 
-                {/* Pálpebra / Blink Effect */}
+                {/* Pálpebra */}
                 <path d="M 0 30 Q 50 -10 100 30 Z" fill="#000" className="animate-[blink_2.4s_linear_forwards] opacity-0 [.light-mode_&]:fill-white" /> 
              </g>
           </svg>
@@ -143,8 +130,8 @@ const ObserverEffect: React.FC = () => {
           0% { opacity: 0; transform: scale(0.8); }
           15% { opacity: 1; transform: scale(1.1); }
           25% { transform: scale(1); }
-          75% { opacity: 1; transform: scale(1); filter: blur(0px); }
-          100% { opacity: 0; transform: scale(0) translateY(10px); filter: blur(4px); }
+          75% { opacity: 1; transform: scale(1); }
+          100% { opacity: 0; transform: scale(0) translateY(10px); }
         }
         @keyframes eyeLook {
           0%, 100% { transform: translate(0, 0); }
@@ -154,7 +141,7 @@ const ObserverEffect: React.FC = () => {
         }
         @keyframes blink {
            0%, 45%, 55%, 100% { transform: translateY(-100%); opacity: 0; }
-           50% { transform: translateY(0); opacity: 1; } /* Piscar rápido no meio da vida */
+           50% { transform: translateY(0); opacity: 1; }
         }
       `}</style>
     </div>
