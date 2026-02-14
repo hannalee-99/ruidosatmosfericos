@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect, useMemo, useRef, memo } from 'react';
 import { storage } from './storage';
-import { Work, GalleryItem } from '../types';
+import { Work, GalleryItem, GalleryItemType } from '../types';
 import { MONTH_NAMES, DEFAULT_IMAGE } from '../constants';
 import LazyImage from './LazyImage';
 
@@ -74,12 +74,13 @@ const WorkModal: React.FC<{ work: Work; onClose: () => void; onNext: () => void;
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [shareLabel, setShareLabel] = useState('compartilhar');
+  
   const galleryItems = useMemo(() => {
     const items: (string | GalleryItem)[] = [
       { type: 'image' as const, url: getWorkCover(work) },
       ...(work.gallery || [])
     ];
-    return items.filter(i => i);
+    return items.filter(i => i !== null && i !== undefined);
   }, [work]);
 
   const handleShare = () => {

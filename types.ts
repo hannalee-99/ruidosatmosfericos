@@ -4,17 +4,21 @@ export enum ViewState {
   MATERIA = 'matéria',
   MANIFESTO = 'manifesto',
   SINAIS = 'sinais',
-  INTERACTIVE = 'medição', // Antigo 👁👁, agora oculto e renomeado
-  ABOUT = '👁👁',          // Antigo 'esse eu', agora assume o ícone
+  INTERACTIVE = 'medição', 
+  ABOUT = '👁👁',          
   CONNECT = 'conectar',
   BACKOFFICE = 'fluxo'
 }
 
+export type GalleryItemType = 'image' | 'video';
+
 export interface GalleryItem {
-  type: 'image' | 'video';
+  type: GalleryItemType;
   url: string;
   coverUrl?: string;
 }
+
+export type WorkStatus = 'disponível' | 'reservado' | 'vendido' | string;
 
 export interface Work {
   id: string;
@@ -22,21 +26,23 @@ export interface Work {
   title: string;
   year: string;
   month: string;
-  date: string; // Novo: formato YYYY-MM-DD para ordenação precisa
+  date: string; // Formato YYYY-MM-DD
   technique: string;
   dimensions: string;
   imageUrl: string;
   gallery?: (string | GalleryItem)[];
-  status: string;
+  status: WorkStatus;
   isVisible: boolean;
   isFeatured?: boolean;
   views: number;
   description?: string;
 }
 
+export type SignalBlockType = 'text' | 'image' | 'embed';
+
 export interface SignalBlock {
   id: string;
-  type: 'text' | 'image' | 'embed';
+  type: SignalBlockType;
   content: string;
   caption?: string;
 }
@@ -52,7 +58,7 @@ export interface Signal {
 }
 
 export interface AboutData {
-  id: string; // Geralmente 'profile'
+  id: string; // 'profile'
   text: string;
   imageUrl: string;
 }
@@ -64,20 +70,12 @@ export interface LinkItem {
 }
 
 export interface ConnectConfig {
-  id: string; // Geralmente 'connect_config'
+  id: string; // 'connect_config'
   email: string;
   links: LinkItem[];
 }
 
 export interface SensorData {
-  id: string; // Geralmente 'sensor_metrics'
+  id: string; // 'sensor_metrics'
   clicks: number;
-}
-
-export interface SocialLinks {
-  id: string;
-  instagram: string;
-  bluesky: string;
-  vimeo: string;
-  email: string;
 }

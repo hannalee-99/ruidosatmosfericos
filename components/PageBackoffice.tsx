@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { storage } from './storage';
-import { Work, Signal, SignalBlock, AboutData, ConnectConfig, LinkItem, GalleryItem, SensorData } from '../types';
+import { Work, Signal, SignalBlock, AboutData, ConnectConfig, LinkItem, GalleryItem, SensorData, GalleryItemType } from '../types';
 import { MONTH_NAMES, DEFAULT_IMAGE, COLORS } from '../constants';
 
 const formatImageUrl = (url: string): string => {
@@ -277,7 +277,7 @@ const PageBackoffice: React.FC<PageBackofficeProps> = ({ onLogout }) => {
   const [connectConfig, setConnectConfig] = useState<ConnectConfig>({ id: 'connect_config', email: '', links: [] });
   const [editingWork, setEditingWork] = useState<Work | null>(null);
   const [editingSignal, setEditingSignal] = useState<Signal | null>(null);
-  const [galleryInputType, setGalleryInputType] = useState<'image' | 'video'>('image');
+  const [galleryInputType, setGalleryInputType] = useState<GalleryItemType>('image');
   const [galleryUrl, setGalleryUrl] = useState('');
   const [galleryCoverUrl, setGalleryCoverUrl] = useState('');
   const [history, setHistory] = useState<Signal[]>([]);
@@ -873,7 +873,7 @@ const PageBackoffice: React.FC<PageBackofficeProps> = ({ onLogout }) => {
 
         {activeTab === 'sync' && (
           <div className="max-w-md space-y-8">
-            <div className="bg-white/5 border border-white/5 p-8 rounded-2xl">
+            <div className="bg-white/5 p-8 rounded-2xl border border-white/5">
               <h2 className="text-xl font-bold font-electrolize mb-4">Gestão de Dados</h2>
               <p className="text-sm opacity-60 font-mono leading-relaxed mb-8">Baixe um backup completo dos seus dados ou restaure a partir de um arquivo JSON anterior.</p>
               <div className="flex flex-col gap-4">
@@ -944,7 +944,7 @@ const PageBackoffice: React.FC<PageBackofficeProps> = ({ onLogout }) => {
                    ))}
                 </div>
                 <div className="flex gap-4">
-                   <select value={galleryInputType} onChange={e => setGalleryInputType(e.target.value as any)} className="bg-white/5 border border-white/10 rounded-lg px-4 py-2 outline-none text-sm font-mono">
+                   <select value={galleryInputType} onChange={e => setGalleryInputType(e.target.value as GalleryItemType)} className="bg-white/5 border border-white/10 rounded-lg px-4 py-2 outline-none text-sm font-mono">
                       <option value="image">Imagem</option>
                       <option value="video">Vídeo (Embed)</option>
                    </select>
