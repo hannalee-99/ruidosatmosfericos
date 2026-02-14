@@ -1,4 +1,3 @@
-
 export enum ViewState {
   LANDING = 'entrada',
   MATERIA = 'matéria',

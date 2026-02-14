@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { storage } from './storage';
 import { Work, Signal, SignalBlock, AboutData, ConnectConfig, LinkItem, GalleryItem, SensorData, GalleryItemType } from '../types';
@@ -644,7 +643,7 @@ const PageBackoffice: React.FC<PageBackofficeProps> = ({ onLogout }) => {
                           {editingSignal.blocks.map((block, idx) => (
                               <div key={block.id} className="relative group/block">
                                   <div className="absolute -left-12 top-1.5 opacity-0 group-hover/block:opacity-100 transition-opacity"><button onClick={() => removeBlock(block.id)} className="p-1 text-gray-600 hover:text-red-500"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button></div>
-                                  {block.type === 'text' && (<textarea id={`textarea-${block.id}`} value={block.content} onChange={(e) => { updateBlock(block.id, e.target.value); autoResizeTextarea(e); }} onInput={autoResizeTextarea} onFocus={(e) => { autoResizeTextarea(e); setActiveBlockId(block.id); }} placeholder="Comece a escrever..." className="w-full bg-transparent outline-none text-[19px] leading-[1.6] font-serif text-gray-200 placeholder:text-gray-600 resize-none overflow-hidden min-h-[1.6em]" />)}
+                                  {block.type === 'text' && (<textarea id={`textarea-${block.id}`} value={block.content} onChange={(e) => { updateBlock(block.id, e.target.value); autoResizeTextarea(e); }} onInput={autoResizeTextarea} onFocus={(e) => { autoResizeTextarea(e); setActiveBlockId(block.id); }} placeholder="Comece a escrever..." className="w-full bg-transparent outline-none text-[19px] font-normal leading-[1.6] font-serif text-gray-200 placeholder:text-gray-600 resize-none overflow-hidden min-h-[1.6em]" />)}
                                   {block.type === 'image' && (
                                     <div className="relative my-4">
                                       {block.content ? (

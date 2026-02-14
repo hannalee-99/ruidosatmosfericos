@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useMemo, useRef, memo } from 'react';
 import { storage } from './storage';
 import { Work, GalleryItem, GalleryItemType } from '../types';
@@ -61,7 +60,7 @@ const BackToTop = ({ targetId }: { targetId?: string }) => {
 };
 
 const GalleryItemRenderer: React.FC<{ item: GalleryItem | string; alt: string; isActive: boolean; onClick?: () => void }> = ({ item, alt, isActive, onClick }) => {
-    const isObject = typeof item === 'object';
+    const isObject = typeof item === 'object' && item !== null;
     const type = isObject ? (item as GalleryItem).type : 'image';
     const url = isObject ? (item as GalleryItem).url : (item as string);
     if (type === 'video') {
