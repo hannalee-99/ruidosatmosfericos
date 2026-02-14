@@ -1,6 +1,5 @@
 
-import React, { useEffect, useState, memo } from 'react';
-import { GoogleGenAI } from "@google/genai";
+import React, { memo } from 'react';
 
 interface OrganicShapeProps {
   color: string;
@@ -17,37 +16,11 @@ const OrganicShape: React.FC<OrganicShapeProps> = memo(({
   top, 
   left, 
   delay,
-  opacity = 0.8
+  opacity = 0.6
 }) => {
-  const [textureUrl, setTextureUrl] = useState<string | null>(null);
+  // Geramos um ID único para o filtro baseado no delay para evitar conflitos
   const filterId = `lava-filter-${delay.replace(/[^a-z0-9]/gi, '')}`;
-
-  useEffect(() => {
-    let isMounted = true;
-    const generateTexture = async () => {
-      if (!process.env.API_KEY) return;
-      try {
-        const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-        const response = await ai.models.generateContent({
-          model: 'gemini-2.5-flash-image',
-          contents: { parts: [{ text: `abstract fluid texture, lava lamp, color ${color}, high contrast` }] },
-          config: { imageConfig: { aspectRatio: "1:1" } }
-        });
-        if (!isMounted) return;
-        
-        // Correção do erro TS2532: Adicionado ?. antes de .find()
-        const imgPart = response.candidates?.[0]?.content?.parts?.find(p => p.inlineData);
-        
-        if (imgPart?.inlineData) {
-          setTextureUrl(`data:image/png;base64,${imgPart.inlineData.data}`);
-        }
-      } catch (e) {
-        console.warn("Organic texture failed", e);
-      }
-    };
-    generateTexture();
-    return () => { isMounted = false; };
-  }, [color]);
+  const noiseId = `noise-${delay.replace(/[^a-z0-9]/gi, '')}`;
 
   return (
     <div 
@@ -57,36 +30,64 @@ const OrganicShape: React.FC<OrganicShapeProps> = memo(({
         width: `${size}px`, height: `${size}px`,
         opacity,
         animation: `lava-float 40s ease-in-out infinite alternate ${delay}`,
-        filter: `url(#${filterId}) blur(15px)`,
       }}
     >
       <svg viewBox="0 0 500 500" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
         <defs>
+          {/* Filtro de distorção orgânica que simula o efeito de fluido sem precisar de IA */}
           <filter id={filterId}>
-            <feTurbulence type="turbulence" baseFrequency="0.01" numOctaves="1" result="noise" />
-            <feDisplacementMap in="SourceGraphic" in2="noise" scale="80" />
+            <feTurbulence 
+              type="fractalNoise" 
+              baseFrequency="0.015" 
+              numOctaves="3" 
+              result="noise" 
+            >
+              <animate 
+                attributeName="baseFrequency" 
+                values="0.015;0.02;0.015" 
+                dur="30s" 
+                repeatCount="indefinite" 
+              />
+            </feTurbulence>
+            <feDisplacementMap in="SourceGraphic" in2="noise" scale="60" />
+          </filter>
+
+          {/* Filtro de textura granulada para dar profundidade */}
+          <filter id={noiseId}>
+            <feTurbulence type="fractalNoise" baseFrequency="0.6" numOctaves="3" opacity="0.5" />
+            <feColorMatrix type="saturate" values="0" />
+            <feBlend in="SourceGraphic" mode="multiply" />
           </filter>
         </defs>
-        <circle 
-          cx="250" cy="250" r="180" 
-          fill={color}
-          style={{ 
-            animation: `lava-morph 30s linear infinite ${delay}`,
-            transformOrigin: 'center'
-          }} 
-        />
-        {textureUrl && (
-          <image href={textureUrl} x="70" y="70" width="360" height="360" opacity="0.4" clipPath="circle(180px at 180px 180px)" />
-        )}
+
+        <g filter={`url(#${filterId})`}>
+          <circle 
+            cx="250" cy="250" r="160" 
+            fill={color}
+            style={{ 
+              animation: `lava-morph 25s linear infinite ${delay}`,
+              transformOrigin: 'center'
+            }} 
+          />
+          {/* Camada de brilho interno para simular volume */}
+          <circle 
+            cx="220" cy="220" r="80" 
+            fill="white" 
+            opacity="0.2" 
+            filter="blur(30px)"
+          />
+        </g>
       </svg>
       
       <style>{`
         @keyframes lava-float {
-          0% { transform: translate(0, 0) scale(1); }
-          100% { transform: translate(20px, -30px) scale(1.05); }
+          0% { transform: translate(0, 0) rotate(0deg) scale(1); }
+          50% { transform: translate(40px, -20px) rotate(5deg) scale(1.1); }
+          100% { transform: translate(-20px, 40px) rotate(-5deg) scale(0.95); }
         }
         @keyframes lava-morph {
           0% { border-radius: 40% 60% 60% 40% / 40% 40% 60% 60%; transform: rotate(0deg); }
+          50% { border-radius: 60% 40% 40% 60% / 60% 60% 40% 40%; transform: rotate(180deg); }
           100% { border-radius: 40% 60% 60% 40% / 40% 40% 60% 60%; transform: rotate(360deg); }
         }
       `}</style>

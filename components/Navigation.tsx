@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ViewState } from '../types';
 import { COLORS } from '../constants';
 import Logo from './Logo';
@@ -22,8 +22,8 @@ const Navigation: React.FC<NavigationProps> = ({
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   
-  const [secretClicks, setSecretClicks] = useState(0);
-  const secretTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Contador simples sem timer de expiração
+  const [clickCount, setClickCount] = useState(0);
 
   if (currentView === ViewState.BACKOFFICE) return null;
 
@@ -55,30 +55,35 @@ const Navigation: React.FC<NavigationProps> = ({
     item !== ViewState.INTERACTIVE
   );
 
-  const triggerSecretStep = () => {
-    const newCount = secretClicks + 1;
-    setSecretClicks(newCount);
-    if (secretTimerRef.current) clearTimeout(secretTimerRef.current);
-    if (newCount >= 5) {
-      onNavigate(ViewState.BACKOFFICE);
-      setSecretClicks(0);
-      setIsMobileMenuOpen(false);
+  const handleLogoClick = () => {
+    // Só conta cliques se estiver na tela de entrada
+    if (currentView === ViewState.LANDING) {
+      const nextCount = clickCount + 1;
+      
+      if (nextCount >= 5) {
+        setClickCount(0); // Reseta o contador
+        const accessKey = prompt("insira a chave de uplink para autorizar o fluxo:");
+        
+        if (accessKey === 'Gengibre26#') {
+          onNavigate(ViewState.BACKOFFICE);
+          setIsMobileMenuOpen(false);
+        } else if (accessKey !== null) {
+          alert("acesso negado. sinal interrompido.");
+        }
+      } else {
+        setClickCount(nextCount);
+      }
     } else {
-      secretTimerRef.current = setTimeout(() => {
-        setSecretClicks(0);
-      }, 2000); 
+      // Se estiver em outra tela, apenas volta para a entrada
+      onNavigate(ViewState.LANDING);
+      setClickCount(0);
     }
   };
 
-  const handleLogoClick = () => {
-    onNavigate(ViewState.LANDING);
+  const handleItemClick = (item: ViewState) => {
+    onNavigate(item);
     setIsMobileMenuOpen(false);
-    triggerSecretStep();
-  };
-
-  const handleMobileNavigate = (view: ViewState) => {
-    onNavigate(view);
-    setIsMobileMenuOpen(false);
+    setClickCount(0); // Reseta contador ao navegar
   };
 
   const activeColor = isDarkMode ? COLORS.matrixGreen : COLORS.deepBlue;
@@ -113,7 +118,8 @@ const Navigation: React.FC<NavigationProps> = ({
           <div className="flex items-center gap-6 flex-shrink-0 z-50">
             <div 
               onClick={handleLogoClick}
-              className="cursor-pointer md:hover:scale-110 transition-transform flex items-center"
+              className="cursor-pointer md:hover:scale-110 transition-transform flex items-center p-2"
+              title={currentView === ViewState.LANDING ? "uplink" : "voltar para entrada"}
             >
               <Logo size={24} color={activeColor} className="md:w-[28px] md:h-[28px]" />
             </div>
@@ -123,10 +129,11 @@ const Navigation: React.FC<NavigationProps> = ({
             <div className="hidden lg:flex gap-10 xl:gap-20 items-center pl-8">
               {items.map((item) => {
                 const isSelected = currentView === item;
+
                 return (
                   <button
                     key={item}
-                    onClick={() => onNavigate(item)}
+                    onClick={() => handleItemClick(item)}
                     className={`
                       font-electrolize text-base tracking-widest pb-1 border-b leading-none whitespace-nowrap flex-shrink-0 lowercase
                       ${isSelected ? 'opacity-100 border-current' : 'opacity-40 border-transparent hover:opacity-100'}
@@ -207,7 +214,7 @@ const Navigation: React.FC<NavigationProps> = ({
                return (
                  <button
                    key={item}
-                   onClick={() => handleMobileNavigate(item)}
+                   onClick={() => handleItemClick(item)}
                    className={`
                      font-electrolize text-3xl lowercase tracking-wider text-left origin-left
                      transition-all duration-700 transform
