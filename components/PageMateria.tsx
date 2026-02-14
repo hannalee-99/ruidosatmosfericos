@@ -74,7 +74,13 @@ const WorkModal: React.FC<{ work: Work; onClose: () => void; onNext: () => void;
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [shareLabel, setShareLabel] = useState('compartilhar');
-  const galleryItems = useMemo(() => [{ type: 'image', url: getWorkCover(work) }, ...(work.gallery || [])].filter(i => i), [work]);
+  const galleryItems = useMemo(() => {
+    const items: (string | GalleryItem)[] = [
+      { type: 'image' as const, url: getWorkCover(work) },
+      ...(work.gallery || [])
+    ];
+    return items.filter(i => i);
+  }, [work]);
 
   const handleShare = () => {
       const shareParam = work.slug || work.id;
@@ -162,7 +168,6 @@ const PageMateria: React.FC<{ isDarkMode?: boolean }> = ({ isDarkMode = true }) 
     storage.save('works', { ...work, views: (work.views || 0) + 1 });
     
     const shareParam = work.slug || work.id;
-    // Tratamento seguro para pushState (evita erros em ambientes blob:)
     try {
       if (window.location.protocol !== 'blob:') {
         window.history.pushState({}, '', `${window.location.pathname}?v=${shareParam}`);
@@ -174,7 +179,6 @@ const PageMateria: React.FC<{ isDarkMode?: boolean }> = ({ isDarkMode = true }) 
 
   const handleCloseModal = () => {
       setSelectedWork(null);
-      // Tratamento seguro para pushState
       try {
         if (window.location.protocol !== 'blob:') {
           window.history.pushState({}, '', window.location.pathname);

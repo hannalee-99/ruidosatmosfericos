@@ -59,7 +59,7 @@ const LinkDialog: React.FC<{
   onClose: () => void;
   onConfirm: (text: string, url: string) => void;
   initialText: string;
-  positionRef: React.RefObject<HTMLButtonElement>;
+  positionRef: React.RefObject<HTMLButtonElement | null>;
 }> = ({ isOpen, onClose, onConfirm, initialText, positionRef }) => {
   const [text, setText] = useState(initialText);
   const [url, setUrl] = useState('');
@@ -103,7 +103,7 @@ const EmbedDialog: React.FC<{
   isOpen: boolean;
   onClose: () => void;
   onConfirm: (url: string) => void;
-  positionRef: React.RefObject<HTMLButtonElement>;
+  positionRef: React.RefObject<HTMLButtonElement | null>;
 }> = ({ isOpen, onClose, onConfirm, positionRef }) => {
   const [url, setUrl] = useState('');
   const [coords, setCoords] = useState({ top: 0, left: 0 });
@@ -290,8 +290,8 @@ const PageBackoffice: React.FC<PageBackofficeProps> = ({ onLogout }) => {
   const [activeBlockId, setActiveBlockId] = useState<string | null>(null); 
   const [showLinkDialog, setShowLinkDialog] = useState(false);
   const [showEmbedDialog, setShowEmbedDialog] = useState(false);
-  const linkButtonRef = useRef<HTMLButtonElement>(null);
-  const embedButtonRef = useRef<HTMLButtonElement>(null);
+  const linkButtonRef = useRef<HTMLButtonElement | null>(null);
+  const embedButtonRef = useRef<HTMLButtonElement | null>(null);
   const [showStyleMenu, setShowStyleMenu] = useState(false);
   const styleButtonRef = useRef<HTMLButtonElement>(null);
   const [saveStatus, setSaveStatus] = useState<string | null>(null);

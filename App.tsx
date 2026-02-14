@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ViewState } from './types';
 import NoiseBackground from './components/NoiseBackground';
 import Splash from './components/Splash';
@@ -17,7 +17,6 @@ import ObserverEffect from './components/ObserverEffect';
 import GenerativeFavicon from './components/GenerativeFavicon';
 import Footer from './components/Footer';
 import { storage } from './components/storage';
-import { DEFAULT_IMAGE } from './constants';
 import { INITIAL_DATA } from './initialData';
 
 const App: React.FC = () => {
