@@ -338,7 +338,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onNavigate, isDarkMode }) => 
                                         {sinal.title}
                                     </span>
                                 </div>
-                                <span className="font-vt text-[10px] opacity-30">></span>
+                                <span className="font-vt text-[10px] opacity-30">&gt;</span>
                             </div>
                         ))}
                         
