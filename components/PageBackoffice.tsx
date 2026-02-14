@@ -172,6 +172,13 @@ export const INITIAL_DATA: {
     } finally { setIsSaving(false); }
   };
 
+  const handleDeleteWork = async (id: string) => {
+    if (!confirm('deseja eliminar esta matéria permanentemente?')) return;
+    await storage.delete('works', id);
+    setEditingWork(null);
+    fetchData();
+  };
+
   const handleSaveProfile = async (e: React.FormEvent) => {
     if (e) e.preventDefault();
     setIsSaving(true);
@@ -261,6 +268,10 @@ export const INITIAL_DATA: {
               </>
             ) : (
               <form onSubmit={handleSaveWork} className="bg-white/5 p-8 rounded-xl border border-white/10 space-y-6 animate-in slide-in-from-bottom-4">
+                <div className="flex justify-between items-center">
+                   <span className="text-[10px] text-[var(--accent)] tracking-widest uppercase">edição de matéria</span>
+                   <button type="button" onClick={() => handleDeleteWork(editingWork.id)} className="text-[10px] text-red-500 hover:underline">excluir_obra()</button>
+                </div>
                 <input type="text" value={editingWork.title} onChange={e => setEditingWork({...editingWork, title: e.target.value})} className="w-full bg-black border border-white/10 p-4 rounded-md outline-none text-xl focus:border-[var(--accent)]" placeholder="título" />
                 <input type="text" value={editingWork.imageUrl} onChange={e => setEditingWork({...editingWork, imageUrl: e.target.value})} className="w-full bg-black border border-white/10 p-4 rounded-md outline-none text-sm focus:border-[var(--accent)]" placeholder="url da imagem" />
                 <div className="flex gap-4">
@@ -301,7 +312,7 @@ export const INITIAL_DATA: {
                        <select value={editingSignal.status} onChange={e => setEditingSignal({...editingSignal, status: e.target.value as any})} className="bg-black border border-white/20 rounded px-2 py-1 text-[10px] outline-none">
                           <option value="rascunho">rascunho</option><option value="publicado">publicado</option>
                        </select>
-                       <button type="button" onClick={() => {if(confirm('apagar sinal?')) { storage.delete('signals', editingSignal.id); setEditingSignal(null); fetchData(); }}} className="text-[10px] text-red-500">excluir()</button>
+                       <button type="button" onClick={() => {if(confirm('apagar sinal?')) { storage.delete('signals', editingSignal.id); setEditingSignal(null); fetchData(); }}} className="text-[10px] text-red-500 hover:underline">excluir()</button>
                     </div>
                   </div>
 
