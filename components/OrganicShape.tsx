@@ -34,7 +34,10 @@ const OrganicShape: React.FC<OrganicShapeProps> = memo(({
           config: { imageConfig: { aspectRatio: "1:1" } }
         });
         if (!isMounted) return;
-        const imgPart = response.candidates?.[0]?.content?.parts.find(p => p.inlineData);
+        
+        // Correção do erro TS2532: Adicionado ?. antes de .find()
+        const imgPart = response.candidates?.[0]?.content?.parts?.find(p => p.inlineData);
+        
         if (imgPart?.inlineData) {
           setTextureUrl(`data:image/png;base64,${imgPart.inlineData.data}`);
         }
