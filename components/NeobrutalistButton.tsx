@@ -7,13 +7,17 @@ interface NeobrutalistButtonProps {
   onClick?: () => void;
   className?: string;
   variant?: 'white' | 'matrix';
+  // Fix: Adicionado suporte para o atributo type nativo do botão (submit, reset, button)
+  type?: 'button' | 'submit' | 'reset';
 }
 
 const NeobrutalistButton: React.FC<NeobrutalistButtonProps> = ({ 
   children, 
   onClick, 
   className = '',
-  variant = 'white'
+  variant = 'white',
+  // Fix: Valor padrão definido como 'button' para compatibilidade e comportamento esperado
+  type = 'button'
 }) => {
   // Uso de variáveis CSS para adaptação automática ao tema
   const bg = variant === 'matrix' ? 'var(--accent)' : COLORS.white;
@@ -21,7 +25,7 @@ const NeobrutalistButton: React.FC<NeobrutalistButtonProps> = ({
 
   return (
     <button
-      type="button"
+      type={type}
       onClick={onClick}
       className={`
         relative px-8 py-3 
