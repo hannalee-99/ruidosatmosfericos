@@ -2,6 +2,7 @@
 import { Work, Signal, AboutData, ConnectConfig, SensorData } from './types';
 
 export const INITIAL_DATA: {
+  lastUpdated: number;
   works: Work[];
   signals: Signal[];
   about: {
@@ -10,22 +11,8 @@ export const INITIAL_DATA: {
     sensor_metrics: SensorData | null;
   };
 } = {
+  "lastUpdated": 1771101643131,
   "works": [
-    {
-      "title": "ruídos de perto",
-      "year": "2024",
-      "month": "11",
-      "date": "2024-12-01",
-      "technique": "acrílica sobre painel",
-      "dimensions": "50x50 cm",
-      "imageUrl": "https://64.media.tumblr.com/2469fc83feaecaf0b7a97fa55f6793d6/670f92e2b0934e32-bb/s2048x3072/3b1cf9f39410af90a8d0607d572f83c0024b2472.jpg",
-      "isFeatured": true,
-      "id": "seed-work-1",
-      "gallery": [],
-      "status": "disponível",
-      "isVisible": true,
-      "views": 0
-    },
     {
       "title": "essência na ionosfera",
       "year": "2025",
@@ -36,6 +23,21 @@ export const INITIAL_DATA: {
       "imageUrl": "https://64.media.tumblr.com/b66d6bd4a439ffdcc801f7dab1e05667/eed33f511f0fbd92-86/s2048x3072/d7031cbe671309845c127778c351178555843cc5.jpg",
       "isFeatured": true,
       "id": "seed-work-2",
+      "gallery": [],
+      "status": "disponível",
+      "isVisible": true,
+      "views": 0
+    },
+    {
+      "title": "ruídos de perto",
+      "year": "2024",
+      "month": "11",
+      "date": "2024-12-01",
+      "technique": "acrílica sobre painel",
+      "dimensions": "50x50 cm",
+      "imageUrl": "https://64.media.tumblr.com/2469fc83feaecaf0b7a97fa55f6793d6/670f92e2b0934e32-bb/s2048x3072/3b1cf9f39410af90a8d0607d572f83c0024b2472.jpg",
+      "isFeatured": true,
+      "id": "seed-work-1",
       "gallery": [],
       "status": "disponível",
       "isVisible": true,
@@ -58,6 +60,33 @@ export const INITIAL_DATA: {
     }
   ],
   "signals": [
+    {
+      "id": "signal-1771101541489",
+      "slug": "esse-e-um-teste",
+      "title": "esse é um teste",
+      "subtitle": "",
+      "date": "14/02/2026",
+      "status": "rascunho",
+      "views": 0,
+      "blocks": [
+        {
+          "id": "b-1771101541489",
+          "type": "text",
+          "content": "## tomara que dê certo dessa vez!\n\n# quero publicar *logoooo*\nlalalalla\n**lalalalala**\nuhuuuuuu\n\n\n"
+        },
+        {
+          "id": "b-1771101598236-5nyk3",
+          "type": "image",
+          "content": "https://64.media.tumblr.com/0274354bfed2d35de4c9a7d56c62bbe3/44698b6eb1de685d-2b/s2048x3072/52bbac4571b22c3c68f7233f6269567c6c51acc1.png",
+          "caption": "eu"
+        },
+        {
+          "id": "b-1771101605541-thnrj",
+          "type": "embed",
+          "content": "<iframe data-testid=\"embed-iframe\" style=\"border-radius:12px\" src=\"https://open.spotify.com/embed/track/02XvknCqa2kPcOLdqD9h69?utm_source=generator&theme=0\" width=\"100%\" height=\"352\" frameBorder=\"0\" allowfullscreen=\"\" allow=\"autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture\" loading=\"lazy\"></iframe>"
+        }
+      ]
+    },
     {
       "id": "signal-macro-vision-v2",
       "title": "nunca esquecer",
@@ -84,12 +113,13 @@ export const INITIAL_DATA: {
   "about": {
     "profile": {
       "id": "profile",
-      "text": "não sou uma imagem única. sou uma coleção de fatias temporais, organizadas por uma estrutura orgânica que cresce sobre o digital.\n\nassim como as raízes verdes buscam caminho no azul profundo, minha consciência navega entre o ruído e a forma, costurando pedaços desconexos em uma identidade provisória.",
-      "imageUrl": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=1000&auto=format&fit=crop"
+      "text": "fluxo no ar",
+      "imageUrl": "https://64.media.tumblr.com/0274354bfed2d35de4c9a7d56c62bbe3/44698b6eb1de685d-2b/s2048x3072/52bbac4571b22c3c68f7233f6269567c6c51acc1.png"
     },
     "connect_config": {
       "id": "connect_config",
-      "email": "contato@ruidos.atmosfericos",
+      "email": "oi.hannalee@gmail.com",
+      "sobreText": "ruídos atmosféricos // v3.1 // sistema de gestão existencial",
       "links": [
         {
           "id": "lnk1",

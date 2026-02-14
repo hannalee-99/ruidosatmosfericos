@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { storage } from './storage';
+import { storage } from '../lib/storage';
 import { SensorData } from '../types';
 
 const PageSensor: React.FC = () => {
@@ -83,7 +83,6 @@ const PageSensor: React.FC = () => {
            presence > 0.3 ? "interferência detectada." : ""}
         </div>
 
-        {/* Botão de Registro de Métrica */}
         <div className="opacity-100 translate-y-0 transition-all duration-500">
           <button
             onClick={handleSync}

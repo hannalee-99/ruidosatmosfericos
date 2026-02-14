@@ -1,3 +1,4 @@
+
 export enum ViewState {
   LANDING = 'entrada',
   MATERIA = 'matéria',
@@ -48,6 +49,7 @@ export interface SignalBlock {
 
 export interface Signal {
   id: string;
+  slug?: string;
   title: string;
   subtitle?: string;
   date: string;
@@ -71,6 +73,7 @@ export interface LinkItem {
 export interface ConnectConfig {
   id: string; // 'connect_config'
   email: string;
+  sobreText?: string;
   links: LinkItem[];
 }
 

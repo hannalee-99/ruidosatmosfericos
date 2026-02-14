@@ -5,14 +5,16 @@ interface LazyImageProps {
   src: string;
   alt: string;
   className?: string;
-  objectFit?: 'cover' | 'contain';
+  objectFit?: 'cover' | 'contain' | 'none';
+  autoHeight?: boolean;
 }
 
 const LazyImage: React.FC<LazyImageProps> = ({ 
   src, 
   alt, 
   className = "",
-  objectFit = 'cover' 
+  objectFit = 'cover',
+  autoHeight = false
 }) => {
   const [isInView, setIsInView] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
@@ -20,7 +22,6 @@ const LazyImage: React.FC<LazyImageProps> = ({
   const imgRef = useRef<HTMLImageElement>(null);
 
   useEffect(() => {
-    // Verificação de segurança para imagens já em cache
     if (imgRef.current && imgRef.current.complete) {
       setIsLoaded(true);
     }
@@ -30,7 +31,6 @@ const LazyImage: React.FC<LazyImageProps> = ({
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
             setIsInView(true);
-            // Uma vez visível, paramos de observar este elemento específico
             if (containerRef.current) {
               observer.unobserve(containerRef.current);
             }
@@ -39,7 +39,7 @@ const LazyImage: React.FC<LazyImageProps> = ({
         });
       },
       { 
-        rootMargin: '100px', // Inicia o carregamento 100px antes de entrar na tela
+        rootMargin: '200px', 
         threshold: 0.01 
       }
     );
@@ -60,17 +60,18 @@ const LazyImage: React.FC<LazyImageProps> = ({
   return (
     <div 
       ref={containerRef}
-      className={`relative w-full h-full overflow-hidden bg-[#050505] [.light-mode_&]:bg-neutral-200/50 ${className}`}
+      className={`relative w-full overflow-hidden ${autoHeight ? 'h-auto' : 'h-full'} ${className}`}
     >
-      {/* Placeholder Atmosférico (Fade Out) */}
-      <div 
-        className={`absolute inset-0 z-10 pointer-events-none transition-opacity duration-1000 ease-out ${isLoaded ? 'opacity-0' : 'opacity-100'}`}
-      >
-        <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 mix-blend-overlay"></div>
-        <div className="w-full h-full bg-gradient-to-br from-neutral-900 via-neutral-800 to-black [.light-mode_&]:from-neutral-100 [.light-mode_&]:via-neutral-200 [.light-mode_&]:to-white animate-pulse"></div>
-      </div>
+      {/* Placeholder Minimalista */}
+      {!isLoaded && (
+        <div 
+          className="absolute inset-0 z-10 pointer-events-none transition-opacity duration-1000 ease-out flex items-center justify-center opacity-10"
+        >
+          <div className="w-4 h-4 rounded-full border border-current animate-ping"></div>
+        </div>
+      )}
 
-      {/* Imagem Real - Opacity 100% e Sem Filtros */}
+      {/* Imagem Real */}
       {isInView && (
         <img
           ref={imgRef}
@@ -78,12 +79,11 @@ const LazyImage: React.FC<LazyImageProps> = ({
           alt={alt}
           onLoad={handleImageLoad}
           className={`
-            w-full h-full 
-            transition-all duration-1000 ease-[cubic-bezier(0.22,1,0.36,1)]
-            ${isLoaded ? 'opacity-100 scale-100 blur-0 grayscale-0' : 'opacity-0 scale-105 blur-lg grayscale'}
-            group-hover:scale-105
+            w-full transition-all duration-1000 ease-[cubic-bezier(0.22,1,0.36,1)]
+            ${autoHeight ? 'h-auto block' : 'h-full object-cover'}
+            ${isLoaded ? 'opacity-100 blur-0 scale-100' : 'opacity-0 blur-lg scale-95'}
           `}
-          style={{ objectFit }}
+          style={!autoHeight ? { objectFit } : {}}
         />
       )}
     </div>

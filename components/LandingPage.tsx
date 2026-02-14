@@ -2,8 +2,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { COLORS, DEFAULT_IMAGE } from '../constants';
 import { ViewState, Work } from '../types';
-import Logo from './Logo';
-import { storage } from './storage';
+import { storage } from '../lib/storage';
 import LazyImage from './LazyImage';
 
 // Componente para efeito de escrita suave
@@ -149,19 +148,24 @@ const LandingPage: React.FC<LandingPageProps> = ({ onNavigate, isDarkMode }) => 
 
   useEffect(() => {
     const fetchData = async () => {
-      const works: Work[] = await storage.getAll('works');
-      const visibleWorks = works.filter(w => w.isVisible);
-      const featured = visibleWorks.filter(w => w.isFeatured);
-      
-      if (featured.length > 0) {
-        setFeaturedWorks(featured.slice(0, 2));
-      } else {
-        setFeaturedWorks(visibleWorks.sort((a,b) => Number(b.id) - Number(a.id)).slice(0, 2));
-      }
+      try {
+        const works: Work[] = await storage.getAll('works');
+        const visibleWorks = works.filter(w => w.isVisible);
+        const featured = visibleWorks.filter(w => w.isFeatured);
+        
+        // RESTRITO A 2 OBRAS NA LANDING PAGE PARA FOCO VISUAL
+        if (featured.length > 0) {
+          setFeaturedWorks(featured.slice(0, 2));
+        } else {
+          setFeaturedWorks(visibleWorks.sort((a,b) => Number(b.id) - Number(a.id)).slice(0, 2));
+        }
 
-      const signals = await storage.getAll('signals');
-      const sortedSignals = signals.filter((s: any) => s.status === 'publicado').sort((a,b) => Number(b.id) - Number(a.id));
-      setLatestSignals(sortedSignals);
+        const signals = await storage.getAll('signals');
+        const sortedSignals = signals.filter((s: any) => s.status === 'publicado').sort((a,b) => Number(b.id) - Number(a.id));
+        setLatestSignals(sortedSignals);
+      } catch (e) {
+        console.error("Erro ao carregar dados da Landing", e);
+      }
       
       setTimeout(() => setIsVisible(true), 150);
     };
@@ -169,7 +173,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onNavigate, isDarkMode }) => 
     fetchData();
   }, []);
 
-  const manifestoText = "opero em \ndesconformidade controlada\nresistindo à (des)ordem \ncriando padrões temporários\no modo dominante de existir \ngera angústia por natureza\nnos limita a poucos sentidos\nenquanto transitamos \npela impermanência";
+  const manifestoText = "opero em \ndesconformidade controlada\nresistindo à (des)ordem \ncriando padrões temporários\o modo dominante de existir \ngera angústia por natureza\nos limita a poucos sentidos\nenquanto transitamos \npela impermanência";
 
   const transitionBase = "transition-all duration-[1200ms] ease-[cubic-bezier(0.2,0.8,0.2,1)]";
   const headerState = isVisible ? 'opacity-100 translate-y-0 blur-0' : 'opacity-0 -translate-y-8 blur-sm';
@@ -187,14 +191,13 @@ const LandingPage: React.FC<LandingPageProps> = ({ onNavigate, isDarkMode }) => 
           <div className="flex flex-col md:flex-row items-start md:items-end justify-between">
             <div className="flex flex-col gap-4 w-full">
               <h1 
-                className={`font-nabla text-4xl sm:text-6xl md:text-7xl lg:text-8xl lowercase md:leading-[0.8] -ml-1 whitespace-nowrap overflow-visible ${
+                className={`font-nabla text-6xl sm:text-7xl md:text-7xl lg:text-8xl lowercase md:leading-[0.8] -ml-1 whitespace-nowrap overflow-visible ${
                   isDarkMode 
                     ? 'mix-blend-screen' 
                     : 'drop-shadow-[3px_3px_0px_rgba(0,0,0,0.25)] opacity-100'
                 }`} 
                 style={{ fontPalette: isDarkMode ? '--matrix' : '--matrix-blue' }}
               >
-                {/* Mobile: Stacked but big - text-5xl is safe for 'atmosféricos' */}
                 <div className="flex flex-col md:hidden leading-[0.8] w-full">
                     <span>
                       <Typewriter 
@@ -215,7 +218,6 @@ const LandingPage: React.FC<LandingPageProps> = ({ onNavigate, isDarkMode }) => 
                       />
                     </span>
                 </div>
-                {/* Desktop: One line */}
                 <div className="hidden md:block">
                   <Typewriter 
                     text="ruídos atmosféricos" 
@@ -245,70 +247,64 @@ const LandingPage: React.FC<LandingPageProps> = ({ onNavigate, isDarkMode }) => 
           </div>
         </header>
 
-        {/* GRID LAYOUT: Obras + Coluna Lateral (Sinais e Manifesto) */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 items-start">
+        {/* MASONRY GRID PRINCIPAL DA LANDING */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           
-          {/* OBRAS EM DESTAQUE (Ocupam slots individuais) */}
-          {featuredWorks.map((work, index) => {
-             const isGradient = work.imageUrl.includes('gradient');
-             const delay = 100 + (index * 150); 
-             
-             return (
-               <ScrollReveal
-                 key={work.id}
-                 delay={delay}
-                 onClick={() => onNavigate(ViewState.MATERIA)}
-                 className="relative group border border-transparent cursor-pointer rounded-3xl flex flex-col p-6 bg-white/0 hover:bg-white/[0.01] [.light-mode_&]:hover:bg-black/[0.01] transition-colors duration-500"
-               >
-                 {work.isFeatured && (
-                   <div 
-                    className="absolute top-8 right-8 z-20 text-[var(--accent)] opacity-80 group-hover:opacity-100 transition-opacity drop-shadow-sm" 
-                    title="destaque"
-                   >
-                      <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor">
-                          <circle cx="12" cy="12" r="6" />
-                      </svg>
-                   </div>
-                 )}
-
-                 <div className="w-full aspect-[3/4] relative overflow-hidden rounded-2xl mb-6 bg-[#0a0a0a] [.light-mode_&]:bg-neutral-200">
-                    {isGradient ? (
-                       <div className="w-full h-full opacity-100 group-hover:scale-105 transition-transform duration-1000" style={{ background: work.imageUrl }}></div>
-                    ) : (
-                       <LazyImage
-                        src={formatImageUrl(work.imageUrl)}
-                        alt={work.title}
-                        className="transition-transform duration-1000 group-hover:scale-[1.02]"
-                        objectFit="cover" 
-                       />
-                    )}
-                 </div>
+          {/* AREA DE OBRAS (MASONRY PAREDE DE QUADROS) - RESTRITO A 2 OBRAS */}
+          <div className="lg:col-span-8">
+            <div className="columns-1 md:columns-2 gap-8 space-y-8">
+              {featuredWorks.map((work, index) => {
+                 const isGradient = work.imageUrl.includes('gradient');
+                 const delay = 100 + (index * 150); 
                  
-                 <div className="flex flex-col items-start space-y-2 px-1 relative z-10">
-                    <h3 
-                      className={`font-electrolize text-3xl md:text-4xl opacity-90 group-hover:opacity-100 transition-opacity duration-300 leading-none break-words w-full`}
-                    >
-                      {work.title}
-                    </h3>
-                    
-                    <div className="mt-2 flex items-center gap-2 font-mono text-[10px] text-[var(--accent)] tracking-widest opacity-60 group-hover:opacity-100 transition-opacity">
-                      <span>ver obra</span>
-                      <span>→</span>
-                    </div>
-                 </div>
-               </ScrollReveal>
-             );
-          })}
+                 return (
+                   <ScrollReveal
+                     key={work.id}
+                     delay={delay}
+                     onClick={() => onNavigate(ViewState.MATERIA)}
+                     className="break-inside-avoid relative group cursor-pointer flex flex-col bg-white/0 hover:bg-white/[0.01] [.light-mode_&]:hover:bg-black/[0.01] transition-colors duration-500 mb-8"
+                   >
+                     <div className="w-full relative overflow-hidden rounded-2xl mb-4 bg-[#0a0a0a] [.light-mode_&]:bg-neutral-200 border border-white/5 [.light-mode_&]:border-black/5">
+                        {isGradient ? (
+                           <div className="w-full h-32 opacity-100 md:group-hover:scale-105 transition-transform duration-1000" style={{ background: work.imageUrl }}></div>
+                        ) : (
+                           <LazyImage
+                            src={formatImageUrl(work.imageUrl)}
+                            alt={work.title}
+                            className="transition-transform duration-1000 md:group-hover:scale-[1.02]"
+                            autoHeight={true} 
+                           />
+                        )}
+                        {work.isFeatured && (
+                           <div className="absolute top-4 right-4 z-20 text-[var(--accent)] opacity-60 group-hover:opacity-100 transition-opacity">
+                              <svg width="8" height="8" viewBox="0 0 24 24" fill="currentColor">
+                                  <circle cx="12" cy="12" r="6" />
+                              </svg>
+                           </div>
+                        )}
+                     </div>
+                     
+                     <div className="flex flex-col items-start px-2 relative z-10">
+                        <h3 className="font-electrolize text-2xl md:text-3xl opacity-90 group-hover:opacity-100 transition-opacity duration-300 leading-tight lowercase">
+                          {work.title}
+                        </h3>
+                        <div className="mt-2 flex items-center gap-2 font-mono text-[9px] text-[var(--accent)] tracking-widest opacity-40 group-hover:opacity-100 transition-opacity">
+                          <span>{work.technique}</span>
+                          <span>///</span>
+                          <span>ver</span>
+                        </div>
+                     </div>
+                   </ScrollReveal>
+                 );
+              })}
+            </div>
+          </div>
 
-          {/* COLUNA LATERAL (Desktop: Col 3 | Tablet: Row 2, Full Width) */}
-          {/* Agrupa Sinais e Manifesto para garantir ordem e tamanho compacto */}
-          <div className="flex flex-col gap-6 w-full md:col-span-2 lg:col-span-1 justify-start">
-             
-             {/* SINAIS (BLOG) - Compacto */}
+          {/* COLUNA LATERAL (SINAIS + MANIFESTO) */}
+          <div className="lg:col-span-4 flex flex-col gap-8">
              <ScrollReveal
                 delay={300}
                 className="relative border border-white/5 p-6 group flex flex-col rounded-3xl bg-black/10 [.light-mode_&]:bg-white/50 [.light-mode_&]:border-black/5"
-                // Garante que o container só cresça o necessário
                 style={{ height: 'fit-content' }} 
              >
                 <div 
@@ -360,7 +356,6 @@ const LandingPage: React.FC<LandingPageProps> = ({ onNavigate, isDarkMode }) => 
                 </div>
              </ScrollReveal>
 
-             {/* MANIFESTO - Logo abaixo */}
              <ScrollReveal
                 delay={400}
                 onClick={() => onNavigate(ViewState.MANIFESTO)}
@@ -380,7 +375,6 @@ const LandingPage: React.FC<LandingPageProps> = ({ onNavigate, isDarkMode }) => 
                 </div>
              </ScrollReveal>
           </div>
-
         </div>
       </div>
     </div>

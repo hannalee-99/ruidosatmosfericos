@@ -1,7 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
 import { COLORS } from '../constants';
-import OrganicShape from './OrganicShape';
 import NeobrutalistButton from './NeobrutalistButton';
 
 interface Fragment {
@@ -43,12 +42,9 @@ const FieldView: React.FC = () => {
   }, []);
 
   return (
-    <div className="relative w-full h-screen overflow-hidden text-white">
-      {/* Organic Pulsing Background Layers */}
-      <OrganicShape color={COLORS.referenceBlue} size={600} top="-10%" left="-5%" delay="0s" />
-      <OrganicShape color={COLORS.referenceYellow} size={500} top="40%" left="60%" delay="4s" opacity={0.2} />
-      <OrganicShape color={COLORS.referenceMagenta} size={700} top="60%" left="-10%" delay="8s" opacity={0.15} />
-      <OrganicShape color={COLORS.matrixGreen} size={400} top="10%" left="70%" delay="12s" opacity={0.1} />
+    <div className="relative w-full h-screen overflow-hidden text-white bg-black">
+      {/* Background estático simplificado para máxima performance */}
+      <div className="absolute inset-0 opacity-[0.05] pointer-events-none bg-[url('https://grainy-gradients.vercel.app/noise.svg')]"></div>
 
       <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
         <div className="max-w-2xl text-center space-y-8 px-6">
@@ -84,9 +80,6 @@ const FieldView: React.FC = () => {
           Reiniciar Campo
         </NeobrutalistButton>
       </div>
-
-      {/* Noise Grain Overlays */}
-      <div className="fixed inset-0 pointer-events-none opacity-[0.03] bg-[url('https://grainy-gradients.vercel.app/noise.svg')]"></div>
 
       <style>{`
         @keyframes glitch-entry {

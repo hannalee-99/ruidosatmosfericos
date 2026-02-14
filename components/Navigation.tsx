@@ -113,7 +113,7 @@ const Navigation: React.FC<NavigationProps> = ({
           <div className="flex items-center gap-6 flex-shrink-0 z-50">
             <div 
               onClick={handleLogoClick}
-              className="cursor-pointer hover:scale-110 transition-transform flex items-center"
+              className="cursor-pointer md:hover:scale-110 transition-transform flex items-center"
             >
               <Logo size={24} color={activeColor} className="md:w-[28px] md:h-[28px]" />
             </div>

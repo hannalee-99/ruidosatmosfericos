@@ -1,5 +1,5 @@
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, memo } from 'react';
 import { GoogleGenAI } from "@google/genai";
 
 interface OrganicShapeProps {
@@ -11,7 +11,7 @@ interface OrganicShapeProps {
   opacity?: number;
 }
 
-const OrganicShape: React.FC<OrganicShapeProps> = ({ 
+const OrganicShape: React.FC<OrganicShapeProps> = memo(({ 
   color, 
   size, 
   top, 
@@ -20,102 +20,75 @@ const OrganicShape: React.FC<OrganicShapeProps> = ({
   opacity = 0.8
 }) => {
   const [textureUrl, setTextureUrl] = useState<string | null>(null);
-  const idSuffix = delay.replace(/[^a-z0-9]/gi, '') + Math.random().toString(36).substr(2, 5);
-  const filterId = `lava-filter-${idSuffix}`;
-  const patternId = `lava-pattern-${idSuffix}`;
+  const filterId = `lava-filter-${delay.replace(/[^a-z0-9]/gi, '')}`;
 
-  // Hook para textura generativa (opcional, mantendo a lógica existente)
   useEffect(() => {
     let isMounted = true;
     const generateTexture = async () => {
+      if (!process.env.API_KEY) return;
       try {
-        if (!process.env.API_KEY) return;
         const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-        const prompt = `Abstract liquid texture, lava lamp oil close up. Color: ${color}. Smooth gradients, minimal noise.`;
         const response = await ai.models.generateContent({
           model: 'gemini-2.5-flash-image',
-          contents: { parts: [{ text: prompt }] },
+          contents: { parts: [{ text: `abstract fluid texture, lava lamp, color ${color}, high contrast` }] },
           config: { imageConfig: { aspectRatio: "1:1" } }
         });
         if (!isMounted) return;
-        const parts = response.candidates?.[0]?.content?.parts;
-        if (parts) {
-            for (const part of parts) {
-                if (part.inlineData) {
-                    setTextureUrl(`data:image/png;base64,${part.inlineData.data}`);
-                    break;
-                }
-            }
+        const imgPart = response.candidates?.[0]?.content?.parts.find(p => p.inlineData);
+        if (imgPart?.inlineData) {
+          setTextureUrl(`data:image/png;base64,${imgPart.inlineData.data}`);
         }
-      } catch (e) { console.warn("Texture skipped:", e); }
+      } catch (e) {
+        console.warn("Organic texture failed", e);
+      }
     };
-    const timeout = setTimeout(generateTexture, Math.random() * 5000);
-    return () => { isMounted = false; clearTimeout(timeout); };
+    generateTexture();
+    return () => { isMounted = false; };
   }, [color]);
 
   return (
     <div 
-      className="absolute pointer-events-none mix-blend-screen"
+      className="absolute pointer-events-none mix-blend-screen will-change-transform"
       style={{
-        top,
-        left,
-        width: `${size}px`,
-        height: `${size}px`,
-        opacity: opacity,
-        // Animação de flutuação muito mais lenta para efeito "Lava Lamp"
-        animation: `lava-float 30s ease-in-out infinite alternate ${delay}`,
-        filter: `url(#${filterId}) blur(20px)`,
-        willChange: 'transform'
+        top, left,
+        width: `${size}px`, height: `${size}px`,
+        opacity,
+        animation: `lava-float 40s ease-in-out infinite alternate ${delay}`,
+        filter: `url(#${filterId}) blur(15px)`,
       }}
     >
-      <svg viewBox="0 0 500 500" xmlns="http://www.w3.org/2000/svg" className="w-full h-full overflow-visible">
+      <svg viewBox="0 0 500 500" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
         <defs>
-          <filter id={filterId} x="-50%" y="-50%" width="200%" height="200%">
-            {/* 1. Turbulência Suave e Lenta para deformação líquida */}
-            <feTurbulence type="turbulence" baseFrequency="0.008" numOctaves="2" result="turbulence">
-               <animate attributeName="baseFrequency" values="0.008;0.004;0.008" dur="40s" repeatCount="indefinite"/>
-            </feTurbulence>
-            <feDisplacementMap in="SourceGraphic" in2="turbulence" scale="120" result="distorted" />
-            
-            {/* 2. Gooey Effect (Blur + Contrast) para bordas viscosas */}
-            <feGaussianBlur in="distorted" stdDeviation="15" result="blur" />
-            <feColorMatrix 
-              in="blur" 
-              mode="matrix" 
-              values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 20 -8" 
-              result="goo" 
-            />
-            <feComposite in="goo" in2="goo" operator="atop"/>
+          <filter id={filterId}>
+            <feTurbulence type="turbulence" baseFrequency="0.01" numOctaves="1" result="noise" />
+            <feDisplacementMap in="SourceGraphic" in2="noise" scale="80" />
           </filter>
-
-          {textureUrl && (
-            <pattern id={patternId} patternUnits="userSpaceOnUse" width="500" height="500">
-               <image href={textureUrl} x="0" y="0" width="500" height="500" preserveAspectRatio="none" />
-            </pattern>
-          )}
         </defs>
-
-        {/* Forma Base: Um círculo que se deforma organicamente via CSS + Filtro SVG */}
-        <g style={{ animation: `lava-morph 45s linear infinite ${delay}` }}>
-          <circle cx="250" cy="250" r="180" fill={textureUrl ? `url(#${patternId})` : color} />
-        </g>
+        <circle 
+          cx="250" cy="250" r="180" 
+          fill={color}
+          style={{ 
+            animation: `lava-morph 30s linear infinite ${delay}`,
+            transformOrigin: 'center'
+          }} 
+        />
+        {textureUrl && (
+          <image href={textureUrl} x="70" y="70" width="360" height="360" opacity="0.4" clipPath="circle(180px at 180px 180px)" />
+        )}
       </svg>
       
       <style>{`
         @keyframes lava-float {
           0% { transform: translate(0, 0) scale(1); }
-          50% { transform: translate(40px, -60px) scale(1.1); }
-          100% { transform: translate(-30px, 40px) scale(0.95); }
+          100% { transform: translate(20px, -30px) scale(1.05); }
         }
         @keyframes lava-morph {
-          0% { transform: rotate(0deg) scale(1, 1); transform-origin: center; }
-          33% { transform: rotate(120deg) scale(1.1, 0.9); transform-origin: center; }
-          66% { transform: rotate(240deg) scale(0.95, 1.05); transform-origin: center; }
-          100% { transform: rotate(360deg) scale(1, 1); transform-origin: center; }
+          0% { border-radius: 40% 60% 60% 40% / 40% 40% 60% 60%; transform: rotate(0deg); }
+          100% { border-radius: 40% 60% 60% 40% / 40% 40% 60% 60%; transform: rotate(360deg); }
         }
       `}</style>
     </div>
   );
-};
+});
 
 export default OrganicShape;

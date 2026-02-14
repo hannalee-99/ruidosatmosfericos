@@ -7,6 +7,17 @@
     <title>ruídos atmosféricos</title>
     <meta name="description" content="sistemas vivos operam em desequilíbrio controlado. o vazio não é ausência, é condição de forma.">
     
+    <!-- Open Graph / Social Media -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="ruídos atmosféricos">
+    <meta property="og:description" content="espere nada, aprecie tudo. registros de presença digital e física.">
+    <meta property="og:image" content="https://images.unsplash.com/photo-1533105079780-92b9be482077?q=80&w=2574&auto=format&fit=crop">
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="ruídos atmosféricos">
+    <meta name="twitter:description" content="espere nada, aprecie tudo.">
+    
     <!-- Favicon SVG Generativo -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.5'/%3E%3CfeDisplacementMap in='SourceGraphic' scale='10'/%3E%3C/filter%3E%3Ccircle cx='50' cy='50' r='40' fill='%239ff85d' filter='url(%23n)'/%3E%3Ccircle cx='50' cy='50' r='20' fill='black'/%3E%3C/svg%3E">
 
@@ -82,6 +93,13 @@
       body { -ms-overflow-style: none; scrollbar-width: none; }
       .will-change-transform { will-change: transform; }
       .no-scrollbar::-webkit-scrollbar { display: none; }
+
+      /* Animation Utilities */
+      .animate-in { animation: fadeIn 1s ease-out; }
+      @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+      }
     </style>
 <script type="importmap">
 {

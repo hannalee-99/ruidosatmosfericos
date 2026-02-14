@@ -10,11 +10,20 @@ interface Ripple {
 const CustomCursor: React.FC = memo(() => {
   const cursorRef = useRef<HTMLDivElement>(null);
   const [ripples, setRipples] = useState<Ripple[]>([]);
+  const [hasHover, setHasHover] = useState(false);
+  const lastRippleTime = useRef(0);
 
   useEffect(() => {
+    const hoverMedia = window.matchMedia('(hover: hover)');
+    setHasHover(hoverMedia.matches);
+
+    const handleChange = (e: MediaQueryListEvent) => setHasHover(e.matches);
+    hoverMedia.addEventListener('change', handleChange);
+
+    if (!hoverMedia.matches) return;
+
     const moveCursor = (e: MouseEvent) => {
       if (cursorRef.current) {
-        // translate3d para máxima performance (GPU)
         cursorRef.current.style.transform = `translate3d(${e.clientX}px, ${e.clientY}px, 0)`;
       }
     };
@@ -27,6 +36,7 @@ const CustomCursor: React.FC = memo(() => {
     document.addEventListener('mouseenter', handleMouseEnter);
 
     return () => {
+      hoverMedia.removeEventListener('change', handleChange);
       window.removeEventListener('mousemove', moveCursor);
       document.removeEventListener('mouseleave', handleMouseLeave);
       document.removeEventListener('mouseenter', handleMouseEnter);
@@ -34,9 +44,16 @@ const CustomCursor: React.FC = memo(() => {
   }, []);
 
   useEffect(() => {
+    if (!hasHover) return;
+
     const handleClick = (e: MouseEvent) => {
-        const id = Date.now();
-        setRipples(prev => [...prev, { id, x: e.clientX, y: e.clientY }]);
+        const now = Date.now();
+        if (now - lastRippleTime.current < 200) return; 
+
+        const id = now;
+        setRipples(prev => [...prev.slice(-3), { id, x: e.clientX, y: e.clientY }]);
+        lastRippleTime.current = now;
+
         setTimeout(() => {
             setRipples(prev => prev.filter(r => r.id !== id));
         }, 500);
@@ -44,18 +61,19 @@ const CustomCursor: React.FC = memo(() => {
 
     window.addEventListener('mousedown', handleClick, { passive: true });
     return () => window.removeEventListener('mousedown', handleClick);
-  }, []);
+  }, [hasHover]);
 
-  // Gerador de lâminas para o vórtex (simetria perfeita)
+  if (!hasHover) return null;
+
   const renderBlades = () => {
     const blades = [];
-    for (let i = 0; i < 8; i++) {
+    for (let i = 0; i < 6; i++) {
       blades.push(
         <path
           key={i}
           d="M16 16C16 16 18 10 24 8C20 10 16 14 16 16Z"
-          transform={`rotate(${i * 45} 16 16)`}
-          opacity={0.8 - (i * 0.05)}
+          transform={`rotate(${i * 60} 16 16)`}
+          opacity={0.8 - (i * 0.1)}
         />
       );
     }
@@ -65,37 +83,32 @@ const CustomCursor: React.FC = memo(() => {
   return (
     <>
       <style>{`
-        @media (hover: none) { .custom-cursor-container { display: none; } }
-        
         @keyframes ripple-minimal {
             0% { transform: scale(0.5); opacity: 0.5; }
             100% { transform: scale(2); opacity: 0; }
         }
-
         @keyframes vortex-rotate {
             from { transform: rotate(0deg); }
             to { transform: rotate(360deg); }
         }
       `}</style>
 
-      {/* Ripple minimalista no clique */}
       {ripples.map(r => (
          <div
             key={r.id}
             className="fixed pointer-events-none z-[9999] rounded-full border border-current opacity-20"
             style={{
-                left: r.x, top: r.y, width: '24px', height: '24px',
-                marginLeft: '-12px', marginTop: '-12px',
+                left: r.x, top: r.y, width: '20px', height: '20px',
+                marginLeft: '-10px', marginTop: '-10px',
                 animation: 'ripple-minimal 0.4s ease-out forwards'
             }}
          />
       ))}
 
-      {/* Cursor Vórtex */}
       <div 
         ref={cursorRef}
-        className="custom-cursor-container fixed top-0 left-0 pointer-events-none z-[10000] transition-opacity duration-500 text-white [.light-mode_&]:text-black"
-        style={{ marginLeft: '-16px', marginTop: '-16px', willChange: 'transform' }}
+        className="fixed top-0 left-0 pointer-events-none z-[10000] transition-opacity duration-500 text-white [.light-mode_&]:text-black"
+        style={{ marginLeft: '-16px', marginTop: '-16px', transform: 'translate3d(-100px, -100px, 0)', willChange: 'transform' }}
       >
         <svg 
           width="32" 
@@ -103,12 +116,12 @@ const CustomCursor: React.FC = memo(() => {
           viewBox="0 0 32 32" 
           fill="currentColor" 
           xmlns="http://www.w3.org/2000/svg"
-          style={{ animation: 'vortex-rotate 3s linear infinite' }}
+          style={{ animation: 'vortex-rotate 4s linear infinite' }}
         >
           <g>
             {renderBlades()}
           </g>
-          <circle cx="16" cy="16" r="1" fill="currentColor" />
+          <circle cx="16" cy="16" r="1.5" fill="currentColor" />
         </svg>
       </div>
     </>
