@@ -2,6 +2,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { ViewState } from '../types';
 import { useTheme, useDataSeeding } from '../lib/hooks';
+import { SpeedInsights } from '@vercel/speed-insights/react';
 
 // Layout & UI
 import Navigation from './Navigation';
@@ -140,6 +141,8 @@ const App: React.FC = () => {
           {view !== ViewState.BACKOFFICE && <Footer />}
         </div>
       </main>
+      
+      <SpeedInsights />
     </div>
   );
 };
