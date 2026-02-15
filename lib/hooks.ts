@@ -1,16 +1,62 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { storage } from './storage';
 import { INITIAL_DATA } from '../initialData';
 
 export const useTheme = () => {
   const [isDarkMode, setIsDarkMode] = useState(true);
   
-  // A lógica de manipulação da classe .light-mode no body foi movida para o App.tsx
-  // para garantir que o Backoffice permaneça sempre em modo escuro.
-  
   const toggleTheme = () => setIsDarkMode(!isDarkMode);
   return { isDarkMode, toggleTheme };
+};
+
+export const useMeta = () => {
+  const updateMeta = useCallback((data: { 
+    title?: string; 
+    description?: string; 
+    image?: string;
+    url?: string;
+  }) => {
+    const siteTitle = 'ruídos atmosféricos';
+    const finalTitle = data.title ? `${data.title} | ${siteTitle}` : siteTitle;
+    
+    document.title = finalTitle.toLowerCase();
+
+    const metaMapping: Record<string, string | undefined> = {
+      'description': data.description,
+      'og:title': finalTitle,
+      'og:description': data.description,
+      'og:image': data.image,
+      'og:url': data.url || window.location.href,
+      'twitter:title': finalTitle,
+      'twitter:description': data.description,
+      'twitter:image': data.image,
+    };
+
+    Object.entries(metaMapping).forEach(([prop, content]) => {
+      if (!content) return;
+      
+      let element = document.querySelector(`meta[property="${prop}"]`) || 
+                    document.querySelector(`meta[name="${prop}"]`);
+      
+      if (!element) {
+        element = document.createElement('meta');
+        if (prop.startsWith('og:')) {
+          element.setAttribute('property', prop);
+        } else {
+          element.setAttribute('name', prop);
+        }
+        document.head.appendChild(element);
+      }
+      element.setAttribute('content', content);
+    });
+  }, []);
+
+  const resetMeta = useCallback(() => {
+    document.title = 'ruídos atmosféricos';
+  }, []);
+
+  return { updateMeta, resetMeta };
 };
 
 export const useDataSeeding = () => {
@@ -20,7 +66,6 @@ export const useDataSeeding = () => {
         const lastSync = parseInt(localStorage.getItem('ra_last_sync') || '0');
         const codeVersion = INITIAL_DATA.lastUpdated || 0;
 
-        // Se o código for mais novo que o que o navegador já sincronizou, atualiza
         if (codeVersion > lastSync) {
           console.log("Detectada nova versão do núcleo. Sincronizando...");
           
@@ -43,7 +88,6 @@ export const useDataSeeding = () => {
           localStorage.setItem('ra_last_sync', codeVersion.toString());
           console.log("Sincronização concluída.");
         } else {
-          // Se for a primeira vez e não tiver dados (fallback), faz o seed básico
           const works = await storage.getAll('works');
           if (works.length === 0) {
             for (const w of INITIAL_DATA.works) await storage.save('works', w);

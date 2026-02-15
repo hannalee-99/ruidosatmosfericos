@@ -316,8 +316,20 @@ export const INITIAL_DATA: {
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-[9px] opacity-40 uppercase tracking-widest">url da imagem</label>
+                    <label className="text-[9px] opacity-40 uppercase tracking-widest">url da imagem (capa / og:image)</label>
                     <input type="text" value={editingWork.imageUrl} onChange={e => setEditingWork({...editingWork, imageUrl: e.target.value})} className="w-full bg-black border border-white/10 p-4 rounded-md outline-none text-sm focus:border-[var(--accent)]" placeholder="https://..." required />
+                  </div>
+
+                  {/* SEO FIELDS FOR WORK */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-white/[0.02] p-4 rounded-lg border border-white/5">
+                    <div className="space-y-2">
+                      <label className="text-[9px] text-[var(--accent)] uppercase tracking-widest">título seo (og:title)</label>
+                      <input type="text" value={editingWork.seoTitle || ''} onChange={e => setEditingWork({...editingWork, seoTitle: e.target.value})} className="w-full bg-black border border-white/10 p-3 rounded-md outline-none text-xs" placeholder="título para redes sociais" />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-[9px] text-[var(--accent)] uppercase tracking-widest">descrição seo (og:description)</label>
+                      <input type="text" value={editingWork.seoDescription || ''} onChange={e => setEditingWork({...editingWork, seoDescription: e.target.value})} className="w-full bg-black border border-white/10 p-3 rounded-md outline-none text-xs" placeholder="resumo para redes sociais" />
+                    </div>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -409,10 +421,31 @@ export const INITIAL_DATA: {
                   {!isPreviewMode ? (
                     <>
                       <input type="text" value={editingSignal.title} onChange={e => handleSignalTitleChange(e.target.value)} className="w-full bg-transparent border-none outline-none text-4xl md:text-5xl font-electrolize placeholder:opacity-20" placeholder="título..." required />
-                      <div className="flex flex-col md:flex-row gap-6 pt-6 border-t border-white/5">
-                        <div className="flex-grow space-y-1">
+                      
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-6 border-t border-white/5">
+                        <div className="space-y-1">
                           <label className="text-[8px] opacity-30 uppercase">slug_url</label>
                           <input type="text" value={editingSignal.slug || ''} onChange={e => { isSlugPristine.current = false; setEditingSignal({...editingSignal, slug: e.target.value.toLowerCase().replace(/\s+/g, '-')}); }} className="bg-white/5 border-b border-white/20 outline-none px-2 py-1 text-[var(--accent)] w-full" />
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-[8px] opacity-30 uppercase">subtítulo / og:description</label>
+                          <input type="text" value={editingSignal.subtitle || ''} onChange={e => setEditingSignal({...editingSignal, subtitle: e.target.value})} className="bg-white/5 border-b border-white/20 outline-none px-2 py-1 w-full" />
+                        </div>
+                      </div>
+
+                      {/* SEO FIELDS FOR SIGNAL */}
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 bg-white/[0.02] p-4 rounded-lg border border-white/5 mt-4">
+                        <div className="space-y-1">
+                          <label className="text-[8px] text-[var(--accent)] uppercase tracking-widest">título seo</label>
+                          <input type="text" value={editingSignal.seoTitle || ''} onChange={e => setEditingSignal({...editingSignal, seoTitle: e.target.value})} className="bg-black border border-white/10 p-2 rounded text-[10px] w-full" />
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-[8px] text-[var(--accent)] uppercase tracking-widest">descrição seo</label>
+                          <input type="text" value={editingSignal.seoDescription || ''} onChange={e => setEditingSignal({...editingSignal, seoDescription: e.target.value})} className="bg-black border border-white/10 p-2 rounded text-[10px] w-full" />
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-[8px] text-[var(--accent)] uppercase tracking-widest">imagem seo (og:image)</label>
+                          <input type="text" value={editingSignal.seoImage || ''} onChange={e => setEditingSignal({...editingSignal, seoImage: e.target.value})} className="bg-black border border-white/10 p-2 rounded text-[10px] w-full" placeholder="url da imagem de capa" />
                         </div>
                       </div>
                     </>

@@ -240,10 +240,6 @@ const LandingPage: React.FC<LandingPageProps> = ({ onNavigate, isDarkMode }) => 
             
             <div className="flex flex-col items-start md:items-end gap-1 mt-12 md:mt-0 font-mono text-[10px] text-left md:text-right w-full md:w-auto">
                 <div className="flex items-center gap-1.5 opacity-60 hover:opacity-100 transition-opacity cursor-default mb-4">
-                  <div className="relative flex">
-                    <div className="w-1.5 h-1.5 bg-green-500 rounded-full"></div>
-                    <div className="w-1.5 h-1.5 bg-green-500 rounded-full absolute top-0 left-0 animate-ping opacity-50"></div>
-                  </div>
                   <span className="font-vt text-[10px] tracking-[0.2em] text-[var(--accent)]">
                     sinal estável
                   </span>

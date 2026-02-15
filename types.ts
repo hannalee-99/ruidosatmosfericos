@@ -36,6 +36,8 @@ export interface Work {
   isFeatured?: boolean;
   views: number;
   description?: string;
+  seoTitle?: string;
+  seoDescription?: string;
 }
 
 export type SignalBlockType = 'text' | 'image' | 'embed';
@@ -56,6 +58,9 @@ export interface Signal {
   blocks: SignalBlock[];
   status: 'rascunho' | 'publicado';
   views: number;
+  seoTitle?: string;
+  seoDescription?: string;
+  seoImage?: string;
 }
 
 export interface AboutData {

@@ -3,6 +3,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { storage } from '../lib/storage';
 import { Work, ViewState } from '../types';
 import { MONTH_NAMES, DEFAULT_IMAGE } from '../constants';
+import { useMeta } from '../lib/hooks';
 import LazyImage from './LazyImage';
 
 interface PageMateriaProps {
@@ -16,6 +17,7 @@ const PageMateria: React.FC<PageMateriaProps> = ({ isDarkMode, workSlug, onNavig
   const [works, setWorks] = useState<Work[]>([]);
   const [filterYear, setFilterYear] = useState<string>('todos');
   const [selectedWork, setSelectedWork] = useState<Work | null>(null);
+  const { updateMeta, resetMeta } = useMeta();
 
   useEffect(() => {
     const fetchWorks = async () => {
@@ -28,60 +30,31 @@ const PageMateria: React.FC<PageMateriaProps> = ({ isDarkMode, workSlug, onNavig
           const work = visible.find(w => w.slug === workSlug || w.id === workSlug);
           if (work) {
             setSelectedWork(work);
-            updateMetaTags(work);
+            updateMeta({
+              title: work.seoTitle || work.title,
+              description: work.seoDescription || work.description || `${work.technique}, ${work.year}`,
+              image: work.imageUrl
+            });
           }
         } else {
           setSelectedWork(null);
-          resetMetaTags();
+          resetMeta();
         }
       } catch (e) {
         console.error("Erro ao carregar obras:", e);
       }
     };
     fetchWorks();
-  }, [workSlug]);
-
-  const updateMetaTags = (work: Work) => {
-    document.title = `${work.title} | ruídos atmosféricos`;
-    
-    const metaTags = {
-      'og:title': work.title,
-      'og:description': work.description || `${work.technique}, ${work.year}`,
-      'og:image': work.imageUrl,
-      'og:url': window.location.href,
-      'twitter:title': work.title,
-      'twitter:description': work.description || work.technique,
-      'twitter:image': work.imageUrl
-    };
-
-    Object.entries(metaTags).forEach(([property, content]) => {
-      let meta = document.querySelector(`meta[property="${property}"]`) || 
-                 document.querySelector(`meta[name="${property}"]`);
-      if (!meta) {
-        meta = document.createElement('meta');
-        if (property.startsWith('og:')) meta.setAttribute('property', property);
-        else meta.setAttribute('name', property);
-        document.head.appendChild(meta);
-      }
-      meta.setAttribute('content', content);
-    });
-  };
-
-  const resetMetaTags = () => {
-    document.title = 'ruídos atmosféricos';
-  };
+  }, [workSlug, updateMeta, resetMeta]);
 
   const filteredWorks = useMemo(() => {
     let result = works;
-    
     if (filterYear !== 'todos') {
       result = result.filter(w => w.year === filterYear);
     }
-
     return result;
   }, [works, filterYear]);
 
-  // Lógica de Navegação
   const navigation = useMemo(() => {
     if (!selectedWork || filteredWorks.length <= 1) return { next: null, prev: null };
     const currentIndex = filteredWorks.findIndex(w => w.id === selectedWork.id);
@@ -109,7 +82,6 @@ const PageMateria: React.FC<PageMateriaProps> = ({ isDarkMode, workSlug, onNavig
     onWorkSelect(null);
   };
 
-  // Atalhos de teclado para navegação
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (!selectedWork) return;
@@ -121,7 +93,6 @@ const PageMateria: React.FC<PageMateriaProps> = ({ isDarkMode, workSlug, onNavig
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [selectedWork, navigation]);
 
-  // VIEW: DETALHE DA OBRA
   if (selectedWork) {
     return (
       <div className="relative min-h-screen w-full flex flex-col items-center justify-center animate-in fade-in duration-700 bg-[var(--bg)]">
@@ -130,7 +101,6 @@ const PageMateria: React.FC<PageMateriaProps> = ({ isDarkMode, workSlug, onNavig
           style={{ backgroundImage: `url(${formatImageUrl(selectedWork.imageUrl)})`, backgroundSize: 'cover', backgroundPosition: 'center' }}
         ></div>
 
-        {/* Botão Fechar (X) */}
         <button 
           onClick={handleBack}
           className="fixed top-24 right-6 md:right-12 z-[110] w-12 h-12 flex items-center justify-center rounded-full bg-white/5 hover:bg-[var(--accent)] hover:text-black border border-white/10 transition-all group"
@@ -139,7 +109,6 @@ const PageMateria: React.FC<PageMateriaProps> = ({ isDarkMode, workSlug, onNavig
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
         </button>
 
-        {/* Setas de Navegação Laterais */}
         <div className="fixed inset-y-0 left-4 md:left-8 flex items-center z-[100]">
           {navigation.prev && (
             <button 
@@ -225,7 +194,6 @@ const PageMateria: React.FC<PageMateriaProps> = ({ isDarkMode, workSlug, onNavig
     );
   }
 
-  // VIEW: LISTAGEM
   return (
     <div className="pt-32 pb-40 px-6 md:px-12 max-w-[1800px] mx-auto min-h-screen">
       <header className="mb-16 md:mb-24 flex flex-col gap-12 items-start">
@@ -235,7 +203,6 @@ const PageMateria: React.FC<PageMateriaProps> = ({ isDarkMode, workSlug, onNavig
         </div>
         
         <div className="flex flex-col gap-6 w-full max-w-2xl">
-          {/* Filtro de Ano */}
           <div className="space-y-3">
             <span className="font-vt text-[10px] tracking-widest opacity-40 uppercase">cronologia</span>
             <div className="flex flex-wrap gap-3">
@@ -257,7 +224,6 @@ const PageMateria: React.FC<PageMateriaProps> = ({ isDarkMode, workSlug, onNavig
         </div>
       </header>
 
-      {/* Galeria Masonry (Parede de Quadros) - Agora com 3 colunas em lg+ */}
       <div className="columns-1 md:columns-2 lg:columns-3 gap-8 space-y-8 max-w-[1600px] mx-auto">
         {filteredWorks.map((work) => (
           <div 

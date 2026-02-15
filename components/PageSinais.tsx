@@ -2,6 +2,7 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { storage } from '../lib/storage';
 import { Signal, SignalBlock } from '../types';
+import { useMeta } from '../lib/hooks';
 import SignalRenderer from './SignalRenderer';
 
 const formatImageUrl = (url: string): string => {
@@ -87,6 +88,7 @@ const PageSinais: React.FC<PageSinaisProps> = ({
   const [posts, setPosts] = useState<Signal[]>([]);
   const [selectedPost, setSelectedPost] = useState<Signal | null>(null);
   const [lightboxIndex, setLightboxIndex] = useState<number>(-1);
+  const { updateMeta, resetMeta } = useMeta();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -101,14 +103,23 @@ const PageSinais: React.FC<PageSinaisProps> = ({
 
         if (activeSignalSlug) {
           const post = published.find(p => p.slug === activeSignalSlug || p.id === activeSignalSlug);
-          if (post) setSelectedPost(post);
+          if (post) {
+            setSelectedPost(post);
+            const firstImage = post.blocks.find(b => b.type === 'image')?.content;
+            updateMeta({
+              title: post.seoTitle || post.title,
+              description: post.seoDescription || post.subtitle || 'captura de frequências e registros de campo',
+              image: post.seoImage || firstImage
+            });
+          }
         } else {
           setSelectedPost(null);
+          resetMeta();
         }
       } catch (e) { console.error("Erro ao carregar sinais", e); }
     };
     fetchData();
-  }, [activeSignalSlug]);
+  }, [activeSignalSlug, updateMeta, resetMeta]);
 
   const postImages = useMemo(() => {
     if (!selectedPost) return [];
