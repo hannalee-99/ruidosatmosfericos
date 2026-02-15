@@ -194,15 +194,19 @@ const LandingPage: React.FC<LandingPageProps> = ({ onNavigate, isDarkMode }) => 
         <header className={`mt-4 md:mt-8 mb-4 md:mb-16 relative border-b border-white/10 pb-8 [.light-mode_&]:border-black/10 ${transitionBase} ${headerState}`}>
           <div className="flex flex-col md:flex-row items-start md:items-end justify-between">
             <div className="flex flex-col gap-4 w-full">
+              {/* Título com Tipografia Fluida para evitar quebra no Desktop */}
               <h1 
-                className={`font-nabla text-6xl sm:text-7xl md:text-8xl lg:text-9xl lowercase md:leading-[0.8] -ml-1 whitespace-nowrap overflow-visible ${
+                className={`font-nabla lowercase md:leading-[0.8] -ml-1 whitespace-nowrap overflow-visible ${
                   isDarkMode 
                     ? 'mix-blend-screen' 
                     : 'drop-shadow-[3px_3px_0px_rgba(0,0,0,0.25)] opacity-100'
                 }`} 
-                style={{ fontPalette: isDarkMode ? '--matrix' : '--matrix-blue' }}
+                style={{ 
+                  fontPalette: isDarkMode ? '--matrix' : '--matrix-blue',
+                  fontSize: 'clamp(3.5rem, 9.5vw, 10rem)' 
+                }}
               >
-                <div className="flex flex-col md:hidden leading-[0.8] w-full">
+                <div className="flex flex-col md:hidden leading-[0.8] w-full" style={{ fontSize: '12vw' }}>
                     <span>
                       <Typewriter 
                         text="ruídos" 
@@ -234,8 +238,8 @@ const LandingPage: React.FC<LandingPageProps> = ({ onNavigate, isDarkMode }) => 
               </h1>
             </div>
             
-            <div className="flex flex-col items-start md:items-end gap-1 mt-6 md:mt-0 font-mono text-[10px] text-left md:text-right w-full md:w-auto">
-                <div className="flex items-center gap-2 opacity-60 hover:opacity-100 transition-opacity cursor-default mb-4">
+            <div className="flex flex-col items-start md:items-end gap-1 mt-12 md:mt-0 font-mono text-[10px] text-left md:text-right w-full md:w-auto">
+                <div className="flex items-center gap-1.5 opacity-60 hover:opacity-100 transition-opacity cursor-default mb-4">
                   <div className="relative flex">
                     <div className="w-1.5 h-1.5 bg-green-500 rounded-full"></div>
                     <div className="w-1.5 h-1.5 bg-green-500 rounded-full absolute top-0 left-0 animate-ping opacity-50"></div>
