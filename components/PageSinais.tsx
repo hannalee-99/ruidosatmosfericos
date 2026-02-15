@@ -86,8 +86,6 @@ const PageSinais: React.FC<PageSinaisProps> = ({
 }) => {
   const [posts, setPosts] = useState<Signal[]>([]);
   const [selectedPost, setSelectedPost] = useState<Signal | null>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
-  const [containerHeight, setContainerHeight] = useState(2000);
   const [lightboxIndex, setLightboxIndex] = useState<number>(-1);
 
   useEffect(() => {
@@ -133,13 +131,8 @@ const PageSinais: React.FC<PageSinaisProps> = ({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [lightboxIndex, postImages.length, selectedPost]);
 
-  useEffect(() => {
-    if (containerRef.current) setContainerHeight(containerRef.current.scrollHeight);
-  }, [posts]);
-
   const groupedPosts = useMemo(() => {
     const groups: Record<string, Signal[]> = {};
-    groups['recente'] = []; 
     posts.forEach(post => {
       const dateParts = post.date.split('/');
       let year = dateParts.length === 3 ? dateParts[2] : 'antigo';
@@ -150,16 +143,6 @@ const PageSinais: React.FC<PageSinaisProps> = ({
   }, [posts]);
 
   const years = Object.keys(groupedPosts).filter(y => groupedPosts[y].length > 0).sort((a, b) => Number(b) - Number(a));
-
-  const wavePath = useMemo(() => {
-    const width = 60, amplitude = 15, frequency = 0.02;
-    let path = `M ${width/2} 0`;
-    for (let y = 0; y <= containerHeight; y += 10) {
-      const x = (width / 2) + Math.sin(y * frequency) * amplitude;
-      path += ` L ${x} ${y}`;
-    }
-    return path;
-  }, [containerHeight]);
 
   const handleOpenPost = async (post: Signal) => {
     if (onSignalSelect) {
@@ -258,46 +241,41 @@ const PageSinais: React.FC<PageSinaisProps> = ({
   }
 
   return (
-    <div className="pt-24 md:pt-32 pb-24 max-w-5xl mx-auto min-h-screen px-6 md:px-0">
-      <div className="relative flex" ref={containerRef}>
-        <div className="absolute left-0 top-0 bottom-0 w-[60px] hidden md:block overflow-visible pointer-events-none z-0">
-          <svg width="60" height="100%" className="overflow-visible">
-            <path d={wavePath} fill="none" stroke="currentColor" strokeOpacity="0.2" strokeWidth="1.5" />
-          </svg>
+    <div className="pt-32 pb-40 px-6 md:px-12 max-w-[1800px] mx-auto min-h-screen">
+      <header className="mb-16 md:mb-24 flex flex-col gap-12 items-start">
+        <div className="flex-shrink-0 space-y-4">
+          <h2 className="font-nabla text-7xl md:text-9xl lowercase" style={{ fontPalette: isDarkMode ? '--matrix' : '--matrix-blue' }}>sinais</h2>
+          <p className="font-mono text-sm opacity-60 lowercase tracking-widest">captura de frequências e registros de campo</p>
         </div>
-        <div className="flex-1 md:pl-24 md:pr-12 relative z-10">
-          <div className="mb-12 md:mb-20 mt-8 md:mt-0">
-             <h2 className="font-nabla text-7xl md:text-9xl lowercase" style={{ fontPalette: isDarkMode ? '--matrix' : '--matrix-blue' }}>sinais</h2>
+      </header>
+
+      <div className="space-y-32">
+        {years.map((year) => (
+          <div key={year} className="relative group">
+            <div 
+              className="absolute -top-12 md:-top-16 left-0 md:-left-8 text-6xl md:text-[10rem] font-bold font-nabla leading-none select-none pointer-events-none z-0 transition-all duration-700 opacity-10 md:group-hover:opacity-20 md:group-hover:scale-105" 
+              style={{ fontPalette: isDarkMode ? '--matrix' : '--matrix-blue' }}
+            >
+              {year}
+            </div>
+            <div className="relative z-10 pt-8 md:pt-16">
+              {groupedPosts[year].map((post) => (
+                    <div key={post.id} className="relative group/item cursor-pointer mb-24 last:mb-0" onClick={() => handleOpenPost(post)}>
+                      <div className="flex flex-col md:flex-row gap-6 md:gap-12">
+                         <div className="md:w-32 flex-shrink-0 flex md:flex-col items-center md:items-start pt-2">
+                            <div className="font-vt text-2xl md:text-3xl text-[var(--accent)] opacity-80">{post.date.split('/').slice(0,2).join('/')}</div>
+                         </div>
+                         <div className="flex-grow pl-6 md:pl-8 border-l border-white/10 md:group-hover/item:border-[var(--accent)] transition-colors py-1">
+                            <h3 className="text-3xl md:text-5xl font-electrolize mb-4 lowercase text-[var(--accent)]">{post.title}</h3>
+                            {post.subtitle && <p className="font-mono text-sm opacity-60 lowercase">{post.subtitle}</p>}
+                            <p className="text-[10px] opacity-20 font-mono mt-2 tracking-widest">/{post.slug || '...'}</p>
+                         </div>
+                      </div>
+                    </div>
+              ))}
+            </div>
           </div>
-          <div className="space-y-32">
-            {years.map((year) => (
-              <div key={year} className="relative group">
-                <div 
-                  className="absolute -top-12 md:-top-16 -left-4 md:-left-20 text-6xl md:text-[10rem] font-bold font-nabla leading-none select-none pointer-events-none z-0 transition-all duration-700 opacity-10 md:group-hover:opacity-20 md:group-hover:scale-105" 
-                  style={{ fontPalette: isDarkMode ? '--matrix' : '--matrix-blue' }}
-                >
-                  {year}
-                </div>
-                <div className="relative z-10">
-                  {groupedPosts[year].map((post) => (
-                        <div key={post.id} className="relative group/item cursor-pointer mb-24 last:mb-0" onClick={() => handleOpenPost(post)}>
-                          <div className="flex flex-col md:flex-row gap-6 md:gap-12">
-                             <div className="md:w-48 flex-shrink-0 flex md:flex-col items-center md:items-end pt-2">
-                                <div className="font-vt text-2xl md:text-3xl text-[var(--accent)] opacity-80">{post.date.split('/').slice(0,2).join('/')}</div>
-                             </div>
-                             <div className="flex-grow pl-6 md:pl-8 border-l border-white/10 md:group-hover/item:border-[var(--accent)] transition-colors py-1">
-                                <h3 className="text-3xl md:text-5xl font-electrolize mb-4 lowercase text-[var(--accent)]">{post.title}</h3>
-                                {post.subtitle && <p className="font-mono text-sm opacity-60 lowercase">{post.subtitle}</p>}
-                                <p className="text-[10px] opacity-20 font-mono mt-2 tracking-widest">/{post.slug || '...'}</p>
-                             </div>
-                          </div>
-                        </div>
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
+        ))}
       </div>
     </div>
   );

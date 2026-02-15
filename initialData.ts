@@ -1,3 +1,4 @@
+
 import { Work, Signal, AboutData, ConnectConfig, SensorData } from './types';
 
 export const INITIAL_DATA: {
@@ -10,7 +11,7 @@ export const INITIAL_DATA: {
     sensor_metrics: SensorData | null;
   };
 } = {
-  "lastUpdated": 1771110920113,
+  "lastUpdated": 1771101643131,
   "works": [
     {
       "title": "essência na ionosfera",
@@ -37,6 +38,21 @@ export const INITIAL_DATA: {
       "imageUrl": "https://64.media.tumblr.com/2469fc83feaecaf0b7a97fa55f6793d6/670f92e2b0934e32-bb/s2048x3072/3b1cf9f39410af90a8d0607d572f83c0024b2472.jpg",
       "isFeatured": true,
       "id": "seed-work-1",
+      "gallery": [],
+      "status": "disponível",
+      "isVisible": true,
+      "views": 0
+    },
+    {
+      "title": "silêncio comprimido",
+      "year": "2023",
+      "month": "11",
+      "date": "2023-12-20",
+      "technique": "carvão e acrílica",
+      "dimensions": "120x120 cm",
+      "imageUrl": "https://images.unsplash.com/photo-1507608616759-54f48f0af0ee?q=80&w=1974&auto=format&fit=crop",
+      "isFeatured": true,
+      "id": "seed-work-3",
       "gallery": [],
       "status": "disponível",
       "isVisible": true,
