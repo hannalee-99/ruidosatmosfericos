@@ -11,13 +11,13 @@ interface PageBackofficeProps {
 }
 
 const PageBackoffice: React.FC<PageBackofficeProps> = ({ onLogout }) => {
-  const [activeTab, setActiveTab] = useState<ViewState | 'sincronizar'>(ViewState.MATERIA);
+  const [activeTab, setActiveTab] = useState<ViewState | 'sincronizar'>(ViewState.LANDING);
   const [works, setWorks] = useState<Work[]>([]);
   const [editingWork, setEditingWork] = useState<Work | null>(null);
   const [signals, setSignals] = useState<Signal[]>([]);
   const [editingSignal, setEditingSignal] = useState<Signal | null>(null);
   const [isPreviewMode, setIsPreviewMode] = useState(false);
-  const [profile, setProfile] = useState<AboutData>({ id: 'profile', text: '', imageUrl: '' });
+  const [profile, setProfile] = useState<AboutData>({ id: 'profile', text: '', imageUrl: '', faviconUrl: '' });
   const [connect, setConnect] = useState<ConnectConfig>({ id: 'connect_config', email: '', sobreText: '', links: [] });
   const [isSaving, setIsSaving] = useState(false);
   const [exportCode, setExportCode] = useState('');
@@ -53,12 +53,11 @@ const PageBackoffice: React.FC<PageBackofficeProps> = ({ onLogout }) => {
       signals,
       about: {
         profile,
-        connect_config: connect,
-        sensor_metrics: { id: 'sensor_metrics', clicks: 0 }
+        connect_config: connect
       }
     };
 
-    const code = `import { Work, Signal, AboutData, ConnectConfig, SensorData } from './types';
+    const code = `import { Work, Signal, AboutData, ConnectConfig } from './types';
 
 export const INITIAL_DATA: {
   lastUpdated: number;
@@ -67,7 +66,6 @@ export const INITIAL_DATA: {
   about: {
     profile: AboutData | null;
     connect_config: ConnectConfig | null;
-    sensor_metrics: SensorData | null;
   };
 } = ${JSON.stringify(data, null, 2)};`;
 
@@ -201,7 +199,7 @@ export const INITIAL_DATA: {
     try {
       await storage.save('about', profile);
       fetchData();
-      alert('perfil sincronizado localmente.');
+      alert('perfil sincronizado localmente. recarregue a página para aplicar o novo favicon.');
     } finally { setIsSaving(false); }
   };
 
@@ -513,9 +511,25 @@ export const INITIAL_DATA: {
         )}
 
         {activeTab === ViewState.ABOUT && (
-          <form onSubmit={handleSaveProfile} className="space-y-8 animate-in fade-in">
-            <textarea value={profile.text} onChange={e => setProfile({...profile, text: e.target.value})} className="w-full bg-white/5 border border-white/10 p-8 h-80 outline-none rounded-xl text-lg focus:border-[var(--accent)]" placeholder="manifesto..." />
-            <input type="text" value={profile.imageUrl} onChange={e => setProfile({...profile, imageUrl: e.target.value})} className="w-full bg-white/5 border border-white/10 p-4 rounded-md focus:border-[var(--accent)] outline-none" placeholder="url avatar" />
+          <form onSubmit={handleSaveProfile} className="space-y-8 animate-in fade-in max-w-4xl mx-auto">
+            <div className="space-y-6">
+              <div>
+                <label className="text-[10px] opacity-40 uppercase tracking-widest block mb-2">manifesto / biografia</label>
+                <textarea value={profile.text} onChange={e => setProfile({...profile, text: e.target.value})} className="w-full bg-white/5 border border-white/10 p-8 h-80 outline-none rounded-xl text-lg focus:border-[var(--accent)] resize-none" placeholder="manifesto..." />
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="text-[10px] opacity-40 uppercase tracking-widest block mb-2">url avatar / perfil</label>
+                  <input type="text" value={profile.imageUrl} onChange={e => setProfile({...profile, imageUrl: e.target.value})} className="w-full bg-white/5 border border-white/10 p-4 rounded-md focus:border-[var(--accent)] outline-none text-xs" placeholder="https://..." />
+                </div>
+                <div>
+                  <label className="text-[10px] text-[var(--accent)] uppercase tracking-widest block mb-2">url favicon (vazio = generativo)</label>
+                  <input type="text" value={profile.faviconUrl || ''} onChange={e => setProfile({...profile, faviconUrl: e.target.value})} className="w-full bg-white/5 border border-white/10 p-4 rounded-md focus:border-[var(--accent)] outline-none text-xs" placeholder="https://... ou base64" />
+                </div>
+              </div>
+            </div>
+            
             <NeobrutalistButton variant="matrix" type="submit" className="w-full py-4">sincronizar_perfil</NeobrutalistButton>
           </form>
         )}
@@ -530,7 +544,7 @@ export const INITIAL_DATA: {
               
               <div>
                 <label className="text-[10px] opacity-40 uppercase tracking-widest block mb-2">texto 'sobre' (terminal)</label>
-                <input type="text" value={connect.sobreText || ''} onChange={e => setConnect({...connect, sobreText: e.target.value})} className="w-full bg-white/5 border border-white/10 p-6 rounded-xl focus:border-[var(--accent)] outline-none text-sm" placeholder="ruídos atmosféricos // v3.1 // ..." />
+                <input type="text" value={connect.sobreText || ''} onChange={e => setConnect({...connect, sobreText: e.target.value})} className="w-full bg-white/5 border border-white/10 p-6 rounded-xl focus:border-[var(--accent)] outline-none text-sm" placeholder="ruídos atmosféricos // v3.1 // sistema de gestão existencial" />
               </div>
 
               <div className="space-y-4 pt-6">

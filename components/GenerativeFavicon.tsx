@@ -1,11 +1,33 @@
 
 import { useEffect } from 'react';
 import { COLORS } from '../constants';
+import { storage } from '../lib/storage';
 
 const GenerativeFavicon = () => {
   useEffect(() => {
-    // Otimização: Delay para não bloquear a thread principal durante o carregamento inicial da página
-    const timeoutId = setTimeout(() => {
+    const applyFavicon = async () => {
+      try {
+        // Primeiro, tenta carregar o favicon customizado do banco
+        const profile = await storage.get('about', 'profile');
+        
+        if (profile && profile.faviconUrl && profile.faviconUrl.trim() !== '') {
+          const link = document.querySelector("link[rel~='icon']") as HTMLLinkElement;
+          if (link) {
+            link.href = profile.faviconUrl;
+          } else {
+            const newLink = document.createElement('link');
+            newLink.rel = 'icon';
+            newLink.href = profile.faviconUrl;
+            document.head.appendChild(newLink);
+          }
+          return; // Favicon customizado aplicado, encerra
+        }
+      } catch (e) {
+        console.error("Erro ao carregar favicon customizado:", e);
+      }
+
+      // Se não houver customizado, gera o randômico (com delay para não travar)
+      setTimeout(() => {
         const generateFavicon = () => {
           const seed = Math.floor(Math.random() * 1000);
           const turbulenceFreq = 0.15 + Math.random() * 0.25; 
@@ -56,9 +78,10 @@ const GenerativeFavicon = () => {
         };
 
         generateFavicon();
-    }, 1000); // 1 segundo de delay para priorizar renderização da UI
+      }, 500);
+    };
 
-    return () => clearTimeout(timeoutId);
+    applyFavicon();
   }, []);
 
   return null; 

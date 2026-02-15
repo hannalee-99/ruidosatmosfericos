@@ -51,8 +51,7 @@ const Navigation: React.FC<NavigationProps> = ({
   }, []);
 
   const items = Object.values(ViewState).filter(item => 
-    item !== ViewState.BACKOFFICE && 
-    item !== ViewState.INTERACTIVE
+    item !== ViewState.BACKOFFICE
   );
 
   const handleLogoClick = () => {

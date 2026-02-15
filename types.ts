@@ -4,7 +4,6 @@ export enum ViewState {
   MATERIA = 'matéria',
   MANIFESTO = 'manifesto',
   SINAIS = 'sinais',
-  INTERACTIVE = 'medição', 
   ABOUT = '👁👁',          
   CONNECT = 'conectar',
   BACKOFFICE = 'fluxo'
@@ -67,6 +66,7 @@ export interface AboutData {
   id: string; // 'profile'
   text: string;
   imageUrl: string;
+  faviconUrl?: string; // Novo campo para o favicon customizado
 }
 
 export interface LinkItem {
@@ -82,7 +82,10 @@ export interface ConnectConfig {
   links: LinkItem[];
 }
 
+/**
+ * Interface para armazenamento de métricas do sensor de presença
+ */
 export interface SensorData {
-  id: string; // 'sensor_metrics'
+  id: string; // ex: 'sensor_metrics'
   clicks: number;
 }

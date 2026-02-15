@@ -81,9 +81,6 @@ export const useDataSeeding = () => {
           if (INITIAL_DATA.about.connect_config) {
             await storage.save('about', INITIAL_DATA.about.connect_config);
           }
-          if (INITIAL_DATA.about.sensor_metrics) {
-            await storage.save('about', INITIAL_DATA.about.sensor_metrics);
-          }
 
           localStorage.setItem('ra_last_sync', codeVersion.toString());
           console.log("Sincronização concluída.");

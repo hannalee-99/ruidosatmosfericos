@@ -1,5 +1,5 @@
 
-import { Work, Signal, AboutData, ConnectConfig, SensorData } from './types';
+import { Work, Signal, AboutData, ConnectConfig } from './types';
 
 export const INITIAL_DATA: {
   lastUpdated: number;
@@ -8,7 +8,6 @@ export const INITIAL_DATA: {
   about: {
     profile: AboutData | null;
     connect_config: ConnectConfig | null;
-    sensor_metrics: SensorData | null;
   };
 } = {
   "lastUpdated": 1771101643131,
@@ -127,10 +126,6 @@ export const INITIAL_DATA: {
           "url": "https://instagram.com"
         }
       ]
-    },
-    "sensor_metrics": {
-      "id": "sensor_metrics",
-      "clicks": 0
     }
   }
 };

@@ -16,7 +16,6 @@ import LandingPage from './LandingPage';
 import PageMateria from './PageMateria';
 import PageManifesto from './PageManifesto';
 import PageSinais from './PageSinais';
-import PageSensor from './PageSensor';
 import PageAbout from './PageAbout';
 import PageConnect from './PageConnect';
 import PageBackoffice from './PageBackoffice';
@@ -108,7 +107,6 @@ const App: React.FC = () => {
       case ViewState.MATERIA: return <PageMateria isDarkMode={isDarkMode} workSlug={activeSlug} onNavigate={setView} onWorkSelect={setActiveSlug} />;
       case ViewState.MANIFESTO: return <PageManifesto isDarkMode={isDarkMode} />;
       case ViewState.SINAIS: return <PageSinais isDarkMode={isDarkMode} activeSignalSlug={activeSlug} onSignalSelect={setActiveSlug} />;
-      case ViewState.INTERACTIVE: return <PageSensor />;
       case ViewState.ABOUT: return <PageAbout onNavigate={setView} isDarkMode={isDarkMode} />;
       case ViewState.CONNECT: return <PageConnect onNavigate={setView} />;
       case ViewState.BACKOFFICE: return <PageBackoffice onLogout={() => { setView(ViewState.LANDING); }} />;
