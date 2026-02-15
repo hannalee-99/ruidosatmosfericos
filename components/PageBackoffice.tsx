@@ -4,6 +4,7 @@ import { storage } from '../lib/storage';
 import { Work, Signal, SignalBlock, SignalBlockType, AboutData, ConnectConfig, ViewState } from '../types';
 import NeobrutalistButton from './NeobrutalistButton';
 import SignalRenderer from './SignalRenderer';
+import { MONTH_NAMES } from '../constants';
 
 interface PageBackofficeProps {
   onLogout: () => void;
@@ -22,6 +23,7 @@ const PageBackoffice: React.FC<PageBackofficeProps> = ({ onLogout }) => {
   const [exportCode, setExportCode] = useState('');
   
   const isSlugPristine = useRef(true);
+  const isWorkSlugPristine = useRef(true);
 
   useEffect(() => {
     fetchData();
@@ -103,11 +105,38 @@ export const INITIAL_DATA: {
     setIsPreviewMode(false);
   };
 
-  const handleTitleChange = (val: string) => {
+  const handleCreateNewWork = () => {
+    isWorkSlugPristine.current = true;
+    setEditingWork({
+      id: `work-${Date.now()}`, 
+      title: '', 
+      slug: '',
+      year: new Date().getFullYear().toString(),
+      month: (new Date().getMonth() + 1).toString().padStart(2, '0'), 
+      technique: '',
+      date: new Date().toISOString().split('T')[0], 
+      dimensions: '', 
+      imageUrl: '',
+      status: 'disponível', 
+      isVisible: true, 
+      isFeatured: false,
+      views: 0,
+      description: ''
+    });
+  };
+
+  const handleSignalTitleChange = (val: string) => {
     if (!editingSignal) return;
     const updates: Partial<Signal> = { title: val };
     if (isSlugPristine.current) updates.slug = createSlug(val);
     setEditingSignal({ ...editingSignal, ...updates });
+  };
+
+  const handleWorkTitleChange = (val: string) => {
+    if (!editingWork) return;
+    const updates: Partial<Work> = { title: val };
+    if (isWorkSlugPristine.current) updates.slug = createSlug(val);
+    setEditingWork({ ...editingWork, ...updates });
   };
 
   const handleAddBlock = (type: SignalBlockType, index?: number) => {
@@ -122,21 +151,6 @@ export const INITIAL_DATA: {
     if (typeof index === 'number') newBlocks.splice(index + 1, 0, newBlock);
     else newBlocks.push(newBlock);
     setEditingSignal({ ...editingSignal, blocks: newBlocks });
-  };
-
-  const applyFormatting = (blockId: string, prefix: string, suffix: string = '') => {
-    const textarea = document.getElementById(`textarea-${blockId}`) as HTMLTextAreaElement;
-    if (!textarea || !editingSignal) return;
-    const start = textarea.selectionStart, end = textarea.selectionEnd, text = textarea.value;
-    const selectedText = text.substring(start, end);
-    const before = text.substring(0, start), after = text.substring(end);
-    const insertion = selectedText || (prefix.startsWith('#') ? "título" : "texto");
-    const newText = before + prefix + insertion + suffix + after;
-    handleUpdateBlock(blockId, newText);
-    setTimeout(() => {
-      textarea.focus();
-      textarea.setSelectionRange(start + prefix.length, start + prefix.length + insertion.length);
-    }, 10);
   };
 
   const handleUpdateBlock = (blockId: string, content: string, caption?: string) => {
@@ -166,7 +180,9 @@ export const INITIAL_DATA: {
     if (!editingWork) return;
     setIsSaving(true);
     try {
-      await storage.save('works', editingWork);
+      const workDate = `${editingWork.year}-${editingWork.month.padStart(2, '0')}-01`;
+      const finalWork = { ...editingWork, date: workDate };
+      await storage.save('works', finalWork);
       setEditingWork(null);
       fetchData();
     } finally { setIsSaving(false); }
@@ -220,6 +236,21 @@ export const INITIAL_DATA: {
     });
   };
 
+  const applyFormatting = (blockId: string, prefix: string, suffix: string = '') => {
+    const textarea = document.getElementById(`textarea-${blockId}`) as HTMLTextAreaElement;
+    if (!textarea || !editingSignal) return;
+    const start = textarea.selectionStart, end = textarea.selectionEnd, text = textarea.value;
+    const selectedText = text.substring(start, end);
+    const before = text.substring(0, start), after = text.substring(end);
+    const insertion = selectedText || (prefix.startsWith('#') ? "título" : "texto");
+    const newText = before + prefix + insertion + suffix + after;
+    handleUpdateBlock(blockId, newText);
+    setTimeout(() => {
+      textarea.focus();
+      textarea.setSelectionRange(start + prefix.length, start + prefix.length + insertion.length);
+    }, 10);
+  };
+
   const tabs = [ViewState.MATERIA, ViewState.SINAIS, ViewState.ABOUT, ViewState.CONNECT, 'sincronizar'];
 
   return (
@@ -248,35 +279,94 @@ export const INITIAL_DATA: {
               <>
                 <div className="flex justify-between items-center mb-8">
                   <p className="text-[10px] opacity-40 uppercase tracking-widest">{works.length} itens captados</p>
-                  <NeobrutalistButton variant="matrix" onClick={() => setEditingWork({
-                    id: `work-${Date.now()}`, title: 'sem título', year: new Date().getFullYear().toString(),
-                    month: (new Date().getMonth() + 1).toString().padStart(2, '0'), technique: 'acrílica',
-                    date: new Date().toISOString().split('T')[0], dimensions: '00x00cm', imageUrl: '',
-                    status: 'disponível', isVisible: true, views: 0
-                  })} className="text-xs py-2 px-6">adicionar_materia</NeobrutalistButton>
+                  <NeobrutalistButton variant="matrix" onClick={handleCreateNewWork} className="text-xs py-2 px-6">adicionar_materia</NeobrutalistButton>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {works.map(w => (
-                    <div key={w.id} onClick={() => setEditingWork(w)} className="bg-white/5 border border-white/5 p-4 rounded-xl cursor-pointer hover:border-[var(--accent)]/30 transition-all group">
+                    <div key={w.id} onClick={() => { setEditingWork(w); isWorkSlugPristine.current = false; }} className="bg-white/5 border border-white/5 p-4 rounded-xl cursor-pointer hover:border-[var(--accent)]/30 transition-all group">
                       <div className="aspect-square bg-neutral-900 rounded-md overflow-hidden mb-4">
                         {w.imageUrl ? <img src={w.imageUrl} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700" /> : <div className="w-full h-full flex items-center justify-center opacity-10">void</div>}
                       </div>
                       <h4 className="text-sm truncate">{w.title}</h4>
+                      <div className="flex justify-between mt-2 opacity-40 text-[9px] uppercase tracking-widest">
+                        <span>{w.year}</span>
+                        <span>{w.isVisible ? 'visível' : 'oculto'}</span>
+                      </div>
                     </div>
                   ))}
                 </div>
               </>
             ) : (
-              <form onSubmit={handleSaveWork} className="bg-white/5 p-8 rounded-xl border border-white/10 space-y-6 animate-in slide-in-from-bottom-4">
-                <div className="flex justify-between items-center">
-                   <span className="text-[10px] text-[var(--accent)] tracking-widest uppercase">edição de matéria</span>
+              <form onSubmit={handleSaveWork} className="bg-white/5 p-8 rounded-xl border border-white/10 space-y-8 animate-in slide-in-from-bottom-4 pb-24">
+                <div className="flex justify-between items-center border-b border-white/5 pb-4">
+                   <span className="text-[10px] text-[var(--accent)] tracking-widest uppercase">edição de matéria /// {editingWork.id}</span>
                    <button type="button" onClick={() => handleDeleteWork(editingWork.id)} className="text-[10px] text-red-500 hover:underline">excluir_obra()</button>
                 </div>
-                <input type="text" value={editingWork.title} onChange={e => setEditingWork({...editingWork, title: e.target.value})} className="w-full bg-black border border-white/10 p-4 rounded-md outline-none text-xl focus:border-[var(--accent)]" placeholder="título" />
-                <input type="text" value={editingWork.imageUrl} onChange={e => setEditingWork({...editingWork, imageUrl: e.target.value})} className="w-full bg-black border border-white/10 p-4 rounded-md outline-none text-sm focus:border-[var(--accent)]" placeholder="url da imagem" />
-                <div className="flex gap-4">
-                  <NeobrutalistButton variant="matrix" type="submit" className="flex-grow">salvar</NeobrutalistButton>
-                  <button type="button" onClick={() => setEditingWork(null)} className="px-8 border border-white/10 rounded-full text-xs">voltar</button>
+                
+                <div className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <label className="text-[9px] opacity-40 uppercase tracking-widest">título</label>
+                      <input type="text" value={editingWork.title} onChange={e => handleWorkTitleChange(e.target.value)} className="w-full bg-black border border-white/10 p-4 rounded-md outline-none text-xl focus:border-[var(--accent)]" placeholder="título" required />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-[9px] opacity-40 uppercase tracking-widest">slug_url</label>
+                      <input type="text" value={editingWork.slug || ''} onChange={e => { isWorkSlugPristine.current = false; setEditingWork({...editingWork, slug: e.target.value.toLowerCase().replace(/\s+/g, '-')})}} className="w-full bg-black border border-white/10 p-4 rounded-md outline-none text-sm focus:border-[var(--accent)] text-[var(--accent)]" placeholder="slug-da-obra" />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-[9px] opacity-40 uppercase tracking-widest">url da imagem</label>
+                    <input type="text" value={editingWork.imageUrl} onChange={e => setEditingWork({...editingWork, imageUrl: e.target.value})} className="w-full bg-black border border-white/10 p-4 rounded-md outline-none text-sm focus:border-[var(--accent)]" placeholder="https://..." required />
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <label className="text-[9px] opacity-40 uppercase tracking-widest">técnica</label>
+                      <input type="text" value={editingWork.technique} onChange={e => setEditingWork({...editingWork, technique: e.target.value})} className="w-full bg-black border border-white/10 p-4 rounded-md outline-none text-sm focus:border-[var(--accent)]" placeholder="ex: acrílica sobre tela" />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-[9px] opacity-40 uppercase tracking-widest">dimensões</label>
+                      <input type="text" value={editingWork.dimensions} onChange={e => setEditingWork({...editingWork, dimensions: e.target.value})} className="w-full bg-black border border-white/10 p-4 rounded-md outline-none text-sm focus:border-[var(--accent)]" placeholder="ex: 100x100cm" />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                    <div className="space-y-2">
+                      <label className="text-[9px] opacity-40 uppercase tracking-widest">ano</label>
+                      <input type="text" value={editingWork.year} onChange={e => setEditingWork({...editingWork, year: e.target.value})} className="w-full bg-black border border-white/10 p-4 rounded-md outline-none text-sm focus:border-[var(--accent)]" />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-[9px] opacity-40 uppercase tracking-widest">mês</label>
+                      <select value={editingWork.month} onChange={e => setEditingWork({...editingWork, month: e.target.value})} className="w-full bg-black border border-white/10 p-4 rounded-md outline-none text-sm focus:border-[var(--accent)] appearance-none">
+                        {MONTH_NAMES.map((name, i) => (
+                          <option key={i} value={(i + 1).toString().padStart(2, '0')}>{name}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="space-y-2 flex flex-col justify-end pb-2">
+                       <label className="flex items-center gap-3 cursor-pointer group">
+                          <input type="checkbox" checked={editingWork.isVisible} onChange={e => setEditingWork({...editingWork, isVisible: e.target.checked})} className="w-4 h-4 accent-[var(--accent)]" />
+                          <span className="text-[9px] opacity-40 group-hover:opacity-100 uppercase tracking-widest">visível no site</span>
+                       </label>
+                    </div>
+                    <div className="space-y-2 flex flex-col justify-end pb-2">
+                       <label className="flex items-center gap-3 cursor-pointer group">
+                          <input type="checkbox" checked={editingWork.isFeatured} onChange={e => setEditingWork({...editingWork, isFeatured: e.target.checked})} className="w-4 h-4 accent-[var(--accent)]" />
+                          <span className="text-[9px] opacity-40 group-hover:opacity-100 uppercase tracking-widest">destaque landing</span>
+                       </label>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-[9px] opacity-40 uppercase tracking-widest">descrição / contemplação (opcional)</label>
+                    <textarea value={editingWork.description || ''} onChange={e => setEditingWork({...editingWork, description: e.target.value})} className="w-full bg-black border border-white/10 p-4 rounded-md outline-none text-sm focus:border-[var(--accent)] h-32 resize-none" placeholder="texto de acompanhamento..." />
+                  </div>
+                </div>
+
+                <div className="flex gap-4 pt-8 sticky bottom-0 bg-[#0a0a0a] py-4 border-t border-white/5">
+                  <NeobrutalistButton variant="matrix" type="submit" className="flex-grow">sincronizar_materia()</NeobrutalistButton>
+                  <button type="button" onClick={() => setEditingWork(null)} className="px-12 border border-white/10 rounded-full text-xs hover:bg-white/5 transition-colors">voltar</button>
                 </div>
               </form>
             )}
@@ -318,7 +408,7 @@ export const INITIAL_DATA: {
 
                   {!isPreviewMode ? (
                     <>
-                      <input type="text" value={editingSignal.title} onChange={e => handleTitleChange(e.target.value)} className="w-full bg-transparent border-none outline-none text-4xl md:text-5xl font-electrolize placeholder:opacity-20" placeholder="título..." required />
+                      <input type="text" value={editingSignal.title} onChange={e => handleSignalTitleChange(e.target.value)} className="w-full bg-transparent border-none outline-none text-4xl md:text-5xl font-electrolize placeholder:opacity-20" placeholder="título..." required />
                       <div className="flex flex-col md:flex-row gap-6 pt-6 border-t border-white/5">
                         <div className="flex-grow space-y-1">
                           <label className="text-[8px] opacity-30 uppercase">slug_url</label>

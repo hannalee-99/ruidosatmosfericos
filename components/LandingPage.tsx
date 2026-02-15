@@ -157,11 +157,15 @@ const LandingPage: React.FC<LandingPageProps> = ({ onNavigate, isDarkMode }) => 
         if (featured.length > 0) {
           setFeaturedWorks(featured.slice(0, 2));
         } else {
-          setFeaturedWorks(visibleWorks.sort((a,b) => Number(b.id) - Number(a.id)).slice(0, 2));
+          setFeaturedWorks(visibleWorks.sort((a,b) => b.date.localeCompare(a.date)).slice(0, 2));
         }
 
         const signals = await storage.getAll('signals');
-        const sortedSignals = signals.filter((s: any) => s.status === 'publicado').sort((a,b) => Number(b.id) - Number(a.id));
+        const sortedSignals = signals.filter((s: any) => s.status === 'publicado').sort((a,b) => {
+          const dA = a.date.split('/').reverse().join('-');
+          const dB = b.date.split('/').reverse().join('-');
+          return dB.localeCompare(dA);
+        });
         setLatestSignals(sortedSignals);
       } catch (e) {
         console.error("Erro ao carregar dados da Landing", e);
@@ -173,7 +177,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onNavigate, isDarkMode }) => 
     fetchData();
   }, []);
 
-  const manifestoText = "opero em \ndesconformidade controlada\nresistindo à (des)ordem \ncriando padrões temporários\o modo dominante de existir \ngera angústia por natureza\nos limita a poucos sentidos\nenquanto transitamos \npela impermanência";
+  const manifestoText = "opero em \ndesconformidade controlada\nresistindo à (des)ordem \ncriando padrões temporários\o modo dominante de existir \ngera angústia por natureza\nos limita a poucos sentidos\nenquanto transitamos \pela impermanência";
 
   const transitionBase = "transition-all duration-[1200ms] ease-[cubic-bezier(0.2,0.8,0.2,1)]";
   const headerState = isVisible ? 'opacity-100 translate-y-0 blur-0' : 'opacity-0 -translate-y-8 blur-sm';
@@ -191,7 +195,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onNavigate, isDarkMode }) => 
           <div className="flex flex-col md:flex-row items-start md:items-end justify-between">
             <div className="flex flex-col gap-4 w-full">
               <h1 
-                className={`font-nabla text-6xl sm:text-7xl md:text-7xl lg:text-8xl lowercase md:leading-[0.8] -ml-1 whitespace-nowrap overflow-visible ${
+                className={`font-nabla text-6xl sm:text-7xl md:text-8xl lg:text-9xl lowercase md:leading-[0.8] -ml-1 whitespace-nowrap overflow-visible ${
                   isDarkMode 
                     ? 'mix-blend-screen' 
                     : 'drop-shadow-[3px_3px_0px_rgba(0,0,0,0.25)] opacity-100'
