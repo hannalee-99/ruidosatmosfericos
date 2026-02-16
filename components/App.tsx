@@ -28,11 +28,8 @@ const App: React.FC = () => {
   
   useDataSeeding();
 
-  // Gerenciamento centralizado da classe de tema
   useEffect(() => {
-    // Força modo escuro se estiver no backoffice
     const shouldBeLight = !isDarkMode && view !== ViewState.BACKOFFICE;
-    
     if (shouldBeLight) {
       document.body.classList.add('light-mode');
     } else {
@@ -41,19 +38,30 @@ const App: React.FC = () => {
   }, [isDarkMode, view]);
 
   const getViewFromHash = useCallback(() => {
-    const rawHash = window.location.hash.replace(/^#\/?/, '');
+    // Remove # e limpa possíveis caracteres residuais de encoding e pontos
+    const rawHash = window.location.hash.replace(/^#\/?/, '').replace(/\/$/, '');
     const decoded = decodeURIComponent(rawHash);
-    const parts = decoded.split('/');
+    const parts = decoded.split('/').map(p => p.replace(/\./g, ''));
     
-    const baseView = parts[0] as ViewState;
+    const baseViewStr = parts[0];
     const slug = parts[1] || null;
 
-    const validView = Object.values(ViewState).find(v => v === baseView) as ViewState;
+    // Mapeia strings de URL para ViewState
+    const validView = Object.values(ViewState).find(v => v === baseViewStr) as ViewState;
     return { 
       view: validView || ViewState.LANDING, 
       slug 
     };
   }, []);
+
+  // Sincroniza estado inicial com a URL antes mesmo do Splash terminar
+  useEffect(() => {
+    const { view: initialView, slug } = getViewFromHash();
+    if (initialView !== ViewState.LANDING) {
+      setView(initialView);
+      setActiveSlug(slug);
+    }
+  }, [getViewFromHash]);
 
   useEffect(() => {
     const syncState = () => {
@@ -75,10 +83,12 @@ const App: React.FC = () => {
   useEffect(() => {
     if (!hasEntered) return;
 
-    let targetHash = `#/${view}`;
-    // Adiciona slug ao hash para Matéria ou Sinais
+    // Constrói a URL limpa conforme solicitado: #/materia/ ou #/materia/slug/
+    let targetHash = `#/${view}/`;
+    
     if ((view === ViewState.MATERIA || view === ViewState.SINAIS) && activeSlug) {
-      targetHash = `#/${view}/${activeSlug}`;
+      const cleanSlug = activeSlug.replace(/\./g, '');
+      targetHash = `#/${view}/${cleanSlug}/`;
     }
 
     if (window.location.hash !== targetHash) {
@@ -97,8 +107,10 @@ const App: React.FC = () => {
 
   const handleEntry = () => {
     setHasEntered(true);
-    setView(ViewState.LANDING);
-    setActiveSlug(null);
+    // Re-sincroniza ao entrar para garantir que deep links funcionem após o splash
+    const { view: currentView, slug } = getViewFromHash();
+    setView(currentView);
+    setActiveSlug(slug);
   };
 
   const renderView = () => {

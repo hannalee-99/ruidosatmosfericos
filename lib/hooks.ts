@@ -17,25 +17,33 @@ export const useMeta = () => {
     image?: string;
     url?: string;
   }) => {
-    const siteTitle = 'ruídos atmosféricos';
-    const finalTitle = data.title ? `${data.title} | ${siteTitle}` : siteTitle;
+    const siteName = 'ruídos atmosféricos';
+    const finalTitle = data.title ? `${data.title} | ${siteName}` : siteName;
     
+    // Atualiza o título do documento (browser tab)
     document.title = finalTitle.toLowerCase();
 
+    // Protocolo OG e Twitter Meta Tags
     const metaMapping: Record<string, string | undefined> = {
       'description': data.description,
+      // Open Graph / Facebook
+      'og:site_name': siteName,
       'og:title': finalTitle,
       'og:description': data.description,
       'og:image': data.image,
       'og:url': data.url || window.location.href,
+      'og:type': 'website',
+      // Twitter
+      'twitter:card': 'summary_large_image',
       'twitter:title': finalTitle,
       'twitter:description': data.description,
       'twitter:image': data.image,
     };
 
     Object.entries(metaMapping).forEach(([prop, content]) => {
-      if (!content) return;
+      if (content === undefined || content === null) return;
       
+      // Tenta encontrar por property (OG) ou name (Standard/Twitter)
       let element = document.querySelector(`meta[property="${prop}"]`) || 
                     document.querySelector(`meta[name="${prop}"]`);
       
@@ -54,6 +62,7 @@ export const useMeta = () => {
 
   const resetMeta = useCallback(() => {
     document.title = 'ruídos atmosféricos';
+    // Em SPAs, idealmente voltamos para as metas base do index.html
   }, []);
 
   return { updateMeta, resetMeta };

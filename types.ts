@@ -1,10 +1,10 @@
 
 export enum ViewState {
   LANDING = 'entrada',
-  MATERIA = 'matéria',
+  MATERIA = 'materia',
   MANIFESTO = 'manifesto',
   SINAIS = 'sinais',
-  ABOUT = '👁👁',          
+  ABOUT = 'sobre',          
   CONNECT = 'conectar',
   BACKOFFICE = 'fluxo'
 }
@@ -35,8 +35,10 @@ export interface Work {
   isFeatured?: boolean;
   views: number;
   description?: string;
+  // Campos SEO para Marketing Digital
   seoTitle?: string;
   seoDescription?: string;
+  seoImage?: string;
 }
 
 export type SignalBlockType = 'text' | 'image' | 'embed';
@@ -57,6 +59,7 @@ export interface Signal {
   blocks: SignalBlock[];
   status: 'rascunho' | 'publicado';
   views: number;
+  // Campos SEO para Marketing Digital
   seoTitle?: string;
   seoDescription?: string;
   seoImage?: string;
@@ -66,7 +69,7 @@ export interface AboutData {
   id: string; // 'profile'
   text: string;
   imageUrl: string;
-  faviconUrl?: string; // Novo campo para o favicon customizado
+  faviconUrl?: string; 
 }
 
 export interface LinkItem {
@@ -82,9 +85,6 @@ export interface ConnectConfig {
   links: LinkItem[];
 }
 
-/**
- * Interface para armazenamento de métricas do sensor de presença
- */
 export interface SensorData {
   id: string; // ex: 'sensor_metrics'
   clicks: number;
