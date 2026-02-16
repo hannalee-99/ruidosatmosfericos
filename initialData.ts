@@ -9,7 +9,7 @@ export const INITIAL_DATA: {
     connect_config: ConnectConfig | null;
   };
 } = {
-  "lastUpdated": 1771205573284,
+  "lastUpdated": 1771205872080,
   "works": [
     {
       "title": "essência na ionosfera",
@@ -67,7 +67,7 @@ export const INITIAL_DATA: {
       "title": "primeira transmissão",
       "subtitle": "espere (espero) nada aprecie (aprecio) tudo",
       "date": "15/02/2026",
-      "status": "rascunho",
+      "status": "publicado",
       "views": 0,
       "blocks": [
         {
