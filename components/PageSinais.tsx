@@ -2,8 +2,10 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { storage } from '../lib/storage';
 import { Signal, SignalBlock } from '../types';
+import { DEFAULT_IMAGE } from '../constants';
 import { useMeta } from '../lib/hooks';
 import SignalRenderer from './SignalRenderer';
+import JsonLd from './JsonLd';
 
 const formatImageUrl = (url: string): string => {
   if (!url) return '';
@@ -24,7 +26,7 @@ const calculateReadingTime = (blocks: SignalBlock[]): string => {
     .join(' ');
   const wordCount = text.trim().split(/\s+/).length;
   const minutes = Math.max(1, Math.ceil(wordCount / 200));
-  return `${minutes} min`;
+  return `${minutes} min de leitura`;
 };
 
 const ReadingProgress = () => {
@@ -42,7 +44,7 @@ const ReadingProgress = () => {
     return () => { if (modalScroll) modalScroll.removeEventListener("scroll", updateProgress); };
   }, []);
   return (
-    <div className="fixed top-0 left-0 w-full h-1 z-[60] bg-white/10 [.light-mode_&]:bg-black/10">
+    <div className="fixed top-0 left-0 w-full h-1 z-[210] bg-white/10 [.light-mode_&]:bg-black/10">
       <div className="h-full bg-[var(--accent)] shadow-[0_0_10px_var(--accent)] transition-all duration-100 ease-out" style={{ width: `${width}%` }} />
     </div>
   );
@@ -66,10 +68,10 @@ const BackToTop = ({ targetId }: { targetId?: string }) => {
   return (
     <button
       onClick={scrollToTop}
-      className={`fixed bottom-8 right-8 z-[80] w-12 h-12 rounded-full flex items-center justify-center bg-white/10 [.light-mode_&]:bg-black/5 hover:bg-[var(--accent)] text-white [.light-mode_&]:text-black hover:text-black border border-white/10 transition-all duration-500 transform ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8 pointer-events-none'}`}
+      className={`fixed bottom-8 right-8 z-[80] w-12 h-12 rounded-full flex items-center justify-center bg-black/80 [.light-mode_&]:bg-white/80 backdrop-blur-md hover:bg-[var(--accent)] text-white [.light-mode_&]:text-black hover:text-black border border-white/10 transition-all duration-500 transform ${visible ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 translate-y-8 scale-90 pointer-events-none'}`}
       title="voltar ao topo"
     >
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
     </button>
   );
 };
@@ -88,6 +90,8 @@ const PageSinais: React.FC<PageSinaisProps> = ({
   const [posts, setPosts] = useState<Signal[]>([]);
   const [selectedPost, setSelectedPost] = useState<Signal | null>(null);
   const [lightboxIndex, setLightboxIndex] = useState<number>(-1);
+  const [showBackButton, setShowBackButton] = useState(true);
+  const lastScrollY = useRef(0);
   const { updateMeta, resetMeta } = useMeta();
 
   useEffect(() => {
@@ -105,7 +109,7 @@ const PageSinais: React.FC<PageSinaisProps> = ({
           const post = published.find(p => p.slug === activeSignalSlug || p.id === activeSignalSlug);
           if (post) {
             setSelectedPost(post);
-            const firstImage = post.blocks.find(b => b.type === 'image')?.content;
+            const firstImage = post.coverImageUrl || post.blocks.find(b => b.type === 'image')?.content;
             updateMeta({
               title: post.seoTitle || post.title,
               description: post.seoDescription || post.subtitle || 'captura de frequências e registros de campo',
@@ -120,6 +124,40 @@ const PageSinais: React.FC<PageSinaisProps> = ({
     };
     fetchData();
   }, [activeSignalSlug, updateMeta, resetMeta]);
+
+  // Lógica para esconder/mostrar botão de voltar no scroll
+  useEffect(() => {
+    const scrollContainer = document.getElementById('post-modal-scroll');
+    if (!scrollContainer || !selectedPost) return;
+
+    const handleScroll = () => {
+      const currentScrollY = scrollContainer.scrollTop;
+      
+      if (currentScrollY > lastScrollY.current && currentScrollY > 100) {
+        setShowBackButton(false);
+      } else {
+        setShowBackButton(true);
+      }
+      lastScrollY.current = currentScrollY;
+    };
+
+    scrollContainer.addEventListener('scroll', handleScroll, { passive: true });
+    return () => scrollContainer.removeEventListener('scroll', handleScroll);
+  }, [selectedPost]);
+
+  const articleSchema = useMemo(() => {
+    if (!selectedPost) return null;
+    const firstImage = selectedPost.coverImageUrl || selectedPost.blocks.find(b => b.type === 'image')?.content;
+    const isoDate = selectedPost.date.split('/').reverse().join('-'); 
+    return {
+      "@context": "https://schema.org",
+      "@type": "Article",
+      "headline": selectedPost.title,
+      "image": [selectedPost.seoImage || firstImage || DEFAULT_IMAGE],
+      "datePublished": isoDate,
+      "author": [{ "@type": "Person", "name": "ruídos atmosféricos", "url": window.location.origin }]
+    };
+  }, [selectedPost]);
 
   const postImages = useMemo(() => {
     if (!selectedPost) return [];
@@ -176,19 +214,40 @@ const PageSinais: React.FC<PageSinaisProps> = ({
   if (selectedPost) {
     const readingTime = calculateReadingTime(selectedPost.blocks);
     return (
-      <div id="post-modal-scroll" className="fixed inset-0 z-50 bg-[#050505] [.light-mode_&]:bg-[#f4f4f4] text-white [.light-mode_&]:text-[#111] overflow-y-auto animate-in fade-in duration-500 selection:bg-[var(--accent)] selection:text-black scroll-smooth">
+      <div id="post-modal-scroll" className="fixed inset-0 z-50 bg-[#050505] [.light-mode_&]:bg-[#f4f4f4] text-white [.light-mode_&]:text-[#111] overflow-y-auto animate-in fade-in duration-500 selection:bg-[var(--accent)] selection:text-black scroll-smooth no-scrollbar">
+         {articleSchema && <JsonLd data={articleSchema} />}
          <ReadingProgress />
          <BackToTop targetId="post-modal-scroll" />
+         
          <div className="fixed inset-0 pointer-events-none opacity-[0.03] bg-[url('https://grainy-gradients.vercel.app/noise.svg')] z-0"></div>
-         <button onClick={handleClosePost} className="fixed top-6 left-6 md:top-8 md:left-8 z-[60] group flex items-center gap-3 mix-blend-difference">
-            <div className="w-10 h-10 rounded-full border border-white/20 flex items-center justify-center group-hover:bg-white group-hover:text-black transition-all duration-300">←</div>
-         </button>
-         <div className="relative z-10 max-w-6xl mx-auto pt-24 md:pt-32 px-6 md:px-12 pb-40">
+         
+         <div 
+           className={`fixed top-24 left-6 md:top-32 md:left-12 z-[110] flex items-center gap-6 transition-all duration-700 ease-[cubic-bezier(0.2,0.8,0.2,1)] ${showBackButton ? 'opacity-100 translate-y-0 pointer-events-auto' : 'opacity-0 -translate-y-8 pointer-events-none blur-sm'}`}
+         >
+            <button 
+              onClick={handleClosePost} 
+              className="group flex items-center gap-3 bg-black/60 [.light-mode_&]:bg-white/60 backdrop-blur-xl p-1 pr-6 rounded-full border border-white/10 [.light-mode_&]:border-black/10 hover:border-[var(--accent)] transition-all shadow-2xl"
+            >
+               <div className="w-10 h-10 rounded-full bg-[var(--accent)] text-black flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+               </div>
+               <span className="font-mono text-[10px] uppercase tracking-widest opacity-60 group-hover:opacity-100 transition-opacity">voltar para sinais</span>
+            </button>
+         </div>
+
+         <div className="relative z-10 max-w-6xl mx-auto pt-48 md:pt-64 px-6 md:px-12 pb-40">
+            {selectedPost.coverImageUrl && (
+              <div className="w-full h-[40vh] md:h-[60vh] rounded-3xl overflow-hidden mb-16 relative">
+                 <img src={selectedPost.coverImageUrl} className="w-full h-full object-cover animate-in zoom-in-105 duration-1000" alt="capa" />
+                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
+              </div>
+            )}
+
             <header className="mb-16 md:mb-24 relative max-w-4xl mx-auto text-left">
                <div className="flex flex-col md:flex-row md:items-end justify-between border-t border-white/20 pt-4 mb-8 gap-4">
-                 <div className="flex flex-wrap gap-4 font-mono text-[10px] md:text-xs tracking-widest lowercase opacity-60">
+                 <div className="flex flex-wrap gap-4 font-mono text-[10px] md:text-xs tracking-widest lowercase opacity-60 items-center">
                     <span className="bg-white/10 px-2 py-1 rounded">data: {selectedPost.date}</span>
-                    <span className="bg-white/10 px-2 py-1 rounded">tempo: {readingTime}</span>
+                    <span className="bg-[var(--accent)]/10 text-[var(--accent)] px-2 py-1 rounded font-bold">{readingTime}</span>
                     <button 
                       onClick={() => {
                         navigator.clipboard.writeText(window.location.href);
@@ -202,11 +261,15 @@ const PageSinais: React.FC<PageSinaisProps> = ({
                  </div>
                </div>
                <h1 className="font-electrolize text-4xl md:text-7xl lg:text-8xl leading-[1.1] md:leading-[0.9] text-[var(--accent)] mb-8 lowercase">{selectedPost.title}</h1>
+               {selectedPost.subtitle && (
+                 <p className="font-mono text-lg md:text-xl opacity-60 italic max-w-2xl">{selectedPost.subtitle}</p>
+               )}
             </header>
-            <article className="max-w-4xl mx-auto">
+            <article className="max-w-4xl mx-auto pb-32">
                <SignalRenderer signal={selectedPost} onImageClick={setLightboxIndex} />
             </article>
          </div>
+
          {viewingBlock && (
            <div className="fixed inset-0 z-[300] bg-[#050505]/98 flex flex-col items-center justify-center p-4 backdrop-blur-xl animate-in fade-in duration-300" onClick={() => setLightboxIndex(-1)}>
               <button onClick={() => setLightboxIndex(-1)} className="absolute top-8 right-8 z-[310] text-white/50 hover:text-white transition-colors">
@@ -233,6 +296,7 @@ const PageSinais: React.FC<PageSinaisProps> = ({
                   key={viewingBlock.id}
                   src={formatImageUrl(viewingBlock.content)} 
                   className="max-w-full max-h-[75vh] object-contain animate-in zoom-in-95 duration-500" 
+                  alt="view"
                 />
                 {viewingBlock.caption && (
                   <div className="max-w-2xl text-center">
@@ -262,9 +326,9 @@ const PageSinais: React.FC<PageSinaisProps> = ({
 
       <div className="space-y-32">
         {years.map((year) => (
-          <div key={year} className="relative group">
+          <div key={year} className="relative group md:pl-24 lg:pl-32">
             <div 
-              className="absolute -top-12 md:-top-16 left-0 md:-left-8 text-6xl md:text-[10rem] font-bold font-nabla leading-none select-none pointer-events-none z-0 transition-all duration-700 opacity-10 md:group-hover:opacity-20 md:group-hover:scale-105" 
+              className="absolute -top-12 md:-top-16 left-0 text-6xl md:text-[10rem] font-bold font-nabla leading-none select-none pointer-events-none z-0 transition-all duration-700 opacity-10 md:group-hover:opacity-20 md:group-hover:scale-105" 
               style={{ fontPalette: isDarkMode ? '--matrix' : '--matrix-blue' }}
             >
               {year}
@@ -272,14 +336,21 @@ const PageSinais: React.FC<PageSinaisProps> = ({
             <div className="relative z-10 pt-8 md:pt-16">
               {groupedPosts[year].map((post) => (
                     <div key={post.id} className="relative group/item cursor-pointer mb-24 last:mb-0" onClick={() => handleOpenPost(post)}>
-                      <div className="flex flex-col md:flex-row gap-6 md:gap-12">
+                      <div className="flex flex-col md:flex-row gap-6 md:gap-12 items-center md:items-start">
                          <div className="md:w-32 flex-shrink-0 flex md:flex-col items-center md:items-start pt-2">
                             <div className="font-vt text-2xl md:text-3xl text-[var(--accent)] opacity-80">{post.date.split('/').slice(0,2).join('/')}</div>
                          </div>
-                         <div className="flex-grow pl-6 md:pl-8 border-l border-white/10 md:group-hover/item:border-[var(--accent)] transition-colors py-1">
-                            <h3 className="text-3xl md:text-5xl font-electrolize mb-4 lowercase text-[var(--accent)]">{post.title}</h3>
-                            {post.subtitle && <p className="font-mono text-sm opacity-60 lowercase">{post.subtitle}</p>}
-                            <p className="text-[10px] opacity-20 font-mono mt-2 tracking-widest">/{post.slug || '...'}</p>
+                         <div className="flex-grow pl-6 md:pl-8 border-l border-white/10 md:group-hover/item:border-[var(--accent)] transition-colors py-1 flex flex-col md:flex-row gap-8 items-center">
+                            <div className="flex-grow">
+                              <h3 className="text-3xl md:text-5xl font-electrolize mb-4 lowercase text-[var(--accent)]">{post.title}</h3>
+                              {post.subtitle && <p className="font-mono text-sm opacity-60 lowercase line-clamp-2">{post.subtitle}</p>}
+                              <p className="text-[10px] opacity-20 font-mono mt-2 tracking-widest">/{post.slug || '...'}</p>
+                            </div>
+                            {post.coverImageUrl && (
+                              <div className="w-full md:w-48 aspect-video md:aspect-square rounded-xl overflow-hidden border border-white/10 flex-shrink-0 grayscale hover:grayscale-0 transition-all duration-700">
+                                <img src={post.coverImageUrl} className="w-full h-full object-cover" alt="thumb" />
+                              </div>
+                            )}
                          </div>
                       </div>
                     </div>

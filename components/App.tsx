@@ -1,6 +1,5 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { SpeedInsights } from '@vercel/speed-insights/react';
 import { ViewState } from '../types';
 import { useTheme, useDataSeeding } from '../lib/hooks';
 
@@ -116,7 +115,7 @@ const App: React.FC = () => {
 
   const renderView = () => {
     switch (view) {
-      case ViewState.LANDING: return <LandingPage onNavigate={setView} isDarkMode={isDarkMode} />;
+      case ViewState.LANDING: return <LandingPage onNavigate={setView} onSignalSelect={setActiveSlug} isDarkMode={isDarkMode} />;
       case ViewState.MATERIA: return <PageMateria isDarkMode={isDarkMode} workSlug={activeSlug} onNavigate={setView} onWorkSelect={setActiveSlug} />;
       case ViewState.MANIFESTO: return <PageManifesto isDarkMode={isDarkMode} />;
       case ViewState.SINAIS: return <PageSinais isDarkMode={isDarkMode} activeSignalSlug={activeSlug} onSignalSelect={setActiveSlug} />;
@@ -153,7 +152,6 @@ const App: React.FC = () => {
           {view !== ViewState.BACKOFFICE && <Footer />}
         </div>
       </main>
-      <SpeedInsights />
     </div>
   );
 };

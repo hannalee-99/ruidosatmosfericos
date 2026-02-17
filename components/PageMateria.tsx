@@ -5,6 +5,7 @@ import { Work, ViewState } from '../types';
 import { MONTH_NAMES, DEFAULT_IMAGE } from '../constants';
 import { useMeta } from '../lib/hooks';
 import LazyImage from './LazyImage';
+import JsonLd from './JsonLd';
 
 interface PageMateriaProps {
   isDarkMode: boolean;
@@ -46,6 +47,33 @@ const PageMateria: React.FC<PageMateriaProps> = ({ isDarkMode, workSlug, onNavig
     };
     fetchWorks();
   }, [workSlug, updateMeta, resetMeta]);
+
+  // Geração do Schema VisualArtwork para SEO
+  const artworkSchema = useMemo(() => {
+    if (!selectedWork) return null;
+    
+    // Tenta extrair dimensões numéricas simples (ex: "70x60 cm")
+    const dimMatch = selectedWork.dimensions.match(/(\d+)\s*x\s*(\d+)/i);
+    const width = dimMatch ? dimMatch[1] : undefined;
+    const height = dimMatch ? dimMatch[2] : undefined;
+
+    return {
+      "@context": "https://schema.org",
+      "@type": "VisualArtwork",
+      "name": selectedWork.title,
+      "image": selectedWork.imageUrl,
+      "dateCreated": selectedWork.year,
+      "artworkMedium": selectedWork.technique,
+      "creator": {
+        "@type": "Person",
+        "name": "ruídos atmosféricos"
+      },
+      "description": selectedWork.seoDescription || selectedWork.description || `obra de arte intitulada ${selectedWork.title}`,
+      "artform": "Painting",
+      "width": width ? { "@type": "Distance", "name": `${width} cm` } : undefined,
+      "height": height ? { "@type": "Distance", "name": `${height} cm` } : undefined
+    };
+  }, [selectedWork]);
 
   const filteredWorks = useMemo(() => {
     let result = works;
@@ -96,6 +124,8 @@ const PageMateria: React.FC<PageMateriaProps> = ({ isDarkMode, workSlug, onNavig
   if (selectedWork) {
     return (
       <div className="relative min-h-screen w-full flex flex-col items-center justify-center animate-in fade-in duration-700 bg-[var(--bg)]">
+        {artworkSchema && <JsonLd data={artworkSchema} />}
+        
         <div 
           className="fixed inset-0 pointer-events-none opacity-[0.08] blur-[80px] z-0 transition-all duration-1000"
           style={{ backgroundImage: `url(${formatImageUrl(selectedWork.imageUrl)})`, backgroundSize: 'cover', backgroundPosition: 'center' }}

@@ -72,13 +72,16 @@ const parseInline = (text: string) => {
       );
     }
 
-    const subParts = part.content.split(/(\*\*.*?\*\*|\*.*?\*)/g);
+    const subParts = part.content.split(/(\*\*.*?\*\*|\*.*?\*|~~.*?~~)/g);
     return subParts.map((sub, j) => {
       if (sub.startsWith('**') && sub.endsWith('**')) {
         return <strong key={`${i}-${j}`} className="font-bold text-[var(--accent)] opacity-100">{sub.slice(2, -2)}</strong>;
       }
       if (sub.startsWith('*') && sub.endsWith('*')) {
         return <em key={`${i}-${j}`} className="italic opacity-80">{sub.slice(1, -1)}</em>;
+      }
+      if (sub.startsWith('~~') && sub.endsWith('~~')) {
+        return <del key={`${i}-${j}`} className="line-through opacity-50">{sub.slice(2, -2)}</del>;
       }
       return sub;
     });

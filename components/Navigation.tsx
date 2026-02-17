@@ -41,7 +41,7 @@ const Navigation: React.FC<NavigationProps> = ({
     [ViewState.MATERIA]: 'matéria',
     [ViewState.MANIFESTO]: 'manifesto',
     [ViewState.SINAIS]: 'sinais',
-    [ViewState.ABOUT]: 'sobre',
+    [ViewState.ABOUT]: 'esse eu',
     [ViewState.CONNECT]: 'contato',
     [ViewState.BACKOFFICE]: 'fluxo'
   };
@@ -53,11 +53,9 @@ const Navigation: React.FC<NavigationProps> = ({
       const nextCount = clickCount + 1;
       if (nextCount >= 5) {
         setClickCount(0);
-        const accessKey = prompt("insira a chave de uplink para autorizar o fluxo:");
-        if (accessKey === 'Gengibre26#') {
-          onNavigate(ViewState.BACKOFFICE);
-          setIsMobileMenuOpen(false);
-        }
+        // Acesso direto removendo a necessidade de senha conforme solicitado
+        onNavigate(ViewState.BACKOFFICE);
+        setIsMobileMenuOpen(false);
       } else {
         setClickCount(nextCount);
       }

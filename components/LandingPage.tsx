@@ -138,10 +138,11 @@ const formatSignalDate = (dateStr: string): string => {
 
 interface LandingPageProps {
   onNavigate: (view: ViewState) => void;
+  onSignalSelect?: (slug: string | null) => void;
   isDarkMode: boolean;
 }
 
-const LandingPage: React.FC<LandingPageProps> = ({ onNavigate, isDarkMode }) => {
+const LandingPage: React.FC<LandingPageProps> = ({ onNavigate, onSignalSelect, isDarkMode }) => {
   const [featuredWorks, setFeaturedWorks] = useState<Work[]>([]);
   const [latestSignals, setLatestSignals] = useState<any[]>([]);
   const [isVisible, setIsVisible] = useState(false);
@@ -151,7 +152,16 @@ const LandingPage: React.FC<LandingPageProps> = ({ onNavigate, isDarkMode }) => 
       try {
         const works: Work[] = await storage.getAll('works');
         const visibleWorks = works.filter(w => w.isVisible);
-        const featured = visibleWorks.filter(w => w.isFeatured);
+        
+        // Prioriza as obras marcadas como isFeatured e ordena pelo featuredOrder (ou data se não houver ordem)
+        const featured = visibleWorks
+          .filter(w => w.isFeatured)
+          .sort((a, b) => {
+            const orderA = a.featuredOrder ?? 999;
+            const orderB = b.featuredOrder ?? 999;
+            if (orderA !== orderB) return orderA - orderB;
+            return b.date.localeCompare(a.date);
+          });
         
         // RESTRITO A 2 OBRAS NA LANDING PAGE PARA FOCO VISUAL
         if (featured.length > 0) {
@@ -293,7 +303,6 @@ const LandingPage: React.FC<LandingPageProps> = ({ onNavigate, isDarkMode }) => 
                           {work.title}
                         </h3>
                         <div className="mt-2 flex items-center gap-2 font-mono text-[9px] text-[var(--accent)] tracking-widest opacity-40 group-hover:opacity-100 transition-opacity">
-                          <span>{work.technique}</span>
                           <span>///</span>
                           <span>ver</span>
                         </div>
@@ -327,7 +336,10 @@ const LandingPage: React.FC<LandingPageProps> = ({ onNavigate, isDarkMode }) => 
                         {displayedSignals.map((sinal, i) => (
                             <div 
                                 key={i} 
-                                onClick={() => onNavigate(ViewState.SINAIS)}
+                                onClick={() => {
+                                  if (onSignalSelect) onSignalSelect(sinal.slug || sinal.id);
+                                  onNavigate(ViewState.SINAIS);
+                                }}
                                 className="flex justify-between items-center border-b border-white/5 py-3 group-hover:border-white/20 transition-colors [.light-mode_&]:border-black/5 [.light-mode_&]:group-hover:border-black/20 cursor-pointer"
                             >
                                 <div className="flex items-center gap-2 overflow-hidden">

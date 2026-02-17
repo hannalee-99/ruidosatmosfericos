@@ -3,7 +3,6 @@ import React, { useState, useEffect } from 'react';
 import { storage } from '../lib/storage';
 import { AboutData, ViewState } from '../types';
 import { DEFAULT_IMAGE } from '../constants';
-import NeobrutalistButton from './NeobrutalistButton';
 
 interface PageAboutProps {
   onNavigate: (view: ViewState) => void;
@@ -56,7 +55,7 @@ const PageAbout: React.FC<PageAboutProps> = ({ onNavigate, isDarkMode }) => {
           </h1>
         </header>
 
-        {/* Coluna da Imagem: Ajusta-se ao tamanho da imagem (fit-content) */}
+        {/* Coluna da Imagem */}
         <div className="md:col-span-5 flex justify-center md:justify-end order-1 md:order-2 w-full mt-4 md:mt-0">
             <div 
               className="relative rounded-2xl md:rounded-3xl overflow-hidden shadow-2xl transition-all duration-500"
@@ -88,14 +87,23 @@ const PageAbout: React.FC<PageAboutProps> = ({ onNavigate, isDarkMode }) => {
              {isLoaded ? (data.text || "configure este texto no backoffice.") : "carregando dados..."}
            </div>
 
+           {/* Botão Estilo Terminal CLI */}
            <div className="pt-4 md:pt-8 flex items-center">
-             <NeobrutalistButton 
+             <button 
                 onClick={() => onNavigate(ViewState.CONNECT)}
-                variant="matrix"
-                className="text-[10px] md:text-xs tracking-[0.2em] px-6 py-2.5 md:px-10 md:py-4 lowercase font-bold opacity-70 md:opacity-100 hover:opacity-100 transition-opacity"
+                className="group relative flex items-center font-mono text-[11px] md:text-sm tracking-widest lowercase transition-all duration-300 active:scale-95"
              >
-               iniciar contato
-             </NeobrutalistButton>
+                <div className="flex items-center gap-2 md:gap-3 py-3 px-5 md:py-4 md:px-8 border border-white/10 [.light-mode_&]:border-black/10 rounded-full bg-black/40 [.light-mode_&]:bg-white/40 backdrop-blur-sm group-hover:border-[var(--accent)] group-hover:bg-black/60 group-hover:shadow-[0_0_20px_rgba(159,248,93,0.15)] transition-all">
+                  <span className="text-[var(--accent)] font-bold">visitor@ruidos:~$</span>
+                  <span className="text-white [.light-mode_&]:text-black opacity-80 group-hover:opacity-100">contact --init</span>
+                  <span className="w-1.5 h-4 md:w-2 md:h-5 bg-[var(--accent)] animate-pulse shadow-[0_0_5px_var(--accent)]"></span>
+                </div>
+                
+                {/* Efeito de glitch sutil no hover */}
+                <span className="absolute -bottom-2 left-10 text-[9px] opacity-0 group-hover:opacity-30 transition-opacity font-vt tracking-[0.3em] text-[var(--accent)]">
+                  >> protocol_uplink_ready
+                </span>
+             </button>
            </div>
         </div>
       </div>

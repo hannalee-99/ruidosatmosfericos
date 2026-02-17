@@ -4,7 +4,7 @@ export enum ViewState {
   MATERIA = 'materia',
   MANIFESTO = 'manifesto',
   SINAIS = 'sinais',
-  ABOUT = 'sobre',          
+  ABOUT = 'esse eu',          
   CONNECT = 'conectar',
   BACKOFFICE = 'fluxo'
 }
@@ -33,6 +33,7 @@ export interface Work {
   status: WorkStatus;
   isVisible: boolean;
   isFeatured?: boolean;
+  featuredOrder?: number; // Nova propriedade para ordenação
   views: number;
   description?: string;
   // Campos SEO para Marketing Digital
@@ -59,9 +60,9 @@ export interface Signal {
   blocks: SignalBlock[];
   status: 'rascunho' | 'publicado';
   views: number;
-  // Campos SEO para Marketing Digital
+  coverImageUrl?: string; // Imagem de capa / Hero
+  seoDescription?: string; // Breve descrição para SEO/Cards
   seoTitle?: string;
-  seoDescription?: string;
   seoImage?: string;
 }
 
