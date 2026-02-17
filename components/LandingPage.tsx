@@ -201,23 +201,23 @@ const LandingPage: React.FC<LandingPageProps> = ({ onNavigate, onSignalSelect, i
       <div className="relative z-10 px-4 md:px-8 pt-24 md:pt-32 max-w-[1800px] mx-auto flex flex-col gap-4">
         
         {/* HEADER */}
-        <header className={`mt-4 md:mt-8 mb-4 md:mb-16 relative border-b border-white/10 pb-8 [.light-mode_&]:border-black/10 ${transitionBase} ${headerState}`}>
+        <header className={`mt-4 md:mt-8 mb-4 md:mb-12 relative border-b border-white/10 pb-8 [.light-mode_&]:border-black/10 ${transitionBase} ${headerState}`}>
           <div className="flex flex-col md:flex-row items-start md:items-end justify-between">
             <div className="flex flex-col gap-4 w-full">
-              {/* Título com Tipografia Fluida para evitar quebra no Desktop */}
+              {/* Título com Tipografia Fluida */}
               <h1 
-                className={`font-nabla lowercase md:leading-[0.8] -ml-1 whitespace-nowrap overflow-visible ${
+                className={`font-nabla lowercase md:leading-[0.8] -ml-1 ${
                   isDarkMode 
                     ? 'mix-blend-screen' 
                     : 'drop-shadow-[3px_3px_0px_rgba(0,0,0,0.25)] opacity-100'
                 }`} 
                 style={{ 
                   fontPalette: isDarkMode ? '--matrix' : '--matrix-blue',
-                  fontSize: 'clamp(3.5rem, 9.5vw, 10rem)' 
                 }}
               >
-                <div className="flex flex-col md:hidden leading-[0.8] w-full" style={{ fontSize: '12vw' }}>
-                    <span>
+                {/* Mobile View: Uniformizada a escala das palavras */}
+                <div className="flex flex-col md:hidden leading-[0.85] w-full">
+                    <span style={{ fontSize: '14.5vw' }}>
                       <Typewriter 
                         text="ruídos" 
                         speed={80} 
@@ -226,7 +226,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onNavigate, onSignalSelect, i
                         shrinkI={true}
                       />
                     </span>
-                    <span className="-mt-1">
+                    <span className="-mt-1" style={{ fontSize: '14.5vw' }}>
                       <Typewriter 
                         text="atmosféricos" 
                         speed={80} 
@@ -236,7 +236,8 @@ const LandingPage: React.FC<LandingPageProps> = ({ onNavigate, onSignalSelect, i
                       />
                     </span>
                 </div>
-                <div className="hidden md:block">
+                {/* Desktop/Tablet View: Com escala levemente reduzida (8.2vw) para melhor respiro */}
+                <div className="hidden md:block whitespace-nowrap overflow-visible" style={{ fontSize: 'clamp(3rem, 8.2vw, 10rem)' }}>
                   <Typewriter 
                     text="ruídos atmosféricos" 
                     speed={80} 
@@ -248,7 +249,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onNavigate, onSignalSelect, i
               </h1>
             </div>
             
-            <div className="flex flex-col items-start md:items-end gap-1 mt-12 md:mt-0 font-mono text-[10px] text-left md:text-right w-full md:w-auto">
+            <div className="flex flex-col items-start md:items-end gap-1 mt-10 md:mt-0 font-mono text-[10px] text-left md:text-right w-full md:w-auto">
                 <div className="flex items-center gap-1.5 opacity-60 hover:opacity-100 transition-opacity cursor-default mb-4">
                   <span className="font-vt text-[10px] tracking-[0.2em] text-[var(--accent)]">
                     sinal estável

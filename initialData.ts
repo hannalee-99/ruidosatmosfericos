@@ -10,7 +10,7 @@ export const INITIAL_DATA: {
     connect_config: ConnectConfig | null;
   };
 } = {
-  "lastUpdated": 1771101643131,
+  "lastUpdated": 1771101643132,
   "works": [
     {
       "title": "essência na ionosfera",
@@ -113,7 +113,8 @@ export const INITIAL_DATA: {
     "profile": {
       "id": "profile",
       "text": "fluxo no ar",
-      "imageUrl": "https://64.media.tumblr.com/0274354bfed2d35de4c9a7d56c62bbe3/44698b6eb1de685d-2b/s2048x3072/52bbac4571b22c3c68f7233f6269567c6c51acc1.png"
+      "imageUrl": "https://64.media.tumblr.com/0274354bfed2d35de4c9a7d56c62bbe3/44698b6eb1de685d-2b/s2048x3072/52bbac4571b22c3c68f7233f6269567c6c51acc1.png",
+      "faviconUrl": ""
     },
     "connect_config": {
       "id": "connect_config",

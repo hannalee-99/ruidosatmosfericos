@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { storage } from '../lib/storage';
 import { Work, ViewState } from '../types';
 import { MONTH_NAMES, DEFAULT_IMAGE } from '../constants';
@@ -18,6 +18,8 @@ const PageMateria: React.FC<PageMateriaProps> = ({ isDarkMode, workSlug, onNavig
   const [works, setWorks] = useState<Work[]>([]);
   const [filterYear, setFilterYear] = useState<string>('todos');
   const [selectedWork, setSelectedWork] = useState<Work | null>(null);
+  const [showBackButton, setShowBackButton] = useState(true);
+  const lastScrollY = useRef(0);
   const { updateMeta, resetMeta } = useMeta();
 
   useEffect(() => {
@@ -48,11 +50,29 @@ const PageMateria: React.FC<PageMateriaProps> = ({ isDarkMode, workSlug, onNavig
     fetchWorks();
   }, [workSlug, updateMeta, resetMeta]);
 
+  // Lógica de esconder/mostrar botão de retorno baseada no scroll
+  useEffect(() => {
+    const scrollContainer = document.getElementById('main-scroll');
+    if (!scrollContainer || !selectedWork) return;
+
+    const handleScroll = () => {
+      const currentScrollY = scrollContainer.scrollTop;
+      if (currentScrollY > lastScrollY.current && currentScrollY > 100) {
+        setShowBackButton(false);
+      } else {
+        setShowBackButton(true);
+      }
+      lastScrollY.current = currentScrollY;
+    };
+
+    scrollContainer.addEventListener('scroll', handleScroll, { passive: true });
+    return () => scrollContainer.removeEventListener('scroll', handleScroll);
+  }, [selectedWork]);
+
   // Geração do Schema VisualArtwork para SEO
   const artworkSchema = useMemo(() => {
     if (!selectedWork) return null;
     
-    // Tenta extrair dimensões numéricas simples (ex: "70x60 cm")
     const dimMatch = selectedWork.dimensions.match(/(\d+)\s*x\s*(\d+)/i);
     const width = dimMatch ? dimMatch[1] : undefined;
     const height = dimMatch ? dimMatch[2] : undefined;
@@ -131,39 +151,48 @@ const PageMateria: React.FC<PageMateriaProps> = ({ isDarkMode, workSlug, onNavig
           style={{ backgroundImage: `url(${formatImageUrl(selectedWork.imageUrl)})`, backgroundSize: 'cover', backgroundPosition: 'center' }}
         ></div>
 
-        <button 
-          onClick={handleBack}
-          className="fixed top-24 right-6 md:right-12 z-[110] w-12 h-12 flex items-center justify-center rounded-full bg-white/5 hover:bg-[var(--accent)] hover:text-black border border-white/10 transition-all group"
-          title="fechar visualização (esc)"
-        >
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-        </button>
+        {/* Botão de Retorno Inteligente (mesmo dos Sinais) */}
+        <div 
+           className={`fixed top-24 left-6 md:top-32 md:left-12 z-[110] flex items-center gap-6 transition-all duration-700 ease-[cubic-bezier(0.2,0.8,0.2,1)] ${showBackButton ? 'opacity-100 translate-y-0 pointer-events-auto' : 'opacity-0 -translate-y-8 pointer-events-none blur-sm'}`}
+         >
+            <button 
+              onClick={handleBack} 
+              className="group flex items-center gap-3 bg-black/60 [.light-mode_&]:bg-white/60 backdrop-blur-xl p-1 pr-6 rounded-full border border-white/10 [.light-mode_&]:border-black/10 hover:border-[var(--accent)] transition-all shadow-2xl"
+            >
+               <div className="w-10 h-10 rounded-full bg-[var(--accent)] text-black flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+               </div>
+               <span className="font-mono text-[10px] uppercase tracking-widest opacity-60 group-hover:opacity-100 transition-opacity">voltar para matéria</span>
+            </button>
+         </div>
 
-        <div className="fixed inset-y-0 left-4 md:left-8 flex items-center z-[100]">
+        {/* Navegação por setas otimizada para Mobile */}
+        <div className="fixed inset-y-0 left-2 md:left-8 flex items-center z-[100]">
           {navigation.prev && (
             <button 
               onClick={() => handleWorkClick(navigation.prev!)}
-              className="w-12 h-12 md:w-16 md:h-16 flex items-center justify-center rounded-full bg-white/5 hover:bg-[var(--accent)] hover:text-black border border-white/5 transition-all group opacity-20 hover:opacity-100"
+              className="w-10 h-10 md:w-16 md:h-16 flex items-center justify-center rounded-full bg-black/40 md:bg-white/5 backdrop-blur-sm hover:bg-[var(--accent)] hover:text-black border border-white/10 transition-all group opacity-60 md:opacity-20 hover:opacity-100"
               title="obra anterior (←)"
             >
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
             </button>
           )}
         </div>
 
-        <div className="fixed inset-y-0 right-4 md:right-8 flex items-center z-[100]">
+        <div className="fixed inset-y-0 right-2 md:right-8 flex items-center z-[100]">
           {navigation.next && (
             <button 
               onClick={() => handleWorkClick(navigation.next!)}
-              className="w-12 h-12 md:w-16 md:h-16 flex items-center justify-center rounded-full bg-white/5 hover:bg-[var(--accent)] hover:text-black border border-white/5 transition-all group opacity-20 hover:opacity-100"
+              className="w-10 h-10 md:w-16 md:h-16 flex items-center justify-center rounded-full bg-black/40 md:bg-white/5 backdrop-blur-sm hover:bg-[var(--accent)] hover:text-black border border-white/10 transition-all group opacity-60 md:opacity-20 hover:opacity-100"
               title="próxima obra (→)"
             >
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18l6-6-6-6"/></svg>
             </button>
           )}
         </div>
 
-        <div className="relative z-10 w-full max-w-7xl px-6 md:px-20 py-32 flex flex-col lg:grid lg:grid-cols-12 gap-12 items-center lg:items-start">
+        {/* Aumentado o padding superior (pt-48) para melhor espaçamento com o botão flutuante */}
+        <div className="relative z-10 w-full max-w-7xl px-6 md:px-20 pt-48 md:pt-64 pb-32 flex flex-col lg:grid lg:grid-cols-12 gap-12 items-center lg:items-start">
           <div className="lg:col-span-8 w-full flex justify-center">
             <div className="relative group max-h-[75vh] w-full flex justify-center">
               <img 

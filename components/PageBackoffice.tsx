@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { storage } from '../lib/storage';
 import { Work, Signal, SignalBlock, SignalBlockType, AboutData, ConnectConfig, ViewState } from '../types';
 import NeobrutalistButton from './NeobrutalistButton';
@@ -286,7 +286,10 @@ export const INITIAL_DATA: {
     }
 
     const newText = before + finalPrefix + insertion + finalSuffix + after;
-    handleUpdateBlock(blockId, newText);
+    const block = editingSignal?.blocks.find(b => b.id === blockId);
+    if (block) {
+       handleUpdateBlock(blockId, newText);
+    }
 
     requestAnimationFrame(() => {
       const updatedTextarea = document.getElementById(`textarea-${blockId}`) as HTMLTextAreaElement;
@@ -359,9 +362,18 @@ export const INITIAL_DATA: {
     });
   };
 
-  const countWords = (text: string) => {
-    return text.trim() ? text.trim().split(/\s+/).length : 0;
-  };
+  // Cálculo de palavras em tempo real para o sinal sendo editado
+  const signalWordCount = useMemo(() => {
+    if (!editingSignal) return 0;
+    const textContent = editingSignal.blocks
+      .filter(b => b.type === 'text')
+      .map(b => b.content)
+      .join(' ')
+      .trim();
+    
+    if (!textContent) return 0;
+    return textContent.split(/\s+/).filter(word => word.length > 0).length;
+  }, [editingSignal]);
 
   const tabs = [ViewState.MATERIA, ViewState.SINAIS, ViewState.ABOUT, ViewState.CONNECT, 'sincronizar'];
 
@@ -592,7 +604,7 @@ export const INITIAL_DATA: {
           </div>
         )}
 
-        {/* Manteve as outras abas inalteradas */}
+        {/* Outras abas */}
         {activeTab === ViewState.SINAIS && (
           <div className="space-y-6">
             {!editingSignal ? (
@@ -627,7 +639,10 @@ export const INITIAL_DATA: {
                   <div className="lg:col-span-8 space-y-6">
                     <div className="bg-white/5 p-8 rounded-xl border border-white/10 space-y-6">
                       <div className="flex justify-between items-center border-b border-white/5 pb-4">
-                        <span className="text-[10px] text-[var(--accent)] tracking-widest uppercase font-bold">conteúdo da transmissão</span>
+                        <div className="flex items-center gap-3">
+                           <span className="text-[10px] text-[var(--accent)] tracking-widest uppercase font-bold">conteúdo da transmissão</span>
+                           <span className="text-[9px] opacity-40 font-mono lowercase pt-0.5">({signalWordCount} palavras)</span>
+                        </div>
                         <div className="flex gap-4">
                            <button type="button" onClick={() => setIsPreviewMode(!isPreviewMode)} className={`text-[10px] border px-4 py-1.5 rounded-full transition-all ${isPreviewMode ? 'bg-[var(--accent)] text-black border-[var(--accent)]' : 'opacity-60 border-white/20 hover:border-white'}`}>
                              {isPreviewMode ? 'editar' : 'visualizar'}
@@ -782,9 +797,15 @@ export const INITIAL_DATA: {
                <h2 className="text-sm font-electrolize text-[var(--accent)] tracking-[0.2em] uppercase">gestão de perfil /// esse eu</h2>
             </header>
             <div className="space-y-6">
-              <div className="space-y-2">
-                <label className="text-[10px] opacity-40 uppercase tracking-widest block">imagem de perfil (url)</label>
-                <input type="text" value={profile.imageUrl} onChange={e => setProfile({...profile, imageUrl: e.target.value})} className="w-full bg-black border border-white/10 p-4 rounded-md outline-none text-sm focus:border-[var(--accent)]" placeholder="https://..." />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <label className="text-[10px] opacity-40 uppercase tracking-widest block">imagem de perfil (url)</label>
+                  <input type="text" value={profile.imageUrl} onChange={e => setProfile({...profile, imageUrl: e.target.value})} className="w-full bg-black border border-white/10 p-4 rounded-md outline-none text-sm focus:border-[var(--accent)]" placeholder="https://..." />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[10px] opacity-40 uppercase tracking-widest block">favicon (ícone do site)</label>
+                  <input type="text" value={profile.faviconUrl || ''} onChange={e => setProfile({...profile, faviconUrl: e.target.value})} className="w-full bg-black border border-white/10 p-4 rounded-md outline-none text-sm focus:border-[var(--accent)]" placeholder="https://... ou data:image/..." />
+                </div>
               </div>
               <div className="space-y-2">
                 <label className="text-[10px] opacity-40 uppercase tracking-widest block">biografia / manifesto pessoal</label>
