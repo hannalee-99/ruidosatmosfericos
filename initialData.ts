@@ -1,4 +1,3 @@
-
 import { Work, Signal, AboutData, ConnectConfig } from './types';
 
 export const INITIAL_DATA: {
@@ -10,7 +9,7 @@ export const INITIAL_DATA: {
     connect_config: ConnectConfig | null;
   };
 } = {
-  "lastUpdated": 1771101643131,
+  "lastUpdated": 1771205872080,
   "works": [
     {
       "title": "essência na ionosfera",
@@ -43,76 +42,48 @@ export const INITIAL_DATA: {
       "views": 0
     },
     {
-      "title": "silêncio comprimido",
-      "year": "2023",
-      "month": "11",
-      "date": "2023-12-20",
-      "technique": "carvão e acrílica",
-      "dimensions": "120x120 cm",
-      "imageUrl": "https://images.unsplash.com/photo-1507608616759-54f48f0af0ee?q=80&w=1974&auto=format&fit=crop",
-      "isFeatured": true,
-      "id": "seed-work-3",
-      "gallery": [],
+      "id": "work-1771205043057",
+      "title": "santo antônio além do carmo de são salvador da bahia de todos os santos",
+      "slug": "sao-salvador-da-bahia-de-todos-os-santos",
+      "year": "2024",
+      "month": "06",
+      "technique": "acrílica sobre painel",
+      "date": "2024-06-01",
+      "dimensions": "40x30cm",
+      "imageUrl": "https://res.cloudinary.com/dcxm8yd49/image/upload/v1771204898/santo_ant%C3%B4nio_al%C3%A9m_do_carmo_de_s%C3%A3o_salvador_da_bahia_de_todos_os_santos_ortlcf.png",
       "status": "disponível",
       "isVisible": true,
-      "views": 0
+      "isFeatured": false,
+      "views": 0,
+      "description": "após uma visitar um lugar obrigatório para todos que vivem e gostam do brasil, salvador, bahia",
+      "seoTitle": "santo antônio além do carmo de são salvador da bahia de todos os santos",
+      "seoDescription": "por Hannalee"
     }
   ],
   "signals": [
     {
-      "id": "signal-1771101541489",
-      "slug": "esse-e-um-teste",
-      "title": "esse é um teste",
-      "subtitle": "",
-      "date": "14/02/2026",
-      "status": "rascunho",
+      "id": "signal-1771205201317",
+      "slug": "primeira-transmissao",
+      "title": "primeira transmissão",
+      "subtitle": "espere (espero) nada aprecie (aprecio) tudo",
+      "date": "15/02/2026",
+      "status": "publicado",
       "views": 0,
       "blocks": [
         {
-          "id": "b-1771101541489",
+          "id": "b-1771205201317",
           "type": "text",
-          "content": "## tomara que dê certo dessa vez!\n\n# quero publicar *logoooo*\nlalalalla\n**lalalalala**\nuhuuuuuu\n\n\n"
-        },
-        {
-          "id": "b-1771101598236-5nyk3",
-          "type": "image",
-          "content": "https://64.media.tumblr.com/0274354bfed2d35de4c9a7d56c62bbe3/44698b6eb1de685d-2b/s2048x3072/52bbac4571b22c3c68f7233f6269567c6c51acc1.png",
-          "caption": "eu"
-        },
-        {
-          "id": "b-1771101605541-thnrj",
-          "type": "embed",
-          "content": "<iframe data-testid=\"embed-iframe\" style=\"border-radius:12px\" src=\"https://open.spotify.com/embed/track/02XvknCqa2kPcOLdqD9h69?utm_source=generator&theme=0\" width=\"100%\" height=\"352\" frameBorder=\"0\" allowfullscreen=\"\" allow=\"autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture\" loading=\"lazy\"></iframe>"
+          "content": "entre o atrito \ndo vazio com a forma \ndo corpo com o mundo \ndo eu com o outro \ndo controle com o fluxo\n\nabre-se um espaço\nalém do limiar da consciência terrena\ndez elevado a menos trinta e três centímetros \no tecido central onde tudo reside\nem transição molecular\no que não se fixa, transmuta\naonde o que está embaixo é como o que está no alto \ne o que está no alto \né como o que está embaixo \nabsorve no tempo e abstrai no agora\n\nhá treze bilhões de anos\nsou matéria em reorganização \nquarks, léptons, partículas \nhoje atravessadas por fluidos terráqueos\nquem fui segundo passado não é mais eu \nnegociando constantemente \ncom a tendência ao caos \nonde o excesso entorpece a frequência\npercebo no ruído o escape \nentre estímulo e sentido \n\nopero em desconformidade controlada \nresistindo à (des)ordem \ncriando padrões temporários \no modo dominante de existir \ngera angústia por natureza\nnos limita a poucos sentidos\nenquanto transitamos pela impermanência\n\na falta surge quando a expectativa não se sustenta \nprojetamos cenários para suportar o indeterminado\naderimos à lógica utilitária por pressão e sobrevivência \na existência não se sustenta na ilusão\npois existir é explorar e transcender\n\npoder é discernir o que se sente\npara reconhecer o necessário\nquando a palavra falha\na forma não sustenta\no movimento escorre\nsinais atravessam\no tecido cósmico\n\né nessa fenda \nque observo \n**criando.**\n"
         }
-      ]
-    },
-    {
-      "id": "signal-macro-vision-v2",
-      "title": "nunca esquecer",
-      "subtitle": "não perca a visão macro!!! a descida da consciência através das camadas da matéria.",
-      "date": "13/03/2025",
-      "status": "publicado",
-      "views": 12,
-      "blocks": [
-        {
-          "id": "b-diagram",
-          "type": "image",
-          "content": "https://theosophy.wiki/en/images/thumb/7/7b/Diagram_of_Principles_1890.jpg/400px-Diagram_of_Principles_1890.jpg",
-          "caption": "source > soul > mind > body > earth"
-        },
-        {
-          "id": "b-noise",
-          "type": "image",
-          "content": "https://upload.wikimedia.org/wikipedia/commons/c/ce/WMAP_2010.png",
-          "caption": "fundo cósmico de micro-ondas"
-        }
-      ]
+      ],
+      "seoTitle": "primeira transmissão",
+      "seoDescription": "espere (espero) nada aprecie (aprecio) tudo"
     }
   ],
   "about": {
     "profile": {
       "id": "profile",
-      "text": "fluxo no ar",
+      "text": "",
       "imageUrl": "https://64.media.tumblr.com/0274354bfed2d35de4c9a7d56c62bbe3/44698b6eb1de685d-2b/s2048x3072/52bbac4571b22c3c68f7233f6269567c6c51acc1.png"
     },
     "connect_config": {
@@ -123,7 +94,7 @@ export const INITIAL_DATA: {
         {
           "id": "lnk1",
           "label": "instagram",
-          "url": "https://instagram.com"
+          "url": "https://instagram.com/h3nn3l99"
         }
       ]
     }
