@@ -99,9 +99,9 @@ const PageAbout: React.FC<PageAboutProps> = ({ onNavigate, isDarkMode }) => {
                   <span className="w-1.5 h-4 md:w-2 md:h-5 bg-[var(--accent)] animate-pulse shadow-[0_0_5px_var(--accent)]"></span>
                 </div>
                 
-                {/* Efeito de glitch sutil no hover */}
+                {/* Efeito de glitch sutil no hover - Correção do erro >> */}
                 <span className="absolute -bottom-2 left-10 text-[9px] opacity-0 group-hover:opacity-30 transition-opacity font-vt tracking-[0.3em] text-[var(--accent)]">
-                  >> protocol_uplink_ready
+                  {">> protocol_uplink_ready"}
                 </span>
              </button>
            </div>
