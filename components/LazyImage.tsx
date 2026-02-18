@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect, useRef } from 'react';
+import { getOptimizedUrl } from '../lib/media';
 
 interface LazyImageProps {
   src: string;
@@ -57,12 +58,14 @@ const LazyImage: React.FC<LazyImageProps> = ({
     setIsLoaded(true);
   };
 
+  // Otimiza a URL baseada no container (estimativa de largura para mobile/desktop)
+  const optimizedSrc = getOptimizedUrl(src, window.innerWidth > 768 ? 1200 : 800);
+
   return (
     <div 
       ref={containerRef}
       className={`relative w-full overflow-hidden bg-transparent ${autoHeight ? 'h-auto' : 'h-full'} ${className}`}
     >
-      {/* Placeholder Minimalista - Apenas efeito de pulso, fundo transparente */}
       {!isLoaded && (
         <div 
           className="absolute inset-0 z-10 pointer-events-none transition-opacity duration-1000 ease-out flex items-center justify-center opacity-10 bg-transparent"
@@ -71,11 +74,10 @@ const LazyImage: React.FC<LazyImageProps> = ({
         </div>
       )}
 
-      {/* Imagem Real - Removido blur para evitar gradientes artificiais */}
       {isInView && (
         <img
           ref={imgRef}
-          src={src}
+          src={optimizedSrc}
           alt={alt}
           onLoad={handleImageLoad}
           className={`

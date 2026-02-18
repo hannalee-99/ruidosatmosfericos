@@ -4,20 +4,9 @@ import { storage } from '../lib/storage';
 import { Signal, SignalBlock } from '../types';
 import { DEFAULT_IMAGE } from '../constants';
 import { useMeta } from '../lib/hooks';
+import { getOptimizedUrl } from '../lib/media';
 import SignalRenderer from './SignalRenderer';
 import JsonLd from './JsonLd';
-
-const formatImageUrl = (url: string): string => {
-  if (!url) return '';
-  if (url.startsWith('data:image')) return url;
-  if (url.includes('drive.google.com')) {
-    const match = url.match(/\/d\/(.+?)\/(view|edit)?/) || url.match(/[?&]id=(.+?)(&|$)/);
-    if (match && match[1]) {
-      return `https://drive.google.com/uc?export=view&id=${match[1]}`;
-    }
-  }
-  return url;
-};
 
 const calculateReadingTime = (blocks: SignalBlock[]): string => {
   const text = blocks
@@ -125,7 +114,6 @@ const PageSinais: React.FC<PageSinaisProps> = ({
     fetchData();
   }, [activeSignalSlug, updateMeta, resetMeta]);
 
-  // Lógica para esconder/mostrar botão de voltar no scroll
   useEffect(() => {
     const scrollContainer = document.getElementById('post-modal-scroll');
     if (!scrollContainer || !selectedPost) return;
@@ -238,7 +226,7 @@ const PageSinais: React.FC<PageSinaisProps> = ({
          <div className="relative z-10 max-w-6xl mx-auto pt-48 md:pt-64 px-6 md:px-12 pb-40">
             {selectedPost.coverImageUrl && (
               <div className="w-full h-[40vh] md:h-[60vh] rounded-3xl overflow-hidden mb-16 relative">
-                 <img src={selectedPost.coverImageUrl} className="w-full h-full object-cover animate-in zoom-in-105 duration-1000" alt="capa" />
+                 <img src={getOptimizedUrl(selectedPost.coverImageUrl)} className="w-full h-full object-cover animate-in zoom-in-105 duration-1000" alt="capa" />
                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
               </div>
             )}
@@ -294,7 +282,7 @@ const PageSinais: React.FC<PageSinaisProps> = ({
               <div className="relative max-w-full max-h-[85vh] flex flex-col items-center gap-8 px-4" onClick={e => e.stopPropagation()}>
                 <img 
                   key={viewingBlock.id}
-                  src={formatImageUrl(viewingBlock.content)} 
+                  src={getOptimizedUrl(viewingBlock.content)} 
                   className="max-w-full max-h-[75vh] object-contain animate-in zoom-in-95 duration-500" 
                   alt="view"
                 />
@@ -348,7 +336,7 @@ const PageSinais: React.FC<PageSinaisProps> = ({
                             </div>
                             {post.coverImageUrl && (
                               <div className="w-full md:w-48 aspect-video md:aspect-square rounded-xl overflow-hidden border border-white/10 flex-shrink-0 grayscale hover:grayscale-0 transition-all duration-700">
-                                <img src={post.coverImageUrl} className="w-full h-full object-cover" alt="thumb" />
+                                <img src={getOptimizedUrl(post.coverImageUrl, 300)} className="w-full h-full object-cover" alt="thumb" />
                               </div>
                             )}
                          </div>

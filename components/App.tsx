@@ -1,9 +1,9 @@
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, Suspense, lazy } from 'react';
 import { ViewState } from '../types';
 import { useTheme, useDataSeeding } from '../lib/hooks';
 
-// Layout & UI
+// Layout & UI (Sempre necessários)
 import Navigation from './Navigation';
 import Splash from './Splash';
 import CustomCursor from './CustomCursor';
@@ -11,14 +11,20 @@ import ObserverEffect from './ObserverEffect';
 import GenerativeFavicon from './GenerativeFavicon';
 import Footer from './Footer';
 
-// Pages
-import LandingPage from './LandingPage';
-import PageMateria from './PageMateria';
-import PageManifesto from './PageManifesto';
-import PageSinais from './PageSinais';
-import PageAbout from './PageAbout';
-import PageConnect from './PageConnect';
-import PageBackoffice from './PageBackoffice';
+// Pages (Carregadas sob demanda para otimizar TTI)
+const LandingPage = lazy(() => import('./LandingPage'));
+const PageMateria = lazy(() => import('./PageMateria'));
+const PageManifesto = lazy(() => import('./PageManifesto'));
+const PageSinais = lazy(() => import('./PageSinais'));
+const PageAbout = lazy(() => import('./PageAbout'));
+const PageConnect = lazy(() => import('./PageConnect'));
+const PageBackoffice = lazy(() => import('./PageBackoffice'));
+
+const PageLoader = () => (
+  <div className="w-full h-screen flex items-center justify-center bg-black">
+    <div className="w-8 h-8 border-2 border-[var(--accent)] border-t-transparent rounded-full animate-spin"></div>
+  </div>
+);
 
 const App: React.FC = () => {
   const [hasEntered, setHasEntered] = useState(false);
@@ -38,7 +44,6 @@ const App: React.FC = () => {
   }, [isDarkMode, view]);
 
   const getViewFromHash = useCallback(() => {
-    // Remove # e limpa possíveis caracteres residuais de encoding e pontos
     const rawHash = window.location.hash.replace(/^#\/?/, '').replace(/\/$/, '');
     const decoded = decodeURIComponent(rawHash);
     const parts = decoded.split('/').map(p => p.replace(/\./g, ''));
@@ -46,7 +51,6 @@ const App: React.FC = () => {
     const baseViewStr = parts[0];
     const slug = parts[1] || null;
 
-    // Mapeia strings de URL para ViewState
     const validView = Object.values(ViewState).find(v => v === baseViewStr) as ViewState;
     return { 
       view: validView || ViewState.LANDING, 
@@ -54,7 +58,6 @@ const App: React.FC = () => {
     };
   }, []);
 
-  // Sincroniza estado inicial com a URL antes mesmo do Splash terminar
   useEffect(() => {
     const { view: initialView, slug } = getViewFromHash();
     if (initialView !== ViewState.LANDING) {
@@ -83,7 +86,6 @@ const App: React.FC = () => {
   useEffect(() => {
     if (!hasEntered) return;
 
-    // Constrói a URL limpa conforme solicitado: #/materia/ ou #/materia/slug/
     let targetHash = `#/${view}/`;
     
     if ((view === ViewState.MATERIA || view === ViewState.SINAIS) && activeSlug) {
@@ -107,23 +109,28 @@ const App: React.FC = () => {
 
   const handleEntry = () => {
     setHasEntered(true);
-    // Re-sincroniza ao entrar para garantir que deep links funcionem após o splash
     const { view: currentView, slug } = getViewFromHash();
     setView(currentView);
     setActiveSlug(slug);
   };
 
   const renderView = () => {
-    switch (view) {
-      case ViewState.LANDING: return <LandingPage onNavigate={setView} onSignalSelect={setActiveSlug} isDarkMode={isDarkMode} />;
-      case ViewState.MATERIA: return <PageMateria isDarkMode={isDarkMode} workSlug={activeSlug} onNavigate={setView} onWorkSelect={setActiveSlug} />;
-      case ViewState.MANIFESTO: return <PageManifesto isDarkMode={isDarkMode} />;
-      case ViewState.SINAIS: return <PageSinais isDarkMode={isDarkMode} activeSignalSlug={activeSlug} onSignalSelect={setActiveSlug} />;
-      case ViewState.ABOUT: return <PageAbout onNavigate={setView} isDarkMode={isDarkMode} />;
-      case ViewState.CONNECT: return <PageConnect onNavigate={setView} />;
-      case ViewState.BACKOFFICE: return <PageBackoffice onLogout={() => { setView(ViewState.LANDING); }} />;
-      default: return null;
-    }
+    return (
+      <Suspense fallback={<PageLoader />}>
+        {(() => {
+          switch (view) {
+            case ViewState.LANDING: return <LandingPage onNavigate={setView} onSignalSelect={setActiveSlug} isDarkMode={isDarkMode} />;
+            case ViewState.MATERIA: return <PageMateria isDarkMode={isDarkMode} workSlug={activeSlug} onNavigate={setView} onWorkSelect={setActiveSlug} />;
+            case ViewState.MANIFESTO: return <PageManifesto isDarkMode={isDarkMode} />;
+            case ViewState.SINAIS: return <PageSinais isDarkMode={isDarkMode} activeSignalSlug={activeSlug} onSignalSelect={setActiveSlug} />;
+            case ViewState.ABOUT: return <PageAbout onNavigate={setView} isDarkMode={isDarkMode} />;
+            case ViewState.CONNECT: return <PageConnect onNavigate={setView} />;
+            case ViewState.BACKOFFICE: return <PageBackoffice onLogout={() => { setView(ViewState.LANDING); }} />;
+            default: return null;
+          }
+        })()}
+      </Suspense>
+    );
   };
 
   if (!hasEntered) {

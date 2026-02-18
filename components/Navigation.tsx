@@ -53,7 +53,7 @@ const Navigation: React.FC<NavigationProps> = ({
       const nextCount = clickCount + 1;
       if (nextCount >= 5) {
         setClickCount(0);
-        // Acesso direto removendo a necessidade de senha conforme solicitado
+        // Redireciona diretamente para o fluxo (Backoffice)
         onNavigate(ViewState.BACKOFFICE);
         setIsMobileMenuOpen(false);
       } else {
