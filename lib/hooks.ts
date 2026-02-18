@@ -90,6 +90,9 @@ export const useDataSeeding = () => {
           if (INITIAL_DATA.about.connect_config) {
             await storage.save('about', INITIAL_DATA.about.connect_config);
           }
+          if (INITIAL_DATA.about.landing_manifesto) {
+            await storage.save('about', INITIAL_DATA.about.landing_manifesto);
+          }
 
           localStorage.setItem('ra_last_sync', codeVersion.toString());
           console.log("Sincronização concluída.");
@@ -100,6 +103,7 @@ export const useDataSeeding = () => {
             for (const s of INITIAL_DATA.signals) await storage.save('signals', s);
             if (INITIAL_DATA.about.profile) await storage.save('about', INITIAL_DATA.about.profile);
             if (INITIAL_DATA.about.connect_config) await storage.save('about', INITIAL_DATA.about.connect_config);
+            if (INITIAL_DATA.about.landing_manifesto) await storage.save('about', INITIAL_DATA.about.landing_manifesto);
             localStorage.setItem('ra_last_sync', codeVersion.toString());
           }
         }

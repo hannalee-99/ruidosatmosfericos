@@ -86,6 +86,11 @@ export interface ConnectConfig {
   links: LinkItem[];
 }
 
+export interface ManifestoConfig {
+  id: string; // 'landing_manifesto'
+  text: string;
+}
+
 export interface SensorData {
   id: string; // ex: 'sensor_metrics'
   clicks: number;

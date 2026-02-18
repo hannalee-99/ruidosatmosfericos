@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { storage } from '../lib/storage';
-import { Work, Signal, SignalBlock, SignalBlockType, AboutData, ConnectConfig, ViewState } from '../types';
+import { Work, Signal, SignalBlock, SignalBlockType, AboutData, ConnectConfig, ViewState, ManifestoConfig } from '../types';
 import NeobrutalistButton from './NeobrutalistButton';
 import SignalRenderer from './SignalRenderer';
 
@@ -18,6 +18,7 @@ const PageBackoffice: React.FC<PageBackofficeProps> = ({ onLogout }) => {
   const [isPreviewMode, setIsPreviewMode] = useState(false);
   const [profile, setProfile] = useState<AboutData>({ id: 'profile', text: '', imageUrl: '', faviconUrl: '' });
   const [connect, setConnect] = useState<ConnectConfig>({ id: 'connect_config', email: '', sobreText: '', links: [] });
+  const [manifesto, setManifesto] = useState<ManifestoConfig>({ id: 'landing_manifesto', text: '' });
   const [isSaving, setIsSaving] = useState(false);
   const [isProcessingImage, setIsProcessingImage] = useState(false);
   const [exportCode, setExportCode] = useState('');
@@ -31,11 +32,12 @@ const PageBackoffice: React.FC<PageBackofficeProps> = ({ onLogout }) => {
   }, []);
 
   const fetchData = async () => {
-    const [w, s, p, c] = await Promise.all([
+    const [w, s, p, c, m] = await Promise.all([
       storage.getAll('works'),
       storage.getAll('signals'),
       storage.get('about', 'profile'),
-      storage.get('about', 'connect_config')
+      storage.get('about', 'connect_config'),
+      storage.get('about', 'landing_manifesto')
     ]);
     setWorks(w.sort((a, b) => b.date.localeCompare(a.date)));
     setSignals(s.sort((a, b) => {
@@ -45,6 +47,7 @@ const PageBackoffice: React.FC<PageBackofficeProps> = ({ onLogout }) => {
     }));
     if (p) setProfile(p);
     if (c) setConnect(c);
+    if (m) setManifesto(m);
   };
 
   const compressAndResizeImage = (base64Str: string): Promise<string> => {
@@ -99,10 +102,10 @@ const PageBackoffice: React.FC<PageBackofficeProps> = ({ onLogout }) => {
       lastUpdated: Date.now(),
       works,
       signals,
-      about: { profile, connect_config: connect }
+      about: { profile, connect_config: connect, landing_manifesto: manifesto }
     };
 
-    setExportCode(`import { Work, Signal, AboutData, ConnectConfig } from './types';
+    setExportCode(`import { Work, Signal, AboutData, ConnectConfig, ManifestoConfig } from './types';
 
 export const INITIAL_DATA: {
   lastUpdated: number;
@@ -111,6 +114,7 @@ export const INITIAL_DATA: {
   about: {
     profile: AboutData | null;
     connect_config: ConnectConfig | null;
+    landing_manifesto: ManifestoConfig | null;
   };
 } = ${JSON.stringify(data, null, 2)};`);
   };
@@ -341,6 +345,16 @@ export const INITIAL_DATA: {
     } finally { setIsSaving(false); }
   };
 
+  const handleSaveManifesto = async (e: React.FormEvent) => {
+    if (e) e.preventDefault();
+    setIsSaving(true);
+    try {
+      await storage.save('about', manifesto);
+      fetchData();
+      alert('manifesto da landing page salvo.');
+    } finally { setIsSaving(false); }
+  };
+
   const handleAddLink = () => {
     setConnect({
       ...connect,
@@ -375,12 +389,13 @@ export const INITIAL_DATA: {
     return textContent.split(/\s+/).filter(word => word.length > 0).length;
   }, [editingSignal]);
 
-  const tabs = [ViewState.MATERIA, ViewState.SINAIS, ViewState.ABOUT, ViewState.CONNECT, 'sincronizar'];
+  const tabs = [ViewState.MATERIA, ViewState.SINAIS, ViewState.MANIFESTO, ViewState.ABOUT, ViewState.CONNECT, 'sincronizar'];
   
   // Mapeamento de ViewState para Label amigável (consistente com Navigation.tsx)
   const tabLabels: Record<string, string> = {
     [ViewState.MATERIA]: 'matéria',
     [ViewState.SINAIS]: 'sinais',
+    [ViewState.MANIFESTO]: 'manifesto',
     [ViewState.ABOUT]: 'esse eu',
     [ViewState.CONNECT]: 'contato',
     'sincronizar': 'sincronizar'
@@ -801,6 +816,27 @@ export const INITIAL_DATA: {
               </form>
             )}
           </div>
+        )}
+
+        {activeTab === ViewState.MANIFESTO && (
+          <form onSubmit={handleSaveManifesto} className="space-y-8 animate-in fade-in max-w-4xl mx-auto">
+            <header className="border-b border-white/10 pb-4">
+               <h2 className="text-sm font-electrolize text-[var(--accent)] tracking-[0.2em] uppercase">editor de manifesto /// landing page</h2>
+            </header>
+            <div className="space-y-6">
+              <div className="space-y-2">
+                <label className="text-[10px] opacity-40 uppercase tracking-widest block">texto do manifesto (efeito typewriter)</label>
+                <textarea 
+                  value={manifesto.text} 
+                  onChange={e => setManifesto({...manifesto, text: e.target.value})} 
+                  className="w-full bg-black border border-white/10 p-8 h-80 outline-none rounded-xl text-lg focus:border-[var(--accent)] resize-none lowercase leading-relaxed" 
+                  placeholder="escreva o manifesto curto para a landing page..." 
+                />
+                <p className="text-[10px] opacity-30 font-mono">Dica: use quebras de linha para controlar o ritmo do efeito de escrita.</p>
+              </div>
+            </div>
+            <NeobrutalistButton variant="matrix" type="submit" className="w-full py-4">salvar manifesto</NeobrutalistButton>
+          </form>
         )}
 
         {activeTab === ViewState.ABOUT && (

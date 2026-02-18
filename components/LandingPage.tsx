@@ -146,6 +146,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onNavigate, onSignalSelect, i
   const [featuredWorks, setFeaturedWorks] = useState<Work[]>([]);
   const [latestSignals, setLatestSignals] = useState<any[]>([]);
   const [isVisible, setIsVisible] = useState(false);
+  const [manifestoText, setManifestoText] = useState("");
 
   useEffect(() => {
     const fetchData = async () => {
@@ -177,6 +178,14 @@ const LandingPage: React.FC<LandingPageProps> = ({ onNavigate, onSignalSelect, i
           return dB.localeCompare(dA);
         });
         setLatestSignals(sortedSignals);
+
+        // Busca o texto do manifesto no storage
+        const manifestoData = await storage.get('about', 'landing_manifesto');
+        if (manifestoData) {
+          setManifestoText(manifestoData.text);
+        } else {
+          setManifestoText("opero em \ndesconformidade controlada\nresistindo à (des)ordem \ncriando padrões temporários\no modo dominante de existir \ngera angústia por natureza\nos limita a poucos sentidos\nenquanto transitamos \npela impermanência");
+        }
       } catch (e) {
         console.error("Erro ao carregar dados da Landing", e);
       }
@@ -186,8 +195,6 @@ const LandingPage: React.FC<LandingPageProps> = ({ onNavigate, onSignalSelect, i
 
     fetchData();
   }, []);
-
-  const manifestoText = "opero em \ndesconformidade controlada\nresistindo à (des)ordem \ncriando padrões temporários\o modo dominante de existir \ngera angústia por natureza\nos limita a poucos sentidos\nenquanto transitamos \pela impermanência";
 
   const transitionBase = "transition-all duration-[1200ms] ease-[cubic-bezier(0.2,0.8,0.2,1)]";
   const headerState = isVisible ? 'opacity-100 translate-y-0 blur-0' : 'opacity-0 -translate-y-8 blur-sm';
@@ -381,7 +388,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onNavigate, onSignalSelect, i
                 <div 
                   className="font-electrolize text-xl leading-relaxed text-white transition-colors duration-500 lowercase whitespace-pre-wrap [.light-mode_&]:text-black"
                 >
-                  {isVisible && <Typewriter text={manifestoText} speed={60} delay={800} isDarkMode={isDarkMode} />}
+                  {isVisible && manifestoText && <Typewriter text={manifestoText} speed={60} delay={800} isDarkMode={isDarkMode} />}
                 </div>
                 
                 <div 

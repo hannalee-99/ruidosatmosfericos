@@ -1,5 +1,5 @@
 
-import { Work, Signal, AboutData, ConnectConfig } from './types';
+import { Work, Signal, AboutData, ConnectConfig, ManifestoConfig } from './types';
 
 export const INITIAL_DATA: {
   lastUpdated: number;
@@ -8,9 +8,10 @@ export const INITIAL_DATA: {
   about: {
     profile: AboutData | null;
     connect_config: ConnectConfig | null;
+    landing_manifesto: ManifestoConfig | null;
   };
 } = {
-  "lastUpdated": 1771101643132,
+  "lastUpdated": 1771101700000,
   "works": [
     {
       "title": "essência na ionosfera",
@@ -127,6 +128,10 @@ export const INITIAL_DATA: {
           "url": "https://instagram.com"
         }
       ]
+    },
+    "landing_manifesto": {
+        "id": "landing_manifesto",
+        "text": "opero em \ndesconformidade controlada\nresistindo à (des)ordem \ncriando padrões temporários\no modo dominante de existir \ngera angústia por natureza\nos limita a poucos sentidos\nenquanto transitamos \npela impermanência"
     }
   }
 };
