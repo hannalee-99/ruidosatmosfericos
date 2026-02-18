@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { storage } from '../lib/storage';
 import { AboutData, ViewState } from '../types';
 import { DEFAULT_IMAGE } from '../constants';
+import LazyImage from './LazyImage';
 
 interface PageAboutProps {
   onNavigate: (view: ViewState) => void;
@@ -55,10 +56,10 @@ const PageAbout: React.FC<PageAboutProps> = ({ onNavigate, isDarkMode }) => {
           </h1>
         </header>
 
-        {/* Coluna da Imagem */}
+        {/* Coluna da Imagem - Placeholder e Container Totalmente Transparentes */}
         <div className="md:col-span-5 flex justify-center md:justify-end order-1 md:order-2 w-full mt-4 md:mt-0">
             <div 
-              className="relative rounded-2xl md:rounded-3xl overflow-hidden shadow-2xl transition-all duration-500"
+              className="relative rounded-2xl md:rounded-3xl overflow-hidden transition-all duration-500 bg-transparent"
               style={{ 
                 animation: `imageReveal 1s cubic-bezier(0.2, 0.8, 0.2, 1) forwards`,
                 opacity: 0,
@@ -67,10 +68,11 @@ const PageAbout: React.FC<PageAboutProps> = ({ onNavigate, isDarkMode }) => {
                 maxWidth: '100%'
               }}
             >
-               <img 
+               <LazyImage 
                  src={imageSrc} 
                  alt="perfil"
-                 className="max-w-full h-auto block object-contain md:max-h-[75vh]"
+                 autoHeight={true}
+                 className="max-w-full block md:max-h-[75vh]"
                />
             </div>
         </div>
@@ -99,7 +101,6 @@ const PageAbout: React.FC<PageAboutProps> = ({ onNavigate, isDarkMode }) => {
                   <span className="w-1.5 h-4 md:w-2 md:h-5 bg-[var(--accent)] animate-pulse shadow-[0_0_5px_var(--accent)]"></span>
                 </div>
                 
-                {/* Efeito de glitch sutil no hover - Correção do erro >> */}
                 <span className="absolute -bottom-2 left-10 text-[9px] opacity-0 group-hover:opacity-30 transition-opacity font-vt tracking-[0.3em] text-[var(--accent)]">
                   {">> protocol_uplink_ready"}
                 </span>

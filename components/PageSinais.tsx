@@ -336,11 +336,11 @@ const PageSinais: React.FC<PageSinaisProps> = ({
             <div className="relative z-10 pt-8 md:pt-16">
               {groupedPosts[year].map((post) => (
                     <div key={post.id} className="relative group/item cursor-pointer mb-24 last:mb-0" onClick={() => handleOpenPost(post)}>
-                      <div className="flex flex-col md:flex-row gap-6 md:gap-12 items-center md:items-start">
-                         <div className="md:w-32 flex-shrink-0 flex md:flex-col items-center md:items-start pt-2">
+                      <div className="flex flex-col md:flex-row gap-6 md:gap-12 items-start md:items-start">
+                         <div className="md:w-32 flex-shrink-0 flex md:flex-col items-start md:items-start pt-2">
                             <div className="font-vt text-2xl md:text-3xl text-[var(--accent)] opacity-80">{post.date.split('/').slice(0,2).join('/')}</div>
                          </div>
-                         <div className="flex-grow pl-6 md:pl-8 border-l border-white/10 md:group-hover/item:border-[var(--accent)] transition-colors py-1 flex flex-col md:flex-row gap-8 items-center">
+                         <div className="flex-grow pl-6 md:pl-8 border-l border-white/10 md:group-hover/item:border-[var(--accent)] transition-colors py-1 flex flex-col md:flex-row gap-8 items-start md:items-center">
                             <div className="flex-grow">
                               <h3 className="text-3xl md:text-5xl font-electrolize mb-4 lowercase text-[var(--accent)]">{post.title}</h3>
                               {post.subtitle && <p className="font-mono text-sm opacity-60 lowercase line-clamp-2">{post.subtitle}</p>}

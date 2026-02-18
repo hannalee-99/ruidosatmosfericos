@@ -60,18 +60,18 @@ const LazyImage: React.FC<LazyImageProps> = ({
   return (
     <div 
       ref={containerRef}
-      className={`relative w-full overflow-hidden ${autoHeight ? 'h-auto' : 'h-full'} ${className}`}
+      className={`relative w-full overflow-hidden bg-transparent ${autoHeight ? 'h-auto' : 'h-full'} ${className}`}
     >
-      {/* Placeholder Minimalista */}
+      {/* Placeholder Minimalista - Apenas efeito de pulso, fundo transparente */}
       {!isLoaded && (
         <div 
-          className="absolute inset-0 z-10 pointer-events-none transition-opacity duration-1000 ease-out flex items-center justify-center opacity-10"
+          className="absolute inset-0 z-10 pointer-events-none transition-opacity duration-1000 ease-out flex items-center justify-center opacity-10 bg-transparent"
         >
           <div className="w-4 h-4 rounded-full border border-current animate-ping"></div>
         </div>
       )}
 
-      {/* Imagem Real */}
+      {/* Imagem Real - Removido blur para evitar gradientes artificiais */}
       {isInView && (
         <img
           ref={imgRef}
@@ -81,7 +81,7 @@ const LazyImage: React.FC<LazyImageProps> = ({
           className={`
             w-full transition-all duration-1000 ease-[cubic-bezier(0.22,1,0.36,1)]
             ${autoHeight ? 'h-auto block' : 'h-full object-cover'}
-            ${isLoaded ? 'opacity-100 blur-0 scale-100' : 'opacity-0 blur-lg scale-95'}
+            ${isLoaded ? 'opacity-100 scale-100' : 'opacity-0 scale-98'}
           `}
           style={!autoHeight ? { objectFit } : {}}
         />

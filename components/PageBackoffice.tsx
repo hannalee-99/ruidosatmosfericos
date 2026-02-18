@@ -376,6 +376,15 @@ export const INITIAL_DATA: {
   }, [editingSignal]);
 
   const tabs = [ViewState.MATERIA, ViewState.SINAIS, ViewState.ABOUT, ViewState.CONNECT, 'sincronizar'];
+  
+  // Mapeamento de ViewState para Label amigável (consistente com Navigation.tsx)
+  const tabLabels: Record<string, string> = {
+    [ViewState.MATERIA]: 'matéria',
+    [ViewState.SINAIS]: 'sinais',
+    [ViewState.ABOUT]: 'esse eu',
+    [ViewState.CONNECT]: 'contato',
+    'sincronizar': 'sincronizar'
+  };
 
   const featuredWorks = works.filter(w => w.isFeatured).sort((a, b) => (a.featuredOrder ?? 999) - (b.featuredOrder ?? 999));
 
@@ -387,15 +396,18 @@ export const INITIAL_DATA: {
       </header>
 
       <div className="flex gap-6 mb-12 overflow-x-auto no-scrollbar max-w-6xl mx-auto">
-        {tabs.map(tab => (
-          <button 
-            key={tab}
-            onClick={() => { setActiveTab(tab as any); setEditingWork(null); setEditingSignal(null); setIsPreviewMode(false); setExportCode(''); fetchData(); }}
-            className={`text-xs uppercase tracking-[0.3em] pb-2 border-b-2 transition-all ${activeTab === tab ? 'border-[var(--accent)] text-[var(--accent)]' : 'border-transparent opacity-30 hover:opacity-100'}`}
-          >
-            {tab}
-          </button>
-        ))}
+        {tabs.map(tab => {
+          const isSelected = activeTab === tab;
+          return (
+            <button 
+              key={tab}
+              onClick={() => { setActiveTab(tab as any); setEditingWork(null); setEditingSignal(null); setIsPreviewMode(false); setExportCode(''); fetchData(); }}
+              className={`text-xs uppercase tracking-[0.3em] pb-2 border-b-2 transition-all ${isSelected ? 'border-[var(--accent)] text-[var(--accent)]' : 'border-transparent opacity-30 hover:opacity-100'}`}
+            >
+              {tabLabels[tab] || tab}
+            </button>
+          );
+        })}
       </div>
 
       <div className="max-w-6xl mx-auto">
@@ -800,7 +812,7 @@ export const INITIAL_DATA: {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
                   <label className="text-[10px] opacity-40 uppercase tracking-widest block">imagem de perfil (url)</label>
-                  <input type="text" value={profile.imageUrl} onChange={e => setProfile({...profile, imageUrl: e.target.value})} className="w-full bg-black border border-white/10 p-4 rounded-md outline-none text-sm focus:border-[var(--accent)]" placeholder="https://..." />
+                  <input type="text" value={profile.imageUrl} onChange={e => setProfile({...profile, imageUrl: e.target.value})} className="w-full bg-black border border-white/10 p-4 rounded-md outline-none text-sm focus:border(--accent)]" placeholder="https://..." />
                 </div>
                 <div className="space-y-2">
                   <label className="text-[10px] opacity-40 uppercase tracking-widest block">favicon (ícone do site)</label>
