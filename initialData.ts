@@ -10,7 +10,7 @@ export const INITIAL_DATA: {
     landing_manifesto: ManifestoConfig | null;
   };
 } = {
-  "lastUpdated": 1771626224006,
+  "lastUpdated": 1771626562507,
   "works": [
     {
       "id": "work-1771621176503",
@@ -256,6 +256,24 @@ export const INITIAL_DATA: {
       "technique": "óleo sobre tela",
       "dimensions": "40x50 cm",
       "imageUrl": "https://res.cloudinary.com/dcxm8yd49/image/upload/v1771624965/kling_klang_kats.avif",
+      "status": "disponível",
+      "isVisible": true,
+      "isFeatured": false,
+      "featuredOrder": 999,
+      "views": 0,
+      "description": "",
+      "seoDescription": ""
+    },
+    {
+      "id": "work-1771626518362",
+      "title": "the hyper post modern world ",
+      "slug": "the-hyper-post-modern-world",
+      "year": "2014",
+      "month": "01",
+      "date": "2014-01-01",
+      "technique": "digital",
+      "dimensions": "",
+      "imageUrl": "https://64.media.tumblr.com/32443e171a63a3e6f12f532557fd7e8a/tumblr_n93fqaVKP41qbwhaio1_1280.jpg",
       "status": "disponível",
       "isVisible": true,
       "isFeatured": false,
