@@ -288,12 +288,12 @@ const LandingPage: React.FC<LandingPageProps> = ({ onNavigate, onSignalSelect, i
                    >
                      <div className="w-full relative overflow-hidden rounded-2xl mb-4 bg-[#0a0a0a] [.light-mode_&]:bg-neutral-200 border border-white/5 [.light-mode_&]:border-black/5">
                         {isGradient ? (
-                           <div className="w-full h-32 opacity-100 md:group-hover:scale-105 transition-transform duration-1000" style={{ background: work.imageUrl }}></div>
+                           <div className="w-full h-32 opacity-100 transition-transform duration-1000" style={{ background: work.imageUrl }}></div>
                         ) : (
                            <LazyImage
                             src={formatImageUrl(work.imageUrl)}
                             alt={work.title}
-                            className="transition-transform duration-1000 md:group-hover:scale-[1.02]"
+                            className="transition-transform duration-1000"
                             autoHeight={true} 
                            />
                         )}

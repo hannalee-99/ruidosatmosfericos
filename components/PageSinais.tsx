@@ -335,7 +335,7 @@ const PageSinais: React.FC<PageSinaisProps> = ({
                               <p className="text-[10px] opacity-20 font-mono mt-2 tracking-widest">/{post.slug || '...'}</p>
                             </div>
                             {post.coverImageUrl && (
-                              <div className="w-full md:w-48 aspect-video md:aspect-square rounded-xl overflow-hidden border border-white/10 flex-shrink-0 grayscale hover:grayscale-0 transition-all duration-700">
+                              <div className="w-full md:w-48 aspect-video md:aspect-square rounded-xl overflow-hidden border border-white/10 flex-shrink-0 transition-all duration-700">
                                 <img src={getOptimizedUrl(post.coverImageUrl, 300)} className="w-full h-full object-cover" alt="thumb" />
                               </div>
                             )}

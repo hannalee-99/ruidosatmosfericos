@@ -290,11 +290,11 @@ const PageMateria: React.FC<PageMateriaProps> = ({ isDarkMode, workSlug, onNavig
             className="break-inside-avoid mb-8 group relative flex flex-col gap-4 cursor-pointer"
             onClick={() => handleWorkClick(work)}
           >
-            <div className="overflow-hidden rounded-2xl bg-neutral-900 border border-white/5 [.light-mode_&]:bg-neutral-200">
+            <div className="overflow-hidden rounded-2xl bg-transparent border-none">
               <LazyImage 
                 src={formatImageUrl(work.imageUrl)} 
                 alt={work.title}
-                className="w-full h-auto group-hover:scale-[1.03] transition-transform duration-1000"
+                className="w-full h-auto transition-transform duration-1000"
                 autoHeight={true}
               />
             </div>

@@ -480,7 +480,7 @@ export const INITIAL_DATA: {
                     {works.map(w => (
                       <div key={w.id} onClick={() => { setEditingWork(w); isWorkSlugPristine.current = false; }} className="bg-white/5 border border-white/5 p-4 rounded-xl cursor-pointer hover:border-[var(--accent)]/30 transition-all group">
                         <div className="aspect-square bg-neutral-900 rounded-md overflow-hidden mb-4 relative">
-                          <img src={w.imageUrl || 'https://via.placeholder.com/300'} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" alt={w.title} />
+                          <img src={w.imageUrl || 'https://via.placeholder.com/300'} className="w-full h-full object-cover transition-transform duration-700" alt={w.title} />
                           {w.isFeatured && (
                             <div className="absolute top-2 right-2 bg-[var(--accent)] text-black text-[8px] uppercase font-bold px-2 py-1 rounded">Destaque</div>
                           )}
