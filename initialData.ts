@@ -10,7 +10,7 @@ export const INITIAL_DATA: {
     landing_manifesto: ManifestoConfig | null;
   };
 } = {
-  "lastUpdated": 1771625367945,
+  "lastUpdated": 1771625971298,
   "works": [
     {
       "id": "work-1771621176503",
@@ -24,7 +24,7 @@ export const INITIAL_DATA: {
       "imageUrl": "https://res.cloudinary.com/dcxm8yd49/image/upload/v1771620670/processos-em-transmutacao.avif",
       "status": "disponível",
       "isVisible": true,
-      "isFeatured": true,
+      "isFeatured": false,
       "featuredOrder": 999,
       "views": 0,
       "description": "quando a palavra falha...",
@@ -240,7 +240,7 @@ export const INITIAL_DATA: {
       "imageUrl": "https://res.cloudinary.com/dcxm8yd49/image/upload/v1771620966/velour_no_black_lodge.avif",
       "status": "disponível",
       "isVisible": true,
-      "isFeatured": false,
+      "isFeatured": true,
       "featuredOrder": 999,
       "views": 0,
       "description": "",
@@ -273,7 +273,7 @@ export const INITIAL_DATA: {
       "subtitle": "alô? pronto!",
       "date": "14/02/2026",
       "status": "publicado",
-      "views": 0,
+      "views": 1,
       "blocks": [
         {
           "id": "b-1771101541489",
@@ -281,7 +281,7 @@ export const INITIAL_DATA: {
           "content": "fui uma pré-adolescente fascinada por qualquer possibilidade de customizar coisas: cortava todos os uniformes da escola, fazia as próprias capas de caderno, meus próprios icons no photoshop 6.bolinha e lembro como se fosse agora quando conheci o templates by marina e entendi que poderia criar meu sítio digital~~~. passava horasss editando o meu blogger pra ficar com a minha cara que já tinha muita dessa essência aqui que você tá vendo nesse espaço. do dropsdemorango.blogger.com lá em 2004, fotolog, livejournal, deviantart, até o blogpost, onde fiz minha primeira url **ruidosatmosfericos**\n\n**esse nome**\n\nera 2007 quando ouvi **ruídos atmosféricos** pela primeira vez. a tv tava ligada na cultura de madrugada por algum motivo, o tema era a poluição sonora na atmosfera, os ruídos atmosféricos meteorológicos. a expressão me prendeu, fiquei obcecada, comecei a imaginar que eu mesma estava contribuindo com esses ruídos de uma forma energética, biológica e filosófica com a boa bagunça que a mente de uma pessoa de 16 anos (que curtia entender de física quântica e fazer autoanálise de questões existenciais que só quem viveu sabe) pode proporcionar.\n\npois bem, tenho me sentido sem um espaço na internet já faz um tempo. estou online ativamente desde 2003, embarcando nos primeiros trens de toda novidade que surgiu. boa parte das minhas maiores amizades iniciaram online por fóruns e comunidades no orkut (viva topicão na comunidade do nine inch nails que servia apenas pra gente falar as maiores bobeiras possíveis sobre trent reznor e cia), pra mim estar online é manter viva essa minha vida social que sempre foi pacatíssima onde moro. mas não me sinto mais em casa como já me senti um dia, as redes sociais são mecanismos de consumir energia mental em troca de atenção e dinheiro e atenção é o novo petróleo junto com dados, que é outra coisa que as redes também captam de nós em uma troca bem injusta, enfim, eu não me vejo mais nesses lugares, mas me mantenho para evitar isolamento e motivos maiores.\n\nentão uni minha força fuçeira de coisas nerd e criei esse sítio digital aqui sozinha, um espaço que tenho vontade de ter desde quando me entendo por gente conectada. \n\npossivelmente escreverei para ninguém ler, mas como uma saudosa twitteira, não me importo! mas se você estiver até aqui lendo isso aqui, **welcome to my crib! 💜**"
         }
       ],
-      "coverImageUrl": "https://res.cloudinary.com/dcxm8yd49/image/upload/v1771623752/ruidos.avif"
+      "coverImageUrl": ""
     },
     {
       "id": "signal-macro-vision-v2",
