@@ -10,7 +10,7 @@ export const INITIAL_DATA: {
     landing_manifesto: ManifestoConfig | null;
   };
 } = {
-  "lastUpdated": 1771626136725,
+  "lastUpdated": 1771626224006,
   "works": [
     {
       "id": "work-1771621176503",
@@ -25,7 +25,7 @@ export const INITIAL_DATA: {
       "status": "disponível",
       "isVisible": true,
       "isFeatured": true,
-      "featuredOrder": 0,
+      "featuredOrder": 1,
       "views": 0,
       "description": "quando a palavra falha...",
       "seoDescription": "quando a palavra falha..."
@@ -241,7 +241,7 @@ export const INITIAL_DATA: {
       "status": "disponível",
       "isVisible": true,
       "isFeatured": true,
-      "featuredOrder": 1,
+      "featuredOrder": 0,
       "views": 0,
       "description": "",
       "seoDescription": ""
