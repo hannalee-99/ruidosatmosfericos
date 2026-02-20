@@ -10,7 +10,7 @@ export const INITIAL_DATA: {
     landing_manifesto: ManifestoConfig | null;
   };
 } = {
-  "lastUpdated": 1771625971298,
+  "lastUpdated": 1771626136725,
   "works": [
     {
       "id": "work-1771621176503",
@@ -24,8 +24,8 @@ export const INITIAL_DATA: {
       "imageUrl": "https://res.cloudinary.com/dcxm8yd49/image/upload/v1771620670/processos-em-transmutacao.avif",
       "status": "disponível",
       "isVisible": true,
-      "isFeatured": false,
-      "featuredOrder": 999,
+      "isFeatured": true,
+      "featuredOrder": 0,
       "views": 0,
       "description": "quando a palavra falha...",
       "seoDescription": "quando a palavra falha..."
@@ -97,7 +97,7 @@ export const INITIAL_DATA: {
       "status": "disponível",
       "isVisible": true,
       "isFeatured": true,
-      "featuredOrder": 999,
+      "featuredOrder": 2,
       "views": 0,
       "description": "flutuando...",
       "seoDescription": "flutuando..."
@@ -241,7 +241,7 @@ export const INITIAL_DATA: {
       "status": "disponível",
       "isVisible": true,
       "isFeatured": true,
-      "featuredOrder": 999,
+      "featuredOrder": 1,
       "views": 0,
       "description": "",
       "seoDescription": ""
