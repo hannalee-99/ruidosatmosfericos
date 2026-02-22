@@ -72,7 +72,7 @@ const parseInline = (text: string) => {
       );
     }
 
-    const subParts = part.content.split(/(\*\*.*?\*\*|\*.*?\*|~~.*?~~)/g);
+    const subParts = part.content.split(/(\*\*.*?\*\*|\*.*?\*|~~.*?~~|<br\s*\/?>)/g);
     return subParts.map((sub, j) => {
       if (sub.startsWith('**') && sub.endsWith('**')) {
         return <strong key={`${i}-${j}`} className="font-bold text-[var(--accent)] opacity-100">{sub.slice(2, -2)}</strong>;
@@ -82,6 +82,9 @@ const parseInline = (text: string) => {
       }
       if (sub.startsWith('~~') && sub.endsWith('~~')) {
         return <del key={`${i}-${j}`} className="line-through opacity-50">{sub.slice(2, -2)}</del>;
+      }
+      if (sub.match(/<br\s*\/?>/)) {
+        return <br key={`${i}-${j}`} />;
       }
       return sub;
     });
@@ -99,6 +102,29 @@ const MarkdownRenderer: React.FC<{ content: string }> = ({ content }) => {
         if (trimmed.startsWith('### ')) return <h4 key={index} className="font-electrolize text-xl md:text-3xl text-white [.light-mode_&]:text-black mt-8 mb-4 opacity-90 lowercase">{trimmed.substring(4)}</h4>;
         if (trimmed.startsWith('> ')) return <blockquote key={index} className="border-l-2 border-[var(--accent)] pl-6 py-2 my-8 italic opacity-70 bg-white/5 [.light-mode_&]:bg-black/5 rounded-r-lg">{parseInline(trimmed.substring(2))}</blockquote>;
         if (trimmed === '---') return <hr key={index} className="border-t border-white/10 [.light-mode_&]:border-black/10 my-8" />;
+        
+        // Listas Numeradas (1. ou 1))
+        const numberedMatch = line.match(/^(\d+[\.\)])\s+(.*)/);
+        if (numberedMatch) {
+          return (
+            <div key={index} className="flex gap-4 items-start pl-2">
+              <span className="text-[var(--accent)] font-bold shrink-0">{numberedMatch[1]}</span>
+              <div className="flex-grow lowercase">{parseInline(numberedMatch[2])}</div>
+            </div>
+          );
+        }
+
+        // Listas com Bullets (•, -, *)
+        const bulletMatch = line.match(/^([•\-\*])\s+(.*)/);
+        if (bulletMatch) {
+          return (
+            <div key={index} className="flex gap-4 items-start pl-2">
+              <span className="text-[var(--accent)] font-bold shrink-0">•</span>
+              <div className="flex-grow lowercase">{parseInline(bulletMatch[2])}</div>
+            </div>
+          );
+        }
+
         return <p key={index} className="lowercase min-h-[1em]">{parseInline(line)}</p>;
       })}
     </div>

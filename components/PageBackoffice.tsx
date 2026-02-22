@@ -286,7 +286,12 @@ export const INITIAL_DATA: {
       if (!insertion) insertion = "texto do link";
       finalSuffix = `](${url})`;
     } else if (!insertion) {
-      insertion = "texto";
+      // Não insere "texto" para br e separador
+      if (prefix === '<br/>' || prefix === '\n---\n') {
+        insertion = "";
+      } else {
+        insertion = "texto";
+      }
     }
 
     const newText = before + finalPrefix + insertion + finalSuffix + after;
@@ -709,6 +714,11 @@ export const INITIAL_DATA: {
                                       <button type="button" onClick={() => applyFormatting(block.id, '## ', '')} className="p-1 px-2 text-[10px] hover:bg-white/10 rounded uppercase" title="título 2">H2</button>
                                       <button type="button" onClick={() => applyFormatting(block.id, '### ', '')} className="p-1 px-2 text-[10px] hover:bg-white/10 rounded uppercase" title="título 3">H3</button>
                                       <button type="button" onClick={() => applyFormatting(block.id, '[', ']')} className="p-1 px-2 text-[10px] hover:bg-white/10 rounded lowercase" title="link">link</button>
+                                      <div className="w-px h-4 bg-white/10 mx-1 self-center" />
+                                      <button type="button" onClick={() => applyFormatting(block.id, '<br/>', '')} className="p-1 px-2 text-[10px] hover:bg-white/10 rounded lowercase" title="quebra de linha">br</button>
+                                      <button type="button" onClick={() => applyFormatting(block.id, '\n---\n', '')} className="p-1 px-2 text-[10px] hover:bg-white/10 rounded lowercase" title="separador">---</button>
+                                      <button type="button" onClick={() => applyFormatting(block.id, '1) ', '')} className="p-1 px-2 text-[10px] hover:bg-white/10 rounded lowercase" title="lista numerada">1)</button>
+                                      <button type="button" onClick={() => applyFormatting(block.id, '• ', '')} className="p-1 px-2 text-[10px] hover:bg-white/10 rounded lowercase" title="lista bullet">•</button>
                                     </div>
                                     <textarea id={`textarea-${block.id}`} value={block.content} onChange={e => handleUpdateBlock(block.id, e.target.value)} className="w-full bg-transparent border-none outline-none text-lg leading-relaxed min-h-[150px] resize-none placeholder:opacity-10 lowercase" placeholder="escreva seu sinal..." onInput={e => { e.currentTarget.style.height = 'auto'; e.currentTarget.style.height = e.currentTarget.scrollHeight + 'px'; }} />
                                   </div>

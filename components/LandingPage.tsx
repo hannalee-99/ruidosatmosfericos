@@ -3,6 +3,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { COLORS, DEFAULT_IMAGE } from '../constants';
 import { ViewState, Work } from '../types';
 import { storage } from '../lib/storage';
+import { useMeta } from '../lib/hooks';
 import LazyImage from './LazyImage';
 
 // Componente para efeito de escrita suave
@@ -147,6 +148,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onNavigate, onSignalSelect, i
   const [latestSignals, setLatestSignals] = useState<any[]>([]);
   const [isVisible, setIsVisible] = useState(false);
   const [manifestoText, setManifestoText] = useState("");
+  const { updateMeta } = useMeta();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -165,10 +167,21 @@ const LandingPage: React.FC<LandingPageProps> = ({ onNavigate, onSignalSelect, i
           });
         
         // RESTRITO A 2 OBRAS NA LANDING PAGE PARA FOCO VISUAL
+        let currentFeatured: Work[] = [];
         if (featured.length > 0) {
-          setFeaturedWorks(featured.slice(0, 2));
+          currentFeatured = featured.slice(0, 2);
         } else {
-          setFeaturedWorks(visibleWorks.sort((a,b) => b.date.localeCompare(a.date)).slice(0, 2));
+          currentFeatured = visibleWorks.sort((a,b) => b.date.localeCompare(a.date)).slice(0, 2);
+        }
+        setFeaturedWorks(currentFeatured);
+
+        // Atualiza Meta Tags para a Home
+        if (currentFeatured.length > 0) {
+          updateMeta({
+            description: "espere nada, aprecie tudo. registros de presença digital e física.",
+            image: currentFeatured[0].imageUrl,
+            url: "https://ruidosatmosfericos.online"
+          });
         }
 
         const signals = await storage.getAll('signals');
