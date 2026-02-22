@@ -1,4 +1,3 @@
-
 {
   "name": "ruidos-atmosfericos",
   "private": true,
@@ -11,6 +10,8 @@
     "lint": "tsc --noEmit"
   },
   "dependencies": {
+    "@use-gesture/react": "^10.3.1",
+    "framer-motion": "^12.34.3",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   },
