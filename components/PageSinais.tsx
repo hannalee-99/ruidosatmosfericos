@@ -7,6 +7,7 @@ import { useMeta } from '../lib/hooks';
 import { getOptimizedUrl } from '../lib/media';
 import SignalRenderer from './SignalRenderer';
 import JsonLd from './JsonLd';
+import BackToTop from './BackToTop';
 
 const calculateReadingTime = (blocks: SignalBlock[]): string => {
   const text = blocks
@@ -36,32 +37,6 @@ const ReadingProgress = () => {
     <div className="fixed top-0 left-0 w-full h-1 z-[210] bg-white/10 [.light-mode_&]:bg-black/10">
       <div className="h-full bg-[var(--accent)] shadow-[0_0_10px_var(--accent)] transition-all duration-100 ease-out" style={{ width: `${width}%` }} />
     </div>
-  );
-};
-
-const BackToTop = ({ targetId }: { targetId?: string }) => {
-  const [visible, setVisible] = useState(false);
-  useEffect(() => {
-    const scrollTarget = targetId ? document.getElementById(targetId) : window;
-    const handleScroll = () => {
-      const currentScroll = targetId && scrollTarget instanceof HTMLElement ? scrollTarget.scrollTop : window.scrollY;
-      setVisible(currentScroll > 300);
-    };
-    if (scrollTarget) scrollTarget.addEventListener('scroll', handleScroll, { passive: true });
-    return () => { if (scrollTarget) scrollTarget.removeEventListener('scroll', handleScroll); };
-  }, [targetId]);
-  const scrollToTop = () => {
-    const scrollTarget = targetId ? document.getElementById(targetId) : window;
-    if (scrollTarget) scrollTarget.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-  return (
-    <button
-      onClick={scrollToTop}
-      className={`fixed bottom-8 right-8 z-[80] w-12 h-12 rounded-full flex items-center justify-center bg-black/80 [.light-mode_&]:bg-white/80 backdrop-blur-md hover:bg-[var(--accent)] text-white [.light-mode_&]:text-black hover:text-black border border-white/10 transition-all duration-500 transform ${visible ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 translate-y-8 scale-90 pointer-events-none'}`}
-      title="voltar ao topo"
-    >
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
-    </button>
   );
 };
 
@@ -202,10 +177,10 @@ const PageSinais: React.FC<PageSinaisProps> = ({
   if (selectedPost) {
     const readingTime = calculateReadingTime(selectedPost.blocks);
     return (
-      <div id="post-modal-scroll" className="fixed inset-0 z-50 bg-[#050505] [.light-mode_&]:bg-[#f4f4f4] text-white [.light-mode_&]:text-[#111] overflow-y-auto animate-in fade-in duration-500 selection:bg-[var(--accent)] selection:text-black scroll-smooth no-scrollbar">
+      <div id="post-modal-scroll" className="fixed inset-0 z-[150] bg-[#050505] [.light-mode_&]:bg-[#f4f4f4] text-white [.light-mode_&]:text-[#111] overflow-y-auto animate-in fade-in duration-500 selection:bg-[var(--accent)] selection:text-black scroll-smooth no-scrollbar">
          {articleSchema && <JsonLd data={articleSchema} />}
          <ReadingProgress />
-         <BackToTop targetId="post-modal-scroll" />
+         <BackToTop targetId="post-modal-scroll" bottom="bottom-20" zIndex="z-[160]" />
          
          <div className="fixed inset-0 pointer-events-none opacity-[0.03] bg-[url('https://grainy-gradients.vercel.app/noise.svg')] z-0"></div>
          
@@ -223,7 +198,7 @@ const PageSinais: React.FC<PageSinaisProps> = ({
             </button>
          </div>
 
-         <div className="relative z-10 max-w-6xl mx-auto pt-48 md:pt-64 px-6 md:px-12 pb-40">
+         <div className="relative z-10 max-w-5xl mx-auto pt-64 md:pt-80 px-6 md:px-12 pb-40">
             {selectedPost.coverImageUrl && (
               <div className="w-full h-[40vh] md:h-[60vh] rounded-3xl overflow-hidden mb-16 relative">
                  <img src={getOptimizedUrl(selectedPost.coverImageUrl)} className="w-full h-full object-cover animate-in zoom-in-105 duration-1000" alt="capa" />
@@ -231,7 +206,7 @@ const PageSinais: React.FC<PageSinaisProps> = ({
               </div>
             )}
 
-            <header className="mb-16 md:mb-24 relative max-w-4xl mx-auto text-left">
+            <header className="mb-16 md:mb-24 relative max-w-3xl mx-auto text-left">
                <div className="flex flex-col md:flex-row md:items-end justify-between border-t border-white/20 pt-4 mb-8 gap-4">
                  <div className="flex flex-wrap gap-4 font-mono text-[10px] md:text-xs tracking-widest lowercase opacity-60 items-center">
                     <span className="bg-white/10 px-2 py-1 rounded">data: {selectedPost.date}</span>
@@ -253,48 +228,50 @@ const PageSinais: React.FC<PageSinaisProps> = ({
                  <p className="font-mono text-lg md:text-xl opacity-60 italic max-w-2xl">{selectedPost.subtitle}</p>
                )}
             </header>
-            <article className="max-w-4xl mx-auto pb-32">
+            <article className="max-w-3xl mx-auto pb-32">
                <SignalRenderer signal={selectedPost} onImageClick={setLightboxIndex} />
             </article>
          </div>
 
          {viewingBlock && (
-           <div className="fixed inset-0 z-[300] bg-[#050505]/98 flex flex-col items-center justify-center p-4 backdrop-blur-xl animate-in fade-in duration-300" onClick={() => setLightboxIndex(-1)}>
-              <button onClick={() => setLightboxIndex(-1)} className="absolute top-8 right-8 z-[310] text-white/50 hover:text-white transition-colors">
+           <div className="fixed inset-0 z-[300] bg-[#050505]/95 flex flex-col items-center justify-between py-12 md:py-20 px-6 md:px-24 backdrop-blur-2xl animate-in fade-in duration-500" onClick={() => setLightboxIndex(-1)}>
+              <button onClick={() => setLightboxIndex(-1)} className="absolute top-8 md:top-12 right-8 md:right-12 z-[310] text-white/50 hover:text-white transition-colors">
                 <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
               </button>
               {postImages.length > 1 && (
                 <>
                   <button 
                     onClick={(e) => { e.stopPropagation(); setLightboxIndex(prev => (prev - 1 + postImages.length) % postImages.length); }}
-                    className="absolute left-4 md:left-8 top-1/2 -translate-y-1/2 w-16 h-16 flex items-center justify-center rounded-full bg-white/5 hover:bg-white/10 border border-white/10 transition-all z-[310]"
+                    className="fixed left-4 md:left-12 top-1/2 -translate-y-1/2 w-12 h-12 md:w-20 md:h-20 flex items-center justify-center rounded-full text-white/20 hover:text-white hover:bg-white/5 transition-all z-[310]"
                   >
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M15 18l-6-6 6-6"/></svg>
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1"><path d="M15 18l-6-6 6-6"/></svg>
                   </button>
                   <button 
                     onClick={(e) => { e.stopPropagation(); setLightboxIndex(prev => (prev + 1) % postImages.length); }}
-                    className="absolute right-4 md:right-8 top-1/2 -translate-y-1/2 w-16 h-16 flex items-center justify-center rounded-full bg-white/5 hover:bg-white/10 border border-white/10 transition-all z-[310]"
+                    className="fixed right-4 md:right-12 top-1/2 -translate-y-1/2 w-12 h-12 md:w-20 md:h-20 flex items-center justify-center rounded-full text-white/20 hover:text-white hover:bg-white/5 transition-all z-[310]"
                   >
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 18l6-6-6-6"/></svg>
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1"><path d="M9 18l6-6-6-6"/></svg>
                   </button>
                 </>
               )}
-              <div className="relative max-w-full max-h-[85vh] flex flex-col items-center gap-8 px-4" onClick={e => e.stopPropagation()}>
-                <img 
-                  key={viewingBlock.id}
-                  src={getOptimizedUrl(viewingBlock.content)} 
-                  className="max-w-full max-h-[75vh] object-contain animate-in zoom-in-95 duration-500" 
-                  alt="view"
-                />
+              <div className="flex-1 w-full max-w-6xl flex flex-col items-center justify-center gap-12 md:gap-16" onClick={e => e.stopPropagation()}>
+                <div className="relative w-full flex-1 flex items-center justify-center min-h-0">
+                  <img 
+                    key={viewingBlock.id}
+                    src={getOptimizedUrl(viewingBlock.content)} 
+                    className="max-w-full max-h-full object-contain animate-in zoom-in-95 fade-in duration-700 ease-out shadow-2xl" 
+                    alt="view"
+                  />
+                </div>
                 {viewingBlock.caption && (
                   <div className="max-w-2xl text-center">
-                    <span className="font-vt text-lg md:text-2xl text-[var(--accent)] tracking-widest lowercase border-b border-[var(--accent)]/30 pb-2 inline-block">
+                    <span className="font-vt text-lg md:text-2xl text-[var(--accent)] tracking-widest lowercase border-b border-[var(--accent)]/20 pb-2 inline-block">
                       {viewingBlock.caption}
                     </span>
                   </div>
                 )}
-                <div className="font-mono text-[10px] opacity-40 uppercase tracking-[0.4em]">
-                  {lightboxIndex + 1} / {postImages.length}
+                <div className="font-mono text-[10px] opacity-30 uppercase tracking-[0.5em]">
+                  {lightboxIndex + 1} <span className="mx-2 opacity-20">/</span> {postImages.length}
                 </div>
               </div>
            </div>
@@ -304,8 +281,8 @@ const PageSinais: React.FC<PageSinaisProps> = ({
   }
 
   return (
-    <div className="pt-32 pb-40 px-6 md:px-12 max-w-[1800px] mx-auto min-h-screen">
-      <header className="mb-16 md:mb-24 flex flex-col gap-12 items-start">
+    <div className="pt-48 md:pt-64 pb-40 px-6 md:px-12 max-w-[1800px] mx-auto min-h-screen">
+      <header className="mb-24 md:mb-32 flex flex-col gap-12 items-start">
         <div className="flex-shrink-0 space-y-4">
           <h2 className="font-nabla text-7xl md:text-9xl lowercase" style={{ fontPalette: isDarkMode ? '--matrix' : '--matrix-blue' }}>sinais</h2>
           <p className="font-mono text-sm opacity-60 lowercase tracking-widest">captura de frequências e registros de campo</p>
@@ -323,22 +300,40 @@ const PageSinais: React.FC<PageSinaisProps> = ({
             </div>
             <div className="relative z-10 pt-8 md:pt-16">
               {groupedPosts[year].map((post) => (
-                    <div key={post.id} className="relative group/item cursor-pointer mb-24 last:mb-0" onClick={() => handleOpenPost(post)}>
-                      <div className="flex flex-col md:flex-row gap-6 md:gap-12 items-start md:items-start">
-                         <div className="md:w-32 flex-shrink-0 flex md:flex-col items-start md:items-start pt-2">
-                            <div className="font-vt text-2xl md:text-3xl text-[var(--accent)] opacity-80">{post.date.split('/').slice(0,2).join('/')}</div>
-                         </div>
-                         <div className="flex-grow pl-6 md:pl-8 border-l border-white/10 md:group-hover/item:border-[var(--accent)] transition-colors py-1 flex flex-col md:flex-row gap-8 items-start md:items-center">
-                            <div className="flex-grow">
-                              <h3 className="text-3xl md:text-5xl font-electrolize mb-4 lowercase text-[var(--accent)]">{post.title}</h3>
-                              {post.subtitle && <p className="font-mono text-sm opacity-60 lowercase line-clamp-2">{post.subtitle}</p>}
-                              <p className="text-[10px] opacity-20 font-mono mt-2 tracking-widest">/{post.slug || '...'}</p>
+                    <div key={post.id} className="relative group/item cursor-pointer mb-32 last:mb-0" onClick={() => handleOpenPost(post)}>
+                      <div className="flex flex-col md:flex-row gap-8 md:gap-16 items-start">
+                         {/* Data Column */}
+                         <div className="md:w-20 flex-shrink-0 pt-4">
+                            <div className="font-vt text-2xl text-[var(--accent)] opacity-30 group-hover/item:opacity-100 transition-opacity">
+                              {post.date.split('/').slice(0,2).join('.')}
                             </div>
+                         </div>
+
+                         {/* Content & Image Wrapper */}
+                         <div className="flex-grow flex flex-col md:flex-row gap-10 items-start md:items-center border-l border-white/5 group-hover/item:border-[var(--accent)]/30 pl-8 md:pl-12 transition-all duration-500">
+                            
+                            {/* Image - Now on the left of the text on desktop */}
                             {post.coverImageUrl && (
-                              <div className="w-full md:w-48 aspect-video md:aspect-square rounded-xl overflow-hidden border border-white/10 flex-shrink-0 transition-all duration-700">
-                                <img src={getOptimizedUrl(post.coverImageUrl, 300)} className="w-full h-full object-cover" alt="thumb" />
+                              <div className="w-full md:w-72 aspect-[4/3] rounded-2xl overflow-hidden flex-shrink-0 relative group-hover/item:shadow-[0_0_30px_rgba(var(--accent-rgb),0.1)] transition-all duration-700">
+                                <img 
+                                  src={getOptimizedUrl(post.coverImageUrl, 400)} 
+                                  className="w-full h-full object-cover" 
+                                  alt="thumb" 
+                                />
+                                <div className="absolute inset-0 bg-transparent group-hover/item:bg-transparent transition-colors"></div>
                               </div>
                             )}
+
+                            <div className="flex-grow space-y-6">
+                              <h3 className="text-4xl md:text-6xl font-electrolize lowercase text-white [.light-mode_&]:text-black group-hover/item:text-[var(--accent)] transition-colors leading-[0.9]">
+                                {post.title}
+                              </h3>
+                              {post.subtitle && (
+                                <p className="font-mono text-sm opacity-40 group-hover/item:opacity-80 transition-opacity lowercase leading-relaxed max-w-lg">
+                                  {post.subtitle}
+                                </p>
+                              )}
+                            </div>
                          </div>
                       </div>
                     </div>

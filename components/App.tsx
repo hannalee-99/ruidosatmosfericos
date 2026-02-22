@@ -10,6 +10,7 @@ import CustomCursor from './CustomCursor';
 import ObserverEffect from './ObserverEffect';
 import GenerativeFavicon from './GenerativeFavicon';
 import Footer from './Footer';
+import BackToTop from './BackToTop';
 
 // Pages (Carregadas sob demanda para otimizar TTI)
 const LandingPage = lazy(() => import('./LandingPage'));
@@ -158,6 +159,7 @@ const App: React.FC = () => {
           <div className="flex-grow">{renderView()}</div>
           {view !== ViewState.BACKOFFICE && <Footer />}
         </div>
+        <BackToTop targetId="main-scroll" />
       </main>
     </div>
   );

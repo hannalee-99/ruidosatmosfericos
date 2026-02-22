@@ -75,18 +75,14 @@ const LazyImage: React.FC<LazyImageProps> = ({
       )}
 
       {isInView && (
-        <img
-          ref={imgRef}
-          src={optimizedSrc}
-          alt={alt}
-          onLoad={handleImageLoad}
-          className={`
-            w-full transition-all duration-1000 ease-[cubic-bezier(0.22,1,0.36,1)]
-            ${autoHeight ? 'h-auto block' : 'h-full object-cover'}
-            ${isLoaded ? 'opacity-100 scale-100' : 'opacity-0 scale-98'}
-          `}
-          style={!autoHeight ? { objectFit } : {}}
-        />
+            <img
+              ref={imgRef}
+              src={optimizedSrc}
+              alt={alt}
+              onLoad={handleImageLoad}
+                className={`w-full ${autoHeight ? 'h-auto block' : 'h-full object-cover'} ${isLoaded ? 'opacity-100' : 'opacity-0'}`}
+              style={!autoHeight ? { objectFit } : {}}
+            />
       )}
     </div>
   );

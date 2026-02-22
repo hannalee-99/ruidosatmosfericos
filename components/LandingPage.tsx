@@ -299,7 +299,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onNavigate, onSignalSelect, i
                      onClick={() => onNavigate(ViewState.MATERIA)}
                      className="break-inside-avoid relative group cursor-pointer flex flex-col bg-white/0 hover:bg-white/[0.01] [.light-mode_&]:hover:bg-black/[0.01] transition-colors duration-500 mb-8"
                    >
-                     <div className="w-full relative overflow-hidden rounded-2xl mb-4 bg-[#0a0a0a] [.light-mode_&]:bg-neutral-200 border border-white/5 [.light-mode_&]:border-black/5">
+                     <div className="w-full relative overflow-hidden rounded-2xl mb-4 bg-transparent">
                         {isGradient ? (
                            <div className="w-full h-32 opacity-100 transition-transform duration-1000" style={{ background: work.imageUrl }}></div>
                         ) : (
