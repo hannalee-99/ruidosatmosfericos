@@ -1,5 +1,7 @@
 
 import React, { useState, useEffect, useMemo, useRef } from 'react';
+import { useWheel } from '@use-gesture/react';
+import { motion, useSpring, useTransform } from 'framer-motion';
 import { storage } from '../lib/storage';
 import { Work, ViewState } from '../types';
 import { MONTH_NAMES, DEFAULT_IMAGE } from '../constants';
@@ -141,6 +143,37 @@ const PageMateria: React.FC<PageMateriaProps> = ({ isDarkMode, workSlug, onNavig
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [selectedWork, navigation]);
 
+  const scale = useSpring(1, { stiffness: 200, damping: 30 });
+  const imageContainerRef = useRef<HTMLDivElement>(null);
+
+  // Hook do useGesture para capturar o scroll do mouse de forma otimizada
+  useWheel(
+    ({ delta: [, dy], event }) => {
+      // Se estiver usando Ctrl/Cmd, deixa o zoom do navegador agir
+      if (event.ctrlKey || event.metaKey) return;
+
+      const currentScale = scale.get();
+      const zoomSpeed = 0.002;
+      const newScale = Math.min(Math.max(currentScale - dy * zoomSpeed, 1), 5);
+      
+      scale.set(newScale);
+
+      // Impede o scroll da página se estivermos dando zoom ou se já houver zoom
+      if (newScale > 1 || (currentScale === 1 && dy < 0)) {
+        if (event.cancelable) event.preventDefault();
+      }
+    },
+    { 
+      target: imageContainerRef, 
+      eventOptions: { passive: false } 
+    }
+  );
+
+  // Reset zoom when changing work
+  useEffect(() => {
+    scale.set(1);
+  }, [workSlug, scale]);
+
   if (selectedWork) {
     return (
       <div className="relative min-h-screen w-full flex flex-col items-center justify-center animate-in fade-in duration-700 bg-[var(--bg)]">
@@ -194,13 +227,27 @@ const PageMateria: React.FC<PageMateriaProps> = ({ isDarkMode, workSlug, onNavig
         {/* Aumentado o padding superior (pt-48) para melhor espaçamento com o botão flutuante */}
         <div className="relative z-10 w-full max-w-7xl px-6 md:px-20 pt-48 md:pt-64 pb-32 flex flex-col lg:grid lg:grid-cols-12 gap-12 items-center lg:items-start">
           <div className="lg:col-span-8 w-full flex justify-center">
-            <div className="relative group max-h-[75vh] w-full flex justify-center">
-              <img 
+            <div 
+              ref={imageContainerRef}
+              className="relative group max-h-[75vh] w-full flex justify-center overflow-hidden rounded-lg cursor-zoom-in touch-none"
+            >
+              <motion.img 
                 src={formatImageUrl(selectedWork.imageUrl)} 
                 alt={selectedWork.title}
                 key={selectedWork.id}
-                className="max-w-full max-h-[75vh] object-contain rounded-lg shadow-2xl animate-in fade-in zoom-in-95 duration-500"
+                style={{ 
+                  scale,
+                }}
+                className="max-w-full max-h-[75vh] object-contain shadow-2xl animate-in fade-in zoom-in-95 duration-500"
               />
+              <motion.div 
+                style={{ 
+                  opacity: useTransform(scale, [1, 1.1], [0, 1])
+                }}
+                className="absolute bottom-4 right-4 bg-black/60 backdrop-blur-md px-3 py-1 rounded-full border border-white/10 text-[10px] font-mono tracking-widest pointer-events-none"
+              >
+                zoom ativo
+              </motion.div>
             </div>
           </div>
 

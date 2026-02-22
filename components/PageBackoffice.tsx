@@ -4,6 +4,7 @@ import { storage } from '../lib/storage';
 import { Work, Signal, SignalBlock, SignalBlockType, AboutData, ConnectConfig, ViewState, ManifestoConfig } from '../types';
 import NeobrutalistButton from './NeobrutalistButton';
 import SignalRenderer from './SignalRenderer';
+import BackofficeManifesto from './BackofficeManifesto';
 
 interface PageBackofficeProps {
   onLogout: () => void;
@@ -342,16 +343,6 @@ export const INITIAL_DATA: {
       await storage.save('about', connect);
       fetchData();
       alert('configurações salvas.');
-    } finally { setIsSaving(false); }
-  };
-
-  const handleSaveManifesto = async (e: React.FormEvent) => {
-    if (e) e.preventDefault();
-    setIsSaving(true);
-    try {
-      await storage.save('about', manifesto);
-      fetchData();
-      alert('manifesto da landing page salvo.');
     } finally { setIsSaving(false); }
   };
 
@@ -819,24 +810,7 @@ export const INITIAL_DATA: {
         )}
 
         {activeTab === ViewState.MANIFESTO && (
-          <form onSubmit={handleSaveManifesto} className="space-y-8 animate-in fade-in max-w-4xl mx-auto">
-            <header className="border-b border-white/10 pb-4">
-               <h2 className="text-sm font-electrolize text-[var(--accent)] tracking-[0.2em] uppercase">editor de manifesto /// landing page</h2>
-            </header>
-            <div className="space-y-6">
-              <div className="space-y-2">
-                <label className="text-[10px] opacity-40 uppercase tracking-widest block">texto do manifesto (efeito typewriter)</label>
-                <textarea 
-                  value={manifesto.text} 
-                  onChange={e => setManifesto({...manifesto, text: e.target.value})} 
-                  className="w-full bg-black border border-white/10 p-8 h-80 outline-none rounded-xl text-lg focus:border-[var(--accent)] resize-none lowercase leading-relaxed" 
-                  placeholder="escreva o manifesto curto para a landing page..." 
-                />
-                <p className="text-[10px] opacity-30 font-mono">Dica: use quebras de linha para controlar o ritmo do efeito de escrita.</p>
-              </div>
-            </div>
-            <NeobrutalistButton variant="matrix" type="submit" className="w-full py-4">salvar manifesto</NeobrutalistButton>
-          </form>
+          <BackofficeManifesto onSave={fetchData} />
         )}
 
         {activeTab === ViewState.ABOUT && (

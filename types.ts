@@ -88,7 +88,8 @@ export interface ConnectConfig {
 
 export interface ManifestoConfig {
   id: string; // 'landing_manifesto'
-  text: string;
+  text: string; // Texto da landing page (typewriter)
+  fullManifesto?: string[]; // Blocos de texto da página de manifesto
 }
 
 export interface SensorData {
