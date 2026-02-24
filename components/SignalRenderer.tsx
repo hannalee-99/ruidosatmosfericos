@@ -133,7 +133,6 @@ const MarkdownRenderer: React.FC<{ content: string }> = ({ content }) => {
 
 interface SignalRendererProps {
   signal: Signal;
-  onImageClick?: (index: number) => void;
 }
 
 type RenderGroup = 
@@ -141,9 +140,7 @@ type RenderGroup =
   | { type: 'gallery'; id: string; images: SignalBlock[] }
   | { type: 'embed'; id: string; content: string };
 
-const SignalRenderer: React.FC<SignalRendererProps> = ({ signal, onImageClick }) => {
-  const allImages = useMemo(() => signal.blocks.filter(b => b.type === 'image'), [signal.blocks]);
-
+const SignalRenderer: React.FC<SignalRendererProps> = ({ signal }) => {
   const processedBlocks = useMemo(() => {
     const result: RenderGroup[] = [];
     let currentGallery: SignalBlock[] = [];
@@ -176,15 +173,7 @@ const SignalRenderer: React.FC<SignalRendererProps> = ({ signal, onImageClick })
             <div className={`my-12 grid gap-12 ${group.images.length === 1 ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2'}`}>
               {group.images.map((imgBlock) => (
                 <figure key={imgBlock.id} className="relative w-full flex flex-col">
-                  <div 
-                    className="relative cursor-zoom-in" 
-                    onClick={() => {
-                      if (onImageClick) {
-                        const idx = allImages.findIndex(b => b.id === imgBlock.id);
-                        onImageClick(idx);
-                      }
-                    }}
-                  >
+                  <div className="relative">
                     <LazyImage 
                       src={formatImageUrl(imgBlock.content)} 
                       alt="registro visual" 

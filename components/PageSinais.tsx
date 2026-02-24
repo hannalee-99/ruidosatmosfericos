@@ -53,7 +53,6 @@ const PageSinais: React.FC<PageSinaisProps> = ({
 }) => {
   const [posts, setPosts] = useState<Signal[]>([]);
   const [selectedPost, setSelectedPost] = useState<Signal | null>(null);
-  const [lightboxIndex, setLightboxIndex] = useState<number>(-1);
   const [showBackButton, setShowBackButton] = useState(true);
   const lastScrollY = useRef(0);
   const { updateMeta, resetMeta } = useMeta();
@@ -122,26 +121,15 @@ const PageSinais: React.FC<PageSinaisProps> = ({
     };
   }, [selectedPost]);
 
-  const postImages = useMemo(() => {
-    if (!selectedPost) return [];
-    return selectedPost.blocks.filter(b => b.type === 'image');
-  }, [selectedPost]);
-
-  const viewingBlock = lightboxIndex >= 0 && postImages[lightboxIndex] ? postImages[lightboxIndex] : null;
-
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (lightboxIndex !== -1) {
-        if (e.key === 'Escape') setLightboxIndex(-1);
-        if (e.key === 'ArrowRight') setLightboxIndex(prev => (prev + 1) % postImages.length);
-        if (e.key === 'ArrowLeft') setLightboxIndex(prev => (prev - 1 + postImages.length) % postImages.length);
-      } else if (selectedPost && e.key === 'Escape') {
+      if (selectedPost && e.key === 'Escape') {
         handleClosePost();
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [lightboxIndex, postImages.length, selectedPost]);
+  }, [selectedPost]);
 
   const groupedPosts = useMemo(() => {
     const groups: Record<string, Signal[]> = {};
@@ -229,53 +217,9 @@ const PageSinais: React.FC<PageSinaisProps> = ({
                )}
             </header>
             <article className="max-w-3xl mx-auto pb-32">
-               <SignalRenderer signal={selectedPost} onImageClick={setLightboxIndex} />
+               <SignalRenderer signal={selectedPost} />
             </article>
          </div>
-
-         {viewingBlock && (
-           <div className="fixed inset-0 z-[300] bg-[#050505]/95 flex flex-col items-center justify-between py-12 md:py-20 px-6 md:px-24 backdrop-blur-2xl animate-in fade-in duration-500" onClick={() => setLightboxIndex(-1)}>
-              <button onClick={() => setLightboxIndex(-1)} className="absolute top-8 md:top-12 right-8 md:right-12 z-[310] text-white/50 hover:text-white transition-colors">
-                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-              </button>
-              {postImages.length > 1 && (
-                <>
-                  <button 
-                    onClick={(e) => { e.stopPropagation(); setLightboxIndex(prev => (prev - 1 + postImages.length) % postImages.length); }}
-                    className="fixed left-4 md:left-12 top-1/2 -translate-y-1/2 w-12 h-12 md:w-20 md:h-20 flex items-center justify-center rounded-full text-white/20 hover:text-white hover:bg-white/5 transition-all z-[310]"
-                  >
-                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1"><path d="M15 18l-6-6 6-6"/></svg>
-                  </button>
-                  <button 
-                    onClick={(e) => { e.stopPropagation(); setLightboxIndex(prev => (prev + 1) % postImages.length); }}
-                    className="fixed right-4 md:right-12 top-1/2 -translate-y-1/2 w-12 h-12 md:w-20 md:h-20 flex items-center justify-center rounded-full text-white/20 hover:text-white hover:bg-white/5 transition-all z-[310]"
-                  >
-                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1"><path d="M9 18l6-6-6-6"/></svg>
-                  </button>
-                </>
-              )}
-              <div className="flex-1 w-full max-w-6xl flex flex-col items-center justify-center gap-12 md:gap-16" onClick={e => e.stopPropagation()}>
-                <div className="relative w-full flex-1 flex items-center justify-center min-h-0">
-                  <img 
-                    key={viewingBlock.id}
-                    src={getOptimizedUrl(viewingBlock.content)} 
-                    className="max-w-full max-h-full object-contain animate-in zoom-in-95 fade-in duration-700 ease-out shadow-2xl" 
-                    alt="view"
-                  />
-                </div>
-                {viewingBlock.caption && (
-                  <div className="max-w-2xl text-center">
-                    <span className="font-vt text-lg md:text-2xl text-[var(--accent)] tracking-widest lowercase border-b border-[var(--accent)]/20 pb-2 inline-block">
-                      {viewingBlock.caption}
-                    </span>
-                  </div>
-                )}
-                <div className="font-mono text-[10px] opacity-30 uppercase tracking-[0.5em]">
-                  {lightboxIndex + 1} <span className="mx-2 opacity-20">/</span> {postImages.length}
-                </div>
-              </div>
-           </div>
-         )}
       </div>
     );
   }
