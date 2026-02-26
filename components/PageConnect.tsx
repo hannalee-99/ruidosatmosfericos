@@ -35,10 +35,9 @@ const PageConnect: React.FC<PageConnectProps> = ({ onNavigate }) => {
   const bottomRef = useRef<HTMLDivElement>(null);
 
   const COMMANDS = {
-    ajuda: "comandos disponíveis: sinal, outros, feed, sobre, limpar, sair",
+    ajuda: "comandos disponíveis: sinal, outros, limpar, sair",
     sinal: "iniciando protocolo de contato...",
     outros: "buscando redes externas...",
-    feed: "gerando url do feed rss/atom...",
     limpar: "limpando buffer de memória...",
     sair: "encerrando conexão."
   };
@@ -127,37 +126,6 @@ const PageConnect: React.FC<PageConnectProps> = ({ onNavigate }) => {
           addLine("nenhum link externo configurado.", 'output');
         }
       }, 300);
-      return;
-    }
-
-    if (cleanCmd === 'feed') {
-      setTimeout(() => {
-        const siteUrl = window.location.origin;
-        addLine(
-          <div className="p-4 border border-white/20 rounded bg-white/5 mt-2 space-y-2">
-            <span className="opacity-60 block text-xs uppercase tracking-widest">protocolos de feed ativos:</span>
-            <div className="flex flex-col gap-1">
-              <a href="/rss.xml" target="_blank" className="text-[var(--accent)] underline hover:no-underline font-mono">
-                {siteUrl}/rss.xml (RSS 2.0)
-              </a>
-              <a href="/rss-feed" target="_blank" className="text-[var(--accent)] underline hover:no-underline font-mono opacity-50 text-xs">
-                (link alternativo se o acima falhar)
-              </a>
-              <a href="/atom.xml" target="_blank" className="text-[var(--accent)] underline hover:no-underline font-mono">
-                {siteUrl}/atom.xml (Atom 1.0)
-              </a>
-            </div>
-          </div>,
-          'success'
-        );
-      }, 300);
-      return;
-    }
-
-    if (cleanCmd === 'sobre') {
-      setTimeout(() => {
-        addLine(connectConfig.sobreText || "ruídos atmosféricos // v3.1", 'output');
-      }, 200);
       return;
     }
 
