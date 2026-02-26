@@ -71,12 +71,12 @@
         font-family: Nabla;
         base-palette: 6; /* Usa a paleta azul nativa da Nabla como base */
         override-colors: 
-          0 #293fcf, 
-          1 #1a2a8c, 
-          2 #0d1a5e, 
+          0 #293fcf, /* Azul Principal */
+          1 #ff9f43, /* Laranja Vibrante (Segunda Cor) */
+          2 #1a2a8c, /* Azul Escuro (Sombra) */
           3 #293fcf, 
-          4 #1a2a8c, 
-          5 #0d1a5e;
+          4 #ff9f43, 
+          5 #1a2a8c;
       }
 
       body.light-mode {
@@ -90,8 +90,8 @@
       /* Forçar a cor azul no modo claro via Filtro de Tingimento (Garantia de Cor) */
       body.light-mode .font-nabla {
         font-palette: --matrix-blue !important;
-        /* Transforma qualquer cor base em tons de azul profundo, eliminando o branco e o amarelo */
-        filter: brightness(0.8) sepia(1) hue-rotate(190deg) saturate(15) contrast(1.1) !important;
+        /* Ajuste do filtro para permitir que as cores da paleta brilhem sem achatar tudo em azul */
+        filter: brightness(1.05) contrast(1.1) !important;
         display: inline-block;
       }
       
