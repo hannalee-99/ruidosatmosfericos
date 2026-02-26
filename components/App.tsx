@@ -157,7 +157,7 @@ const App: React.FC = () => {
       <main id="main-scroll" className="flex-grow relative z-10 h-full overflow-y-auto overflow-x-hidden scroll-smooth no-scrollbar">
         <div className="min-h-screen flex flex-col">
           <div className="flex-grow">{renderView()}</div>
-          {view !== ViewState.BACKOFFICE && <Footer />}
+          {view !== ViewState.BACKOFFICE && <Footer showRSS={view !== ViewState.LANDING} />}
         </div>
         <BackToTop targetId="main-scroll" />
       </main>

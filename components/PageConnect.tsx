@@ -140,6 +140,9 @@ const PageConnect: React.FC<PageConnectProps> = ({ onNavigate }) => {
               <a href="/rss.xml" target="_blank" className="text-[var(--accent)] underline hover:no-underline font-mono">
                 {siteUrl}/rss.xml (RSS 2.0)
               </a>
+              <a href="/rss-feed" target="_blank" className="text-[var(--accent)] underline hover:no-underline font-mono opacity-50 text-xs">
+                (link alternativo se o acima falhar)
+              </a>
               <a href="/atom.xml" target="_blank" className="text-[var(--accent)] underline hover:no-underline font-mono">
                 {siteUrl}/atom.xml (Atom 1.0)
               </a>
