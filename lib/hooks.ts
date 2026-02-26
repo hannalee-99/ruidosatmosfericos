@@ -1,7 +1,6 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { storage } from './storage';
-import { INITIAL_DATA } from '../initialData';
 
 export const useTheme = () => {
   const [isDarkMode, setIsDarkMode] = useState(true);
@@ -73,6 +72,10 @@ export const useDataSeeding = () => {
     const seed = async () => {
       try {
         const lastSync = parseInt(localStorage.getItem('ra_last_sync') || '0');
+        
+        // Carrega o initialData dinamicamente apenas quando necessário
+        // Isso remove o peso dos dados do bundle principal do site
+        const { INITIAL_DATA } = await import('../initialData');
         const codeVersion = INITIAL_DATA.lastUpdated || 0;
 
         if (codeVersion > lastSync) {

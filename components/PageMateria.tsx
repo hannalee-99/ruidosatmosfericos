@@ -8,6 +8,7 @@ import { MONTH_NAMES, DEFAULT_IMAGE } from '../constants';
 import { useMeta } from '../lib/hooks';
 import LazyImage from './LazyImage';
 import JsonLd from './JsonLd';
+import Lightbox from './Lightbox';
 
 interface PageMateriaProps {
   isDarkMode: boolean;
@@ -20,6 +21,7 @@ const PageMateria: React.FC<PageMateriaProps> = ({ isDarkMode, workSlug, onNavig
   const [works, setWorks] = useState<Work[]>([]);
   const [filterYear, setFilterYear] = useState<string>('todos');
   const [selectedWork, setSelectedWork] = useState<Work | null>(null);
+  const [isLightboxOpen, setIsLightboxOpen] = useState(false);
   const [showBackButton, setShowBackButton] = useState(true);
   const lastScrollY = useRef(0);
   const { updateMeta, resetMeta } = useMeta();
@@ -213,20 +215,35 @@ const PageMateria: React.FC<PageMateriaProps> = ({ isDarkMode, workSlug, onNavig
             <motion.div 
               {...(bind() as any)}
               animate={controls}
-              className="relative group max-h-[75vh] w-full flex justify-center touch-none cursor-grab active:cursor-grabbing"
+              onClick={() => setIsLightboxOpen(true)}
+              className="relative group max-h-[75vh] w-full flex justify-center touch-none cursor-zoom-in"
             >
               <motion.img 
                 src={formatImageUrl(selectedWork.imageUrl)} 
                 alt={selectedWork.title}
                 key={selectedWork.id}
                 layoutId={`work-img-${selectedWork.id}`}
-                className="max-w-full max-h-[75vh] object-contain rounded-lg shadow-2xl"
+                className="max-w-full max-h-[75vh] object-contain rounded-lg shadow-2xl transition-shadow duration-500 group-hover:shadow-[0_0_50px_rgba(var(--accent-rgb),0.2)]"
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.5, ease: [0.2, 0.8, 0.2, 1] }}
               />
+              
+              {/* Zoom Hint */}
+              <div className="absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity bg-black/40 backdrop-blur-md p-2 rounded-full text-white pointer-events-none">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                  <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/>
+                </svg>
+              </div>
             </motion.div>
           </div>
+
+          <Lightbox 
+            isOpen={isLightboxOpen} 
+            onClose={() => setIsLightboxOpen(false)} 
+            src={formatImageUrl(selectedWork.imageUrl)} 
+            alt={selectedWork.title} 
+          />
 
           <div className="lg:col-span-4 w-full space-y-10 lg:pl-8">
             <header className="space-y-4">
@@ -281,7 +298,7 @@ const PageMateria: React.FC<PageMateriaProps> = ({ isDarkMode, workSlug, onNavig
     <div className="pt-32 pb-40 px-6 md:px-12 max-w-[1800px] mx-auto min-h-screen">
       <header className="mb-16 md:mb-24 flex flex-col gap-12 items-start">
         <div className="flex-shrink-0 space-y-4">
-          <h2 className="font-nabla text-7xl md:text-9xl lowercase" style={{ fontPalette: isDarkMode ? '--matrix' : '--matrix-blue' }}>matéria</h2>
+          <h2 className={`font-nabla text-7xl md:text-9xl lowercase ${isDarkMode ? 'palette-matrix' : 'palette-matrix-blue'}`}>matéria</h2>
           <p className="font-mono text-sm opacity-60 lowercase tracking-widest">registros de presença física e digital</p>
         </div>
         

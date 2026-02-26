@@ -8,7 +8,7 @@ import Navigation from './Navigation';
 import Splash from './Splash';
 import CustomCursor from './CustomCursor';
 import ObserverEffect from './ObserverEffect';
-import GenerativeFavicon from './GenerativeFavicon';
+import FaviconManager from './FaviconManager';
 import Footer from './Footer';
 import BackToTop from './BackToTop';
 
@@ -137,7 +137,7 @@ const App: React.FC = () => {
   if (!hasEntered) {
     return (
       <div className="relative w-full h-screen bg-black overflow-hidden">
-        <GenerativeFavicon />
+        <FaviconManager />
         <CustomCursor />
         <Splash onEnter={handleEntry} />
       </div>
@@ -146,7 +146,7 @@ const App: React.FC = () => {
 
   return (
     <div className="relative w-full h-screen overflow-hidden flex flex-col bg-[var(--bg)] text-[var(--text)] transition-colors duration-700">
-      <GenerativeFavicon />
+      <FaviconManager />
       <CustomCursor />
       <ObserverEffect />
 

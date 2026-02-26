@@ -15,7 +15,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ruídos atmosféricos</title>
-    <meta name="description" content="espere nada, aprecie tudo. registros de presença digital e física.">
+    <meta name="description" content="sistemas vivos operam em desequilíbrio controlado. o vazio não é ausência, é condição de forma.">
     
     <!-- Resource Hints para Performance -->
     <link rel="preconnect" href="https://res.cloudinary.com">
@@ -37,11 +37,11 @@
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:url" content="https://ruidosatmosfericos.online">
     <meta name="twitter:title" content="ruídos atmosféricos">
-    <meta name="twitter:description" content="spere nada, aprecie tudo. registros de presença digital e física.">
+    <meta name="twitter:description" content="espere nada, aprecie tudo.">
     <meta name="twitter:image" content="https://64.media.tumblr.com/2469fc83feaecaf0b7a97fa55f6793d6/670f92e2b0934e32-bb/s2048x3072/3b1cf9f39410af90a8d0607d572f83c0024b2472.jpg">
     
-    <!-- Favicon SVG Generativo -->
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.5'/%3E%3CfeDisplacementMap in='SourceGraphic' scale='10'/%3E%3C/filter%3E%3Ccircle cx='50' cy='50' r='40' fill='%239ff85d' filter='url(%23n)'/%3E%3Ccircle cx='50' cy='50' r='20' fill='black'/%3E%3C/svg%3E">
+    <!-- Favicon Manager (Backoffice) -->
+    <link rel="icon" href="/favicon.ico">
 
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Nabla&family=Electrolize&family=VT323&family=IBM+Plex+Mono:wght@400;700&display=swap&font-display=swap" rel="stylesheet">
@@ -69,8 +69,14 @@
 
       @font-palette-values --matrix-blue {
         font-family: Nabla;
-        base-palette: 0;
-        override-colors: 0 #293fcf, 1 #4b5ecc, 2 #0d1a5e, 3 #293fcf, 4 #1a2a8c, 5 #0d1a5e;
+        base-palette: 6; /* Usa a paleta azul nativa da Nabla como base */
+        override-colors: 
+          0 #293fcf, 
+          1 #1a2a8c, 
+          2 #0d1a5e, 
+          3 #293fcf, 
+          4 #1a2a8c, 
+          5 #0d1a5e;
       }
 
       body.light-mode {
@@ -79,6 +85,20 @@
         --accent: #293fcf;
         --accent-rgb: 41, 63, 207;
         --btn-text: #ffffff;
+      }
+
+      /* Forçar a cor azul no modo claro via Filtro de Tingimento (Garantia de Cor) */
+      body.light-mode .font-nabla {
+        font-palette: --matrix-blue !important;
+        /* Transforma qualquer cor base em tons de azul profundo, eliminando o branco e o amarelo */
+        filter: brightness(0.8) sepia(1) hue-rotate(190deg) saturate(15) contrast(1.1) !important;
+        display: inline-block;
+      }
+      
+      /* Reset para o modo escuro */
+      body:not(.light-mode) .font-nabla {
+        font-palette: --matrix !important;
+        filter: none !important;
       }
 
       /* Estilo Global de texto, exceto para elementos de entrada */
@@ -118,6 +138,8 @@
       .font-electrolize { font-family: var(--font-electrolize); }
       .font-terminal { font-family: var(--font-mono); }
       .font-vt { font-family: var(--font-vt); }
+      .palette-matrix { font-palette: --matrix; }
+      .palette-matrix-blue { font-palette: --matrix-blue; }
       
       ::-webkit-scrollbar { display: none; }
       body { -ms-overflow-style: none; scrollbar-width: none; }

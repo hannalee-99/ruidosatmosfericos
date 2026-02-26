@@ -22,6 +22,8 @@ const PageBackoffice: React.FC<PageBackofficeProps> = ({ onLogout }) => {
   const [isSaving, setIsSaving] = useState(false);
   const [isProcessingImage, setIsProcessingImage] = useState(false);
   const [exportCode, setExportCode] = useState('');
+  const [importCode, setImportCode] = useState('');
+  const [isImporting, setIsImporting] = useState(false);
   
   const isSlugPristine = useRef(true);
   const isWorkSlugPristine = useRef(true);
@@ -358,6 +360,86 @@ export const INITIAL_DATA: {
       fetchData();
       alert('manifesto da landing page salvo.');
     } finally { setIsSaving(false); }
+  };
+
+  const handleImportData = async () => {
+    if (!importCode.trim()) return;
+    setIsImporting(true);
+    try {
+      let content = importCode.trim();
+      
+      // Se for o arquivo completo, precisamos pegar o objeto de DADOS, não a definição de TIPOS
+      if (content.includes('= {')) {
+        // Procuramos o '=' e pegamos o '{' que vem depois dele
+        const equalIndex = content.indexOf('=');
+        const start = content.indexOf('{', equalIndex);
+        const end = content.lastIndexOf('};');
+        
+        if (start !== -1 && end !== -1) {
+          content = content.substring(start, end + 1);
+        } else if (start !== -1) {
+          content = content.substring(start);
+        }
+      }
+
+      // Limpeza para tornar o JSON válido
+      let cleanJson = content
+        .replace(/\/\/.*$/gm, '') // Remove comentários de linha única
+        .replace(/\/\*[\s\S]*?\*\//g, '') // Remove comentários de múltiplas linhas
+        .replace(/,\s*([\]}])/g, '$1') // Remove vírgulas antes de ] ou }
+        .trim();
+
+      // Se o JSON começar com algo que não seja {, tentamos encontrar o primeiro {
+      if (!cleanJson.startsWith('{')) {
+        const firstBrace = cleanJson.indexOf('{');
+        if (firstBrace !== -1) {
+          cleanJson = cleanJson.substring(firstBrace);
+        }
+      }
+
+      // Tenta converter chaves não aspeadas (comum em JS/TS manual) para JSON válido
+      cleanJson = cleanJson.replace(/([{,]\s*)([a-zA-Z0-9_]+)\s*:/g, '$1"$2":');
+
+      // Escapa quebras de linha literais dentro de strings (comum em arquivos .ts manuais)
+      // O JSON.parse não aceita quebras de linha reais dentro de aspas, apenas \n
+      cleanJson = cleanJson.replace(/"([^"\\]*(\\.[^"\\]*)*)"/g, (match) => {
+        return match.replace(/\n/g, '\\n').replace(/\r/g, '\\r');
+      });
+      
+      const data = JSON.parse(cleanJson);
+      
+      if (!data.works || !data.signals || !data.about) {
+        throw new Error('formato de dados inválido. certifique-se de colar o conteúdo do initialData.ts ou o json exportado.');
+      }
+
+      // Limpa e salva novos dados
+      const confirmImport = confirm('isso irá sobrescrever todos os dados locais atuais. continuar?');
+      if (!confirmImport) return;
+
+      // Limpeza (opcional, mas recomendada para evitar lixo)
+      const currentWorks = await storage.getAll('works');
+      const currentSignals = await storage.getAll('signals');
+      for (const w of currentWorks) await storage.delete('works', w.id);
+      for (const s of currentSignals) await storage.delete('signals', s.id);
+
+      // Salva novos dados
+      for (const w of data.works) await storage.save('works', w);
+      for (const s of data.signals) await storage.save('signals', s);
+      if (data.about.profile) await storage.save('about', data.about.profile);
+      if (data.about.connect_config) await storage.save('about', data.about.connect_config);
+      if (data.about.landing_manifesto) await storage.save('about', data.about.landing_manifesto);
+
+      // Atualiza timestamp de sincronização para evitar que o seed antigo do código rode
+      localStorage.setItem('ra_last_sync', (data.lastUpdated || Date.now()).toString());
+
+      alert('dados importados com sucesso! a página será recarregada.');
+      window.location.reload();
+    } catch (e) {
+      console.error(e);
+      alert('erro ao importar: ' + (e instanceof Error ? e.message : 'formato inválido'));
+    } finally {
+      setIsImporting(false);
+    }
   };
 
   const handleAddLink = () => {
@@ -909,17 +991,50 @@ export const INITIAL_DATA: {
         )}
 
         {activeTab === 'sincronizar' && (
-          <div className="space-y-8 animate-in fade-in max-w-4xl mx-auto text-center py-12">
-            <h2 className="font-electrolize text-3xl text-[var(--accent)] lowercase">exportar base de dados</h2>
-            <p className="font-mono text-sm opacity-60 lowercase max-w-md mx-auto">extraia o conteúdo atual para persistência manual ou backup no repositório github.</p>
-            {!exportCode ? (
-              <NeobrutalistButton variant="matrix" onClick={generateExportCode} className="px-12 py-6 text-xl">gerar código de extração</NeobrutalistButton>
-            ) : (
-              <div className="space-y-6">
-                <textarea readOnly value={exportCode} className="w-full h-[300px] bg-black border border-white/10 p-6 rounded-md font-mono text-[10px] text-neutral-400 no-scrollbar" />
-                <NeobrutalistButton variant="matrix" onClick={copyToClipboard} className="w-full py-5">copiar código para clipboard</NeobrutalistButton>
+          <div className="space-y-16 animate-in fade-in max-w-4xl mx-auto py-12">
+            
+            {/* Seção de Exportação */}
+            <section className="space-y-8 text-center border-b border-white/10 pb-16">
+              <div className="space-y-2">
+                <h2 className="font-electrolize text-3xl text-[var(--accent)] lowercase">exportar base de dados</h2>
+                <p className="font-mono text-sm opacity-60 lowercase max-w-md mx-auto">extraia o conteúdo atual para persistência manual ou backup no repositório github.</p>
               </div>
-            )}
+              
+              {!exportCode ? (
+                <NeobrutalistButton variant="matrix" onClick={generateExportCode} className="px-12 py-6 text-xl">gerar código de extração</NeobrutalistButton>
+              ) : (
+                <div className="space-y-6">
+                  <textarea readOnly value={exportCode} className="w-full h-[300px] bg-black border border-white/10 p-6 rounded-md font-mono text-[10px] text-neutral-400 no-scrollbar" />
+                  <NeobrutalistButton variant="matrix" onClick={copyToClipboard} className="w-full py-5">copiar código para clipboard</NeobrutalistButton>
+                </div>
+              )}
+            </section>
+
+            {/* Seção de Importação */}
+            <section className="space-y-8 text-center">
+              <div className="space-y-2">
+                <h2 className="font-electrolize text-3xl text-[var(--accent)] lowercase">importar base de dados</h2>
+                <p className="font-mono text-sm opacity-60 lowercase max-w-md mx-auto">cole o conteúdo do seu arquivo initialData.ts do github abaixo para atualizar este ambiente.</p>
+              </div>
+
+              <div className="space-y-6">
+                <textarea 
+                  value={importCode} 
+                  onChange={e => setImportCode(e.target.value)}
+                  placeholder="cole o código aqui..."
+                  className="w-full h-[200px] bg-black border border-white/10 p-6 rounded-md font-mono text-[10px] text-neutral-400 no-scrollbar focus:border-[var(--accent)] outline-none" 
+                />
+                <NeobrutalistButton 
+                  variant="matrix" 
+                  onClick={handleImportData} 
+                  disabled={!importCode.trim() || isImporting}
+                  className="w-full py-5"
+                >
+                  {isImporting ? 'processando...' : 'importar e sobrescrever dados locais'}
+                </NeobrutalistButton>
+              </div>
+            </section>
+
           </div>
         )}
       </div>

@@ -228,12 +228,9 @@ const LandingPage: React.FC<LandingPageProps> = ({ onNavigate, onSignalSelect, i
               <h1 
                 className={`font-nabla lowercase md:leading-[0.8] -ml-1 ${
                   isDarkMode 
-                    ? 'mix-blend-screen' 
-                    : 'drop-shadow-[3px_3px_0px_rgba(0,0,0,0.25)] opacity-100'
+                    ? 'mix-blend-screen palette-matrix' 
+                    : 'drop-shadow-[3px_3px_0px_rgba(0,0,0,0.25)] opacity-100 palette-matrix-blue'
                 }`} 
-                style={{ 
-                  fontPalette: isDarkMode ? '--matrix' : '--matrix-blue',
-                }}
               >
                 {/* Mobile View: Uniformizada a escala das palavras */}
                 <div className="flex flex-col md:hidden leading-[0.85] w-full">

@@ -51,7 +51,7 @@ const PageAbout: React.FC<PageAboutProps> = ({ onNavigate, isDarkMode }) => {
         
         {/* Título Mobile */}
         <header className="md:hidden w-full text-left mb-8">
-          <h1 className="font-nabla text-7xl lowercase tracking-tighter leading-[0.9]" style={{ fontPalette: isDarkMode ? '--matrix' : '--matrix-blue' }}>
+          <h1 className={`font-nabla text-7xl lowercase tracking-tighter leading-[0.9] ${isDarkMode ? 'palette-matrix' : 'palette-matrix-blue'}`}>
             esse<br/>eu
           </h1>
         </header>
@@ -80,7 +80,7 @@ const PageAbout: React.FC<PageAboutProps> = ({ onNavigate, isDarkMode }) => {
         {/* Coluna de Texto */}
         <div className="md:col-span-7 flex flex-col text-left space-y-10 order-2 md:order-1 relative w-full">
            <header className="hidden md:block space-y-4">
-             <h1 className="font-nabla text-7xl md:text-9xl lowercase tracking-tighter leading-[0.9]" style={{ fontPalette: isDarkMode ? '--matrix' : '--matrix-blue' }}>
+             <h1 className={`font-nabla text-7xl md:text-9xl lowercase tracking-tighter leading-[0.9] ${isDarkMode ? 'palette-matrix' : 'palette-matrix-blue'}`}>
                esse<br/>eu
              </h1>
            </header>
