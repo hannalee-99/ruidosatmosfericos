@@ -49,7 +49,26 @@ const PageBackoffice: React.FC<PageBackofficeProps> = ({ onLogout }) => {
     }));
     if (p) setProfile(p);
     if (c) setConnect(c);
-    if (m) setManifesto(m);
+    if (m) {
+      if (!m.layers || m.layers.length === 0) {
+        const defaultLayers = [
+          { n: "01", scale: "∅", name: "abertura", lines: [[{ t: "abre-se um " }, { t: "espaço", accent: true }], [{ t: "para além da consciência terrena" }]] },
+          { n: "02", scale: "10⁻³³ cm", name: "microscópica", lines: [[{ t: "o " }, { t: "tecido central", accent: true }], [{ t: "onde o todo se condensa" }], [{ t: "e o que está em cima é como o que está embaixo" }], [{ t: "e o que está embaixo é como o que está em cima" }], [{ t: "em " }, { t: "vibração primordial", accent: true }]] },
+          { n: "03", scale: "10⁻³ s", name: "instante", lines: [[{ t: "quem fui no " }, { t: "milissegundo", accent: true }, { t: " que já se foi" }], [{ t: "absorve no tempo e abstrai no instante" }], [{ t: "e já não é quem estou " }, { t: "agora", accent: true }]] },
+          { n: "04", scale: "13 × 10⁹ anos", name: "cósmica", lines: [[{ t: "há treze bilhões de anos" }], [{ t: "sou " }, { t: "matéria em reorganização", accent: true }], [{ t: "quarks, léptons, particulas" }], [{ t: "hoje atravessados" }], [{ t: "por fluidos terráqueos" }]] },
+          { n: "05", scale: "existencial", name: "angústia", lines: [[{ t: "existir sob o modo dominante angústia" }], [{ t: "nos limitando os sentidos frente à " }, { t: "transitoriedade", accent: true }], [{ t: "a falta surge quando a expectativa fora criada" }], [{ t: "projetamos cenários para suportar o " }, { t: "indeterminado", accent: true }], [{ t: "vivemos a lógica utilitária somente por pressão e sobrevivência" }]] },
+          { n: "06", scale: "cognitiva", name: "decifrar", lines: [[{ t: "poder é " }, { t: "decifrar", accent: true }, { t: " o sentir" }], [{ t: "aprender a reconhecer o necessário" }], [{ t: "pois a existência não se sustenta na ilusão" }], [{ t: "" }], [{ t: "existir é " }, { t: "transcender", accent: true }]] },
+          { n: "07", scale: "operação", name: "desconformidade", lines: [[{ t: "no limiar de estímulo e sentido" }], [{ t: "resistindo à (des)ordem" }], [{ t: "criando padrões temporários" }], [{ t: "opero em " }, { t: "desconformidade controlada", accent: true }], [{ t: "negociando constantemente com a tendência ao " }, { t: "caos", accent: true }]] },
+          { n: "08", scale: "limite", name: "falha", lines: [[{ t: "quando a palavra " }, { t: "falha", accent: true }, { t: ", a forma não sustenta, o movimento escorre" }]] },
+          { n: "09", scale: "cósmica++", name: "sinais", lines: [[{ t: "sinais", accent: true }, { t: " atravessam o " }, { t: "tecido cósmico", accent: true }]] },
+          { n: "10", scale: "dualidades", name: "atrito", lines: [[{ t: "entre o atrito" }], [{ t: "do vazio com a forma" }], [{ t: "do corpo com o mundo" }], [{ t: "do controle com o fluxo" }], [{ t: "do eu com o " }, { t: "outro", accent: true }]] },
+          { n: "11", scale: "meta", name: "criando", lines: [[{ t: "e é nessa fenda que observo os " }, { t: "ruídos", accent: true }], [{ t: "criando.", accent: true }]] }
+        ];
+        setManifesto({ ...m, layers: defaultLayers });
+      } else {
+        setManifesto(m);
+      }
+    }
   };
 
   const compressAndResizeImage = (base64Str: string): Promise<string> => {
@@ -332,6 +351,13 @@ export const INITIAL_DATA: {
     fetchData();
   };
 
+  const handleDeleteSignal = async (id: string) => {
+    if (!confirm('eliminar esta transmissão permanentemente?')) return;
+    await storage.delete('signals', id);
+    setEditingSignal(null);
+    fetchData();
+  };
+
   const handleSaveProfile = async (e: React.FormEvent) => {
     if (e) e.preventDefault();
     setIsSaving(true);
@@ -358,8 +384,64 @@ export const INITIAL_DATA: {
     try {
       await storage.save('about', manifesto);
       fetchData();
-      alert('manifesto da landing page salvo.');
+      alert('sistema de manifesto atualizado.');
     } finally { setIsSaving(false); }
+  };
+
+  const handleAddManifestoLayer = () => {
+    const newLayer = {
+      n: (manifesto.layers?.length || 0) + 1,
+      scale: "∅",
+      name: "nova camada",
+      lines: [[{ t: "nova linha de pensamento" }]]
+    };
+    setManifesto({
+      ...manifesto,
+      layers: [...(manifesto.layers || []), newLayer]
+    });
+  };
+
+  const handleUpdateManifestoLayer = (index: number, updates: any) => {
+    const newLayers = [...(manifesto.layers || [])];
+    newLayers[index] = { ...newLayers[index], ...updates };
+    setManifesto({ ...manifesto, layers: newLayers });
+  };
+
+  const handleRemoveManifestoLayer = (index: number) => {
+    const newLayers = manifesto.layers?.filter((_, i) => i !== index);
+    setManifesto({ ...manifesto, layers: newLayers });
+  };
+
+  const handleAddManifestoLine = (layerIndex: number) => {
+    const newLayers = [...(manifesto.layers || [])];
+    newLayers[layerIndex].lines.push([{ t: "nova linha" }]);
+    setManifesto({ ...manifesto, layers: newLayers });
+  };
+
+  const handleUpdateManifestoLineSegment = (layerIndex: number, lineIndex: number, segmentIndex: number, text: string, accent: boolean) => {
+    const newLayers = [...(manifesto.layers || [])];
+    const segment = { t: text };
+    if (accent) (segment as any).accent = true;
+    newLayers[layerIndex].lines[lineIndex][segmentIndex] = segment;
+    setManifesto({ ...manifesto, layers: newLayers });
+  };
+
+  const handleAddManifestoSegment = (layerIndex: number, lineIndex: number) => {
+    const newLayers = [...(manifesto.layers || [])];
+    newLayers[layerIndex].lines[lineIndex].push({ t: " " });
+    setManifesto({ ...manifesto, layers: newLayers });
+  };
+
+  const handleRemoveManifestoSegment = (layerIndex: number, lineIndex: number, segmentIndex: number) => {
+    const newLayers = [...(manifesto.layers || [])];
+    newLayers[layerIndex].lines[lineIndex] = newLayers[layerIndex].lines[lineIndex].filter((_: any, i: number) => i !== segmentIndex);
+    setManifesto({ ...manifesto, layers: newLayers });
+  };
+
+  const handleRemoveManifestoLine = (layerIndex: number, lineIndex: number) => {
+    const newLayers = [...(manifesto.layers || [])];
+    newLayers[layerIndex].lines = newLayers[layerIndex].lines.filter((_: any, i: number) => i !== lineIndex);
+    setManifesto({ ...manifesto, layers: newLayers });
   };
 
   const handleImportData = async () => {
@@ -901,6 +983,10 @@ export const INITIAL_DATA: {
                        <div className="pt-6 border-t border-white/10 space-y-4">
                           <NeobrutalistButton variant="matrix" type="submit" className="w-full py-4 text-sm uppercase tracking-widest">salvar transmissão</NeobrutalistButton>
                           <button type="button" onClick={() => setEditingSignal(null)} className="w-full py-2 border border-white/10 rounded-full text-[10px] uppercase tracking-widest opacity-40 hover:opacity-100">cancelar</button>
+                          <button type="button" onClick={() => handleDeleteSignal(editingSignal.id)} className="w-full py-2 text-red-500/40 hover:text-red-500 text-[10px] uppercase tracking-widest transition-colors flex items-center justify-center gap-2">
+                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"></path></svg>
+                             excluir permanentemente
+                          </button>
                        </div>
                     </div>
                   </div>
@@ -911,24 +997,145 @@ export const INITIAL_DATA: {
         )}
 
         {activeTab === ViewState.MANIFESTO && (
-          <form onSubmit={handleSaveManifesto} className="space-y-8 animate-in fade-in max-w-4xl mx-auto">
-            <header className="border-b border-white/10 pb-4">
-               <h2 className="text-sm font-electrolize text-[var(--accent)] tracking-[0.2em] uppercase">editor de manifesto /// landing page</h2>
-            </header>
-            <div className="space-y-6">
-              <div className="space-y-2">
-                <label className="text-[10px] opacity-40 uppercase tracking-widest block">texto do manifesto (efeito typewriter)</label>
-                <textarea 
-                  value={manifesto.text} 
-                  onChange={e => setManifesto({...manifesto, text: e.target.value})} 
-                  className="w-full bg-black border border-white/10 p-8 h-80 outline-none rounded-xl text-lg focus:border-[var(--accent)] resize-none lowercase leading-relaxed" 
-                  placeholder="escreva o manifesto curto para a landing page..." 
-                />
-                <p className="text-[10px] opacity-30 font-mono">Dica: use quebras de linha para controlar o ritmo do efeito de escrita.</p>
+          <div className="space-y-16 animate-in fade-in max-w-5xl mx-auto pb-32">
+            
+            {/* Editor de Landing Manifesto */}
+            <form onSubmit={handleSaveManifesto} className="space-y-8 bg-white/5 p-8 rounded-2xl border border-white/10">
+              <header className="border-b border-white/10 pb-4">
+                 <h2 className="text-sm font-electrolize text-[var(--accent)] tracking-[0.2em] uppercase">01. editor de manifesto /// landing page</h2>
+                 <p className="text-[10px] opacity-40 mt-1">Este é o texto que aparece na página inicial com efeito de escrita.</p>
+              </header>
+              <div className="space-y-6">
+                <div className="space-y-2">
+                  <textarea 
+                    value={manifesto.text} 
+                    onChange={e => setManifesto({...manifesto, text: e.target.value})} 
+                    className="w-full bg-black border border-white/10 p-8 h-48 outline-none rounded-xl text-lg focus:border-[var(--accent)] resize-none lowercase leading-relaxed" 
+                    placeholder="escreva o manifesto curto para a landing page..." 
+                  />
+                </div>
               </div>
+              <NeobrutalistButton variant="matrix" type="submit" className="w-full py-4 text-xs uppercase tracking-widest">salvar manifesto landing</NeobrutalistButton>
+            </form>
+
+            {/* Editor do Manifesto Completo V2 */}
+            <div className="space-y-12">
+               <header className="border-b border-white/10 pb-4 flex justify-between items-end">
+                  <div>
+                    <h2 className="text-sm font-electrolize text-[var(--accent)] tracking-[0.2em] uppercase">02. editor de fluxo /// manifesto completo</h2>
+                    <p className="text-[10px] opacity-40 mt-1">Configure as camadas, linhas e palavras em destaque (accent) da página de manifesto.</p>
+                  </div>
+                  <div className="flex gap-4">
+                    <button 
+                      onClick={() => {
+                        const defaultLayers = [
+                          { n: "01", scale: "∅", name: "abertura", lines: [[{ t: "abre-se um " }, { t: "espaço", accent: true }], [{ t: "para além da consciência terrena" }]] },
+                          { n: "02", scale: "10⁻³³ cm", name: "microscópica", lines: [[{ t: "o " }, { t: "tecido central", accent: true }], [{ t: "onde o todo se condensa" }], [{ t: "e o que está em cima é como o que está embaixo" }], [{ t: "e o que está embaixo é como o que está em cima" }], [{ t: "em " }, { t: "vibração primordial", accent: true }]] },
+                          { n: "03", scale: "10⁻³ s", name: "instante", lines: [[{ t: "quem fui no " }, { t: "milissegundo", accent: true }, { t: " que já se foi" }], [{ t: "absorve no tempo e abstrai no instante" }], [{ t: "e já não é quem estou " }, { t: "agora", accent: true }]] },
+                          { n: "04", scale: "13 × 10⁹ anos", name: "cósmica", lines: [[{ t: "há treze bilhões de anos" }], [{ t: "sou " }, { t: "matéria em reorganização", accent: true }], [{ t: "quarks, léptons, partículas" }], [{ t: "hoje atravessados" }], [{ t: "por fluidos terráqueos" }]] },
+                          { n: "05", scale: "existencial", name: "angústia", lines: [[{ t: "existir sob o modo dominante angústia" }], [{ t: "nos limitando os sentidos frente à " }, { t: "transitoriedade", accent: true }], [{ t: "a falta surge quando a expectativa fora criada" }], [{ t: "projetamos cenários para suportar o " }, { t: "indeterminado", accent: true }], [{ t: "vivemos a lógica utilitária somente por pressão e sobrevivência" }]] },
+                          { n: "06", scale: "cognitiva", name: "decifrar", lines: [[{ t: "poder é " }, { t: "decifrar", accent: true }, { t: " o sentir" }], [{ t: "aprender a reconhecer o necessário" }], [{ t: "pois a existência não se sustenta na ilusão" }], [{ t: "" }], [{ t: "existir é " }, { t: "transcender", accent: true }]] },
+                          { n: "07", scale: "operação", name: "desconformidade", lines: [[{ t: "no limiar de estímulo e sentido" }], [{ t: "resistindo à (des)ordem" }], [{ t: "criando padrões temporários" }], [{ t: "opero em " }, { t: "desconformidade controlada", accent: true }], [{ t: "negociando constantemente com a tendência ao " }, { t: "caos", accent: true }]] },
+                          { n: "08", scale: "limite", name: "falha", lines: [[{ t: "quando a palavra " }, { t: "falha", accent: true }, { t: ", a forma não sustenta, o movimento escorre" }]] },
+                          { n: "09", scale: "cósmica++", name: "sinais", lines: [[{ t: "sinais", accent: true }, { t: " atravessam o " }, { t: "tecido cósmico", accent: true }]] },
+                          { n: "10", scale: "dualidades", name: "atrito", lines: [[{ t: "entre o atrito" }], [{ t: "do vazio com a forma" }], [{ t: "do corpo com o mundo" }], [{ t: "do controle com o fluxo" }], [{ t: "do eu com o " }, { t: "outro", accent: true }]] },
+                          { n: "11", scale: "meta", name: "criando", lines: [[{ t: "e é nessa fenda que observo os " }, { t: "ruídos", accent: true }], [{ t: "criando.", accent: true }]] }
+                        ];
+                        setManifesto({ ...manifesto, layers: defaultLayers });
+                      }}
+                      className="text-[10px] text-white/40 border border-white/10 px-4 py-2 rounded-full hover:bg-white/5 uppercase tracking-widest transition-all"
+                    >
+                      carregar atual
+                    </button>
+                    <button onClick={handleAddManifestoLayer} className="text-[10px] text-[var(--accent)] border border-[var(--accent)]/30 px-6 py-2 rounded-full hover:bg-[var(--accent)]/10 uppercase tracking-widest transition-all">
+                      + nova camada
+                    </button>
+                  </div>
+               </header>
+
+               <div className="space-y-20">
+                  {(manifesto.layers || []).map((layer, lIdx) => (
+                    <div key={lIdx} className="relative group/layer bg-white/[0.02] p-8 rounded-3xl border border-white/5 hover:border-white/10 transition-all">
+                      <div className="absolute -top-3 left-8 bg-black px-4 py-1 border border-white/10 rounded-full flex items-center gap-4">
+                         <span className="text-[10px] text-[var(--accent)] font-bold">camada #{lIdx + 1}</span>
+                         <button onClick={() => handleRemoveManifestoLayer(lIdx)} className="text-red-500 hover:text-red-400 text-xs px-2 border-l border-white/10 ml-2">×</button>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12 mt-4">
+                        <div className="space-y-2">
+                          <label className="text-[9px] opacity-40 uppercase tracking-widest">escala / métrica</label>
+                          <input 
+                            type="text" 
+                            value={layer.scale} 
+                            onChange={e => handleUpdateManifestoLayer(lIdx, { scale: e.target.value })} 
+                            className="w-full bg-black border border-white/10 p-3 rounded text-xs outline-none focus:border-[var(--accent)]" 
+                            placeholder="ex: 10⁻³³ cm" 
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <label className="text-[9px] opacity-40 uppercase tracking-widest">identificador n.</label>
+                          <input 
+                            type="text" 
+                            value={layer.n} 
+                            onChange={e => handleUpdateManifestoLayer(lIdx, { n: e.target.value })} 
+                            className="w-full bg-black border border-white/10 p-3 rounded text-xs outline-none focus:border-[var(--accent)]" 
+                            placeholder="ex: 01" 
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <label className="text-[9px] opacity-40 uppercase tracking-widest">nome da camada</label>
+                          <input 
+                            type="text" 
+                            value={layer.name} 
+                            onChange={e => handleUpdateManifestoLayer(lIdx, { name: e.target.value })} 
+                            className="w-full bg-black border border-white/10 p-3 rounded text-xs outline-none focus:border-[var(--accent)]" 
+                            placeholder="ex: quântica" 
+                          />
+                        </div>
+                      </div>
+
+                      <div className="space-y-6">
+                        <label className="text-[9px] opacity-40 uppercase tracking-widest block mb-4">linhas de transmissão</label>
+                        {layer.lines.map((line: any[], lineIdx: number) => (
+                          <div key={lineIdx} className="flex flex-col gap-3 p-4 bg-black/40 rounded-xl border border-white/5 relative group/line">
+                            <div className="flex flex-wrap gap-3 items-center">
+                              {line.map((segment, sIdx) => (
+                                <div key={sIdx} className="flex items-center bg-white/5 rounded-lg overflow-hidden border border-white/10">
+                                   <input 
+                                     type="text" 
+                                     value={segment.t} 
+                                     onChange={e => handleUpdateManifestoLineSegment(lIdx, lineIdx, sIdx, e.target.value, !!segment.accent)} 
+                                     className={`bg-transparent p-2 text-xs outline-none min-w-[100px] ${segment.accent ? 'text-[var(--accent)] font-bold' : ''}`} 
+                                     placeholder="..."
+                                   />
+                                   <button 
+                                     onClick={() => handleUpdateManifestoLineSegment(lIdx, lineIdx, sIdx, segment.t, !segment.accent)} 
+                                     className={`px-3 py-2 text-[8px] uppercase tracking-tighter border-l border-white/10 hover:bg-white/5 transition-all ${segment.accent ? 'bg-[var(--accent)] text-black font-bold' : 'opacity-20'}`}
+                                     title="alternar destaque (glow)"
+                                   >
+                                     glow
+                                   </button>
+                                   <button onClick={() => handleRemoveManifestoSegment(lIdx, lineIdx, sIdx)} className="px-2 py-2 text-[10px] text-red-500 hover:bg-red-500/10 border-l border-white/10">×</button>
+                                </div>
+                              ))}
+                              <button onClick={() => handleAddManifestoSegment(lIdx, lineIdx)} className="w-8 h-8 rounded-full border border-white/10 flex items-center justify-center hover:bg-white/10 text-lg opacity-40">+</button>
+                            </div>
+                            <button onClick={() => handleRemoveManifestoLine(lIdx, lineIdx)} className="absolute -right-2 -top-2 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center text-[10px] opacity-0 group-hover/line:opacity-100 transition-opacity">×</button>
+                          </div>
+                        ))}
+                        <button onClick={() => handleAddManifestoLine(lIdx)} className="w-full py-3 border border-dashed border-white/10 rounded-xl text-[10px] opacity-30 hover:opacity-100 hover:bg-white/5 uppercase tracking-widest transition-all">
+                          + adicionar linha
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+               </div>
+
+               <div className="pt-12 border-t border-white/10">
+                  <NeobrutalistButton variant="matrix" onClick={() => handleSaveManifesto(null as any)} className="w-full py-6 text-sm uppercase tracking-widest">salvar sistema de manifesto completo</NeobrutalistButton>
+               </div>
             </div>
-            <NeobrutalistButton variant="matrix" type="submit" className="w-full py-4">salvar manifesto</NeobrutalistButton>
-          </form>
+          </div>
         )}
 
         {activeTab === ViewState.ABOUT && (

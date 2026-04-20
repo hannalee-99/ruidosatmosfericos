@@ -4,6 +4,7 @@ export enum ViewState {
   MATERIA = 'materia',
   MANIFESTO = 'manifesto',
   SINAIS = 'sinais',
+  ECOS = 'ecos',
   ABOUT = 'esse eu',          
   CONNECT = 'conectar',
   BACKOFFICE = 'fluxo'
@@ -89,7 +90,7 @@ export interface ConnectConfig {
 export interface ManifestoConfig {
   id: string; // 'landing_manifesto'
   text: string; // Texto da landing page (typewriter)
-  fullManifesto?: string[]; // Blocos de texto da página de manifesto
+  layers?: any[]; // Camadas de texto para PageManifestoV2
 }
 
 export interface SensorData {

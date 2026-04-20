@@ -10,7 +10,7 @@ export const INITIAL_DATA: {
     landing_manifesto: ManifestoConfig | null;
   };
 } = {
-  "lastUpdated": 1771626562507,
+  "lastUpdated": Date.now(),
   "works": [
     {
       "id": "work-1771621176503",
@@ -333,7 +333,20 @@ export const INITIAL_DATA: {
     },
     "landing_manifesto": {
       "id": "landing_manifesto",
-      "text": "quem fui no milissegundo que já se foi\nabsorve no tempo e abstrai no instante\ne já não é quem estou agora"
+      "text": "quem fui no milissegundo que já se foi\nabsorve no tempo e abstrai no instante\ne já não é quem estou agora",
+      "layers": [
+        { "n": "01", "scale": "∅", "name": "abertura", "lines": [[{ "t": "abre-se um " }, { "t": "espaço", "accent": true }], [{ "t": "para além da consciência terrena" }]] },
+        { "n": "02", "scale": "10⁻³³ cm", "name": "microscópica", "lines": [[{ "t": "o " }, { "t": "tecido central", "accent": true }], [{ "t": "onde o todo se condensa" }], [{ "t": "e o que está em cima é como o que está embaixo" }], [{ "t": "e o que está embaixo é como o que está em cima" }], [{ "t": "em " }, { "t": "vibração primordial", "accent": true }]] },
+        { "n": "03", "scale": "10⁻³ s", "name": "instante", "lines": [[{ "t": "quem fui no " }, { "t": "milissegundo", "accent": true }, { "t": " que já se foi" }], [{ "t": "absorve no tempo e abstrai no instante" }], [{ "t": "e já não é quem estou " }, { "t": "agora", "accent": true }]] },
+        { "n": "04", "scale": "13 × 10⁹ anos", "name": "cósmica", "lines": [[{ "t": "há treze bilhões de anos" }], [{ "t": "sou " }, { "t": "matéria em reorganização", "accent": true }], [{ "t": "quarks, léptons, particulas" }], [{ "t": "hoje atravessados" }], [{ "t": "por fluidos terráqueos" }]] },
+        { "n": "05", "scale": "existencial", "name": "angústia", "lines": [[{ "t": "existir sob o modo dominante angústia" }], [{ "t": "nos limitando os sentidos frente à " }, { "t": "transitoriedade", "accent": true }], [{ "t": "a falta surge quando a expectativa fora criada" }], [{ "t": "projetamos cenários para suportar o " }, { "t": "indeterminado", "accent": true }], [{ "t": "vivemos a lógica utilitária somente por pressão e sobrevivência" }]] },
+        { "n": "06", "scale": "cognitiva", "name": "decifrar", "lines": [[{ "t": "poder é " }, { "t": "decifrar", "accent": true }, { "t": " o sentir" }], [{ "t": "aprender a reconhecer o necessário" }], [{ "t": "pois a existência não se sustenta na ilusão" }], [{ "t": "" }], [{ "t": "existir é " }, { "t": "transcender", "accent": true }]] },
+        { "n": "07", "scale": "operação", "name": "desconformidade", "lines": [[{ "t": "no limiar de estímulo e sentido" }], [{ "t": "resistindo à (des)ordem" }], [{ "t": "criando padrões temporários" }], [{ "t": "opero em " }, { "t": "desconformidade controlada", "accent": true }], [{ "t": "negociando constantemente com a tendência ao " }, { "t": "caos", "accent": true }]] },
+        { "n": "08", "scale": "limite", "name": "falha", "lines": [[{ "t": "quando a palavra " }, { "t": "falha", "accent": true }, { "t": ", a forma não sustenta, o movimento escorre" }]] },
+        { "n": "09", "scale": "cósmica++", "name": "sinais", "lines": [[{ "t": "sinais", "accent": true }, { "t": " atravessam o " }, { "t": "tecido cósmico", "accent": true }]] },
+        { "n": "10", "scale": "dualidades", "name": "atrito", "lines": [[{ "t": "entre o atrito" }], [{ "t": "do vazio com a forma" }], [{ "t": "do corpo com o mundo" }], [{ "t": "do controle com o fluxo" }], [{ "t": "do eu com o " }, { "t": "outro", "accent": true }]] },
+        { "n": "11", "scale": "meta", "name": "criando", "lines": [[{ "t": "e é nessa fenda que observo os " }, { "t": "ruídos", "accent": true }], [{ "t": "criando.", "accent": true }]] }
+      ]
     }
   }
 };

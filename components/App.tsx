@@ -15,8 +15,9 @@ import BackToTop from './BackToTop';
 // Pages (Carregadas sob demanda para otimizar TTI)
 const LandingPage = lazy(() => import('./LandingPage'));
 const PageMateria = lazy(() => import('./PageMateria'));
-const PageManifesto = lazy(() => import('./PageManifesto'));
+const PageManifesto = lazy(() => import('./PageManifestoV2'));
 const PageSinais = lazy(() => import('./PageSinais'));
+const PageEcos = lazy(() => import('./PageEcos'));
 const PageAbout = lazy(() => import('./PageAbout'));
 const PageConnect = lazy(() => import('./PageConnect'));
 const PageBackoffice = lazy(() => import('./PageBackoffice'));
@@ -122,8 +123,9 @@ const App: React.FC = () => {
           switch (view) {
             case ViewState.LANDING: return <LandingPage onNavigate={setView} onSignalSelect={setActiveSlug} isDarkMode={isDarkMode} />;
             case ViewState.MATERIA: return <PageMateria isDarkMode={isDarkMode} workSlug={activeSlug} onNavigate={setView} onWorkSelect={setActiveSlug} />;
-            case ViewState.MANIFESTO: return <PageManifesto isDarkMode={isDarkMode} />;
+            case ViewState.MANIFESTO: return <PageManifesto onNavigate={setView} />;
             case ViewState.SINAIS: return <PageSinais isDarkMode={isDarkMode} activeSignalSlug={activeSlug} onSignalSelect={setActiveSlug} />;
+            case ViewState.ECOS: return <PageEcos onNavigate={setView} isDarkMode={isDarkMode} />;
             case ViewState.ABOUT: return <PageAbout onNavigate={setView} isDarkMode={isDarkMode} />;
             case ViewState.CONNECT: return <PageConnect onNavigate={setView} />;
             case ViewState.BACKOFFICE: return <PageBackoffice onLogout={() => { setView(ViewState.LANDING); }} />;

@@ -225,8 +225,8 @@ const PageSinais: React.FC<PageSinaisProps> = ({
   }
 
   return (
-    <div className="pt-48 md:pt-64 pb-40 px-6 md:px-12 max-w-[1800px] mx-auto min-h-screen">
-      <header className="mb-24 md:mb-32 flex flex-col gap-12 items-start">
+    <div className="pt-32 md:pt-40 pb-40 px-6 md:px-12 max-w-[1800px] mx-auto min-h-screen">
+      <header className="mb-16 md:mb-20 flex flex-col gap-8 items-start">
         <div className="flex-shrink-0 space-y-4">
           <h2 className={`font-nabla text-7xl md:text-9xl lowercase ${isDarkMode ? 'palette-matrix' : 'palette-matrix-blue'}`}>sinais</h2>
           <p className="font-mono text-sm opacity-60 lowercase tracking-widest">captura de frequências e registros de campo</p>

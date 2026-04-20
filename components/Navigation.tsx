@@ -41,6 +41,7 @@ const Navigation: React.FC<NavigationProps> = ({
     [ViewState.MATERIA]: 'matéria',
     [ViewState.MANIFESTO]: 'manifesto',
     [ViewState.SINAIS]: 'sinais',
+    [ViewState.ECOS]: 'ecos',
     [ViewState.ABOUT]: 'esse eu',
     [ViewState.CONNECT]: 'contato',
     [ViewState.BACKOFFICE]: 'fluxo'

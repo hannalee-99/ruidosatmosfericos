@@ -97,7 +97,7 @@ const PageConnect: React.FC<PageConnectProps> = ({ onNavigate }) => {
     if (cleanCmd === 'sinal') {
       setTimeout(() => {
         addLine(
-          <div className="p-4 border border-white/20 rounded bg-white/5 mt-2">
+          <div className="p-4 border border-white/20 [.light-mode_&]:border-black/20 rounded bg-white/5 [.light-mode_&]:bg-black/5 mt-2">
             <span className="opacity-60 block text-xs mb-2 uppercase tracking-widest">canal de voz ativo:</span>
             <a href={`mailto:${connectConfig.email}`} className="text-xl md:text-2xl text-[var(--accent)] underline hover:no-underline">
               {connectConfig.email}
@@ -146,12 +146,12 @@ const PageConnect: React.FC<PageConnectProps> = ({ onNavigate }) => {
   return (
     <div className="min-h-screen w-full pt-32 pb-20 px-6 md:px-20 font-mono text-sm md:text-base flex flex-col" onClick={() => inputRef.current?.focus()}>
       <div className="max-w-4xl w-full mx-auto relative z-10">
-        <div className="mb-8 opacity-40 text-[10px] uppercase tracking-widest border-b border-white/10 pb-4">
+        <div className="mb-8 opacity-40 text-[10px] uppercase tracking-widest border-b border-white/10 [.light-mode_&]:border-black/10 pb-4">
           terminal_uplink /// status: conectado
         </div>
         <div className="space-y-3">
           {history.map((line) => (
-            <div key={line.id} className={`${line.type === 'input' ? 'text-white' : line.type === 'error' ? 'text-red-400' : line.type === 'success' ? 'text-[var(--accent)]' : 'opacity-70'}`}>
+            <div key={line.id} className={`${line.type === 'input' ? 'text-white [.light-mode_&]:text-black' : line.type === 'error' ? 'text-red-400' : line.type === 'success' ? 'text-[var(--accent)]' : 'opacity-70'}`}>
               {line.content}
             </div>
           ))}
@@ -165,7 +165,7 @@ const PageConnect: React.FC<PageConnectProps> = ({ onNavigate }) => {
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
               onKeyDown={(e) => { if (e.key === 'Enter') { handleCommand(inputValue); setInputValue(''); } }}
-              className="flex-grow bg-transparent outline-none border-none text-white caret-[var(--accent)]"
+              className="flex-grow bg-transparent outline-none border-none text-white [.light-mode_&]:text-black caret-[var(--accent)]"
               autoComplete="off"
               spellCheck="false"
             />
