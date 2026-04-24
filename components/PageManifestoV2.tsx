@@ -6,6 +6,7 @@ import { storage } from '../lib/storage';
 interface TextSegment {
   t: string;
   accent?: boolean;
+  nabla?: boolean;
 }
 
 interface Layer {
@@ -15,21 +16,34 @@ interface Layer {
   lines: TextSegment[][];
 }
 
-const DEFAULT_LAYERS: Layer[] = [
+export const DEFAULT_LAYERS: Layer[] = [
   {
     n: "01",
-    scale: "∅",
-    name: "abertura",
+    scale: "dualidade",
+    name: "atrito",
     lines: [
-      [{ t: "abre-se um " }, { t: "espaço", accent: true }],
-      [{ t: "para além da consciência terrena" }],
+      [{ t: "entre o " }, { t: "atrito", accent: true }],
+      [{ t: "do " }, { t: "vazio", accent: true }, { t: " com a forma" }],
+      [{ t: "do corpo com o mundo" }],
+      [{ t: "do controle com o fluxo" }],
+      [{ t: "do eu com o " }, { t: "outro", accent: true }],
     ],
   },
   {
     n: "02",
+    scale: "infinito",
+    name: "espaço",
+    lines: [
+      [{ t: "há um " }, { t: "espaço", accent: true }],
+      [{ t: "para além da consciência terrena" }],
+    ],
+  },
+  {
+    n: "03",
     scale: "10⁻³³ cm",
     name: "microscópica",
     lines: [
+      [{ t: "10⁻³³ cm", accent: true }],
       [{ t: "o " }, { t: "tecido central", accent: true }],
       [{ t: "onde o todo se condensa" }],
       [{ t: "e o que está em cima é como o que está embaixo" }],
@@ -38,18 +52,8 @@ const DEFAULT_LAYERS: Layer[] = [
     ],
   },
   {
-    n: "03",
-    scale: "10⁻³ s",
-    name: "instante",
-    lines: [
-      [{ t: "quem fui no " }, { t: "milissegundo", accent: true }, { t: " que já se foi" }],
-      [{ t: "absorve no tempo e abstrai no instante" }],
-      [{ t: "e já não é quem estou " }, { t: "agora", accent: true }],
-    ],
-  },
-  {
     n: "04",
-    scale: "13 × 10⁹ anos",
+    scale: "13.8 bi",
     name: "cósmica",
     lines: [
       [{ t: "há treze bilhões de anos" }],
@@ -61,32 +65,18 @@ const DEFAULT_LAYERS: Layer[] = [
   },
   {
     n: "05",
-    scale: "existencial",
-    name: "angústia",
+    scale: "instante",
+    name: "instante",
     lines: [
-      [{ t: "existir sob o modo dominante angústia" }],
-      [{ t: "nos limitando os sentidos frente à " }, { t: "transitoriedade", accent: true }],
-      [{ t: "a falta surge quando a expectativa fora criada" }],
-      [{ t: "projetamos cenários para suportar o " }, { t: "indeterminado", accent: true }],
-      [{ t: "vivemos a lógica utilitária somente por pressão e sobrevivência" }],
+      [{ t: "quem fui no " }, { t: "milissegundo", accent: true }, { t: " que já se foi" }],
+      [{ t: "absorve no tempo e abstrai no instante" }],
+      [{ t: "e já não é quem estou " }, { t: "agora", accent: true }],
     ],
   },
   {
     n: "06",
-    scale: "cognitiva",
-    name: "decifrar",
-    lines: [
-      [{ t: "poder é " }, { t: "decifrar", accent: true }, { t: " o sentir" }],
-      [{ t: "aprender a reconhecer o necessário" }],
-      [{ t: "pois a existência não se sustenta na ilusão" }],
-      [{ t: "" }],
-      [{ t: "existir é " }, { t: "transcender", accent: true }],
-    ],
-  },
-  {
-    n: "07",
     scale: "operação",
-    name: "desconformidade",
+    name: "fluxo",
     lines: [
       [{ t: "no limiar de estímulo e sentido" }],
       [{ t: "resistindo à (des)ordem" }],
@@ -96,40 +86,58 @@ const DEFAULT_LAYERS: Layer[] = [
     ],
   },
   {
-    n: "08",
-    scale: "limite",
-    name: "falha",
+    n: "07",
+    scale: "ego",
+    name: "existencial",
     lines: [
-      [{ t: "quando a palavra " }, { t: "falha", accent: true }, { t: ", a forma não sustenta, o movimento escorre" }],
+      [{ t: "existir sob o modo dominante" }],
+      [{ t: "nos limita os sentidos frente à " }, { t: "transitoriedade", accent: true }],
+      [{ t: "a falta surge quando a expectativa é criada" }],
+      [{ t: "projetamos cenários para suportar o indeterminado" }],
+      [{ t: "sobrevivemos no útil e chamamos isso de mundo" }],
+    ],
+  },
+  {
+    n: "08",
+    scale: "sentido",
+    name: "decifrar",
+    lines: [
+      [{ t: "decifrar o " }, { t: "sentir", accent: true }, { t: " não é escolha" }],
+      [{ t: "é o que resta" }],
     ],
   },
   {
     n: "09",
-    scale: "cósmica++",
-    name: "sinais",
+    scale: "limite",
+    name: "falha",
     lines: [
-      [{ t: "sinais", accent: true }, { t: " atravessam o " }, { t: "tecido cósmico", accent: true }],
+      [{ t: "quando a forma cede" }],
+      [{ t: "a palavra " }, { t: "falha", accent: true }],
+      [{ t: "e o movimento escorre" }],
     ],
   },
   {
     n: "10",
-    scale: "dualidades",
-    name: "atrito",
+    scale: "conexão",
+    name: "sinais",
     lines: [
-      [{ t: "entre o atrito" }],
-      [{ t: "do vazio com a forma" }],
-      [{ t: "do corpo com o mundo" }],
-      [{ t: "do controle com o fluxo" }],
-      [{ t: "do eu com o " }, { t: "outro", accent: true }],
+      [{ t: "sinais", accent: true }, { t: " atravessam o tecido cósmico" }],
     ],
   },
   {
     n: "11",
+    scale: "fenda",
+    name: "ruídos",
+    lines: [
+      [{ t: "e é nessa fenda que observo os " }, { t: "ruídos", accent: true }],
+    ],
+  },
+  {
+    n: "12",
     scale: "meta",
     name: "criando",
     lines: [
-      [{ t: "e é nessa fenda que observo os " }, { t: "ruídos", accent: true }],
-      [{ t: "criando.", accent: true }],
+      [{ t: "criando.", nabla: true }],
     ],
   },
 ];
@@ -166,7 +174,7 @@ const PageManifestoV2: React.FC<{ onNavigate: (view: ViewState) => void }> = ({ 
   }, []);
 
   const activeLayers = useMemo(() => {
-    if (manifestoData?.layers && manifestoData.layers.length > 0) {
+    if (manifestoData?.isCustomized && manifestoData?.layers && manifestoData.layers.length > 0) {
       return manifestoData.layers;
     }
     return DEFAULT_LAYERS;
@@ -216,7 +224,7 @@ const PageManifestoV2: React.FC<{ onNavigate: (view: ViewState) => void }> = ({ 
 
     const line = layer.lines[lineIndex];
     if (!line) {
-      // Move to next layer after a pause
+      // End of layer
       timerRef.current = setTimeout(() => {
         setHistory([]); // Clear terminal for the next paragraph
         setLayerIndex(prev => prev + 1);
@@ -246,7 +254,9 @@ const PageManifestoV2: React.FC<{ onNavigate: (view: ViewState) => void }> = ({ 
 
     if (currentText.length < segment.t.length) {
       setIsTyping(true);
+      
       const delay = 25; 
+      
       timerRef.current = setTimeout(() => {
         setCurrentText(segment.t.substring(0, currentText.length + 1));
       }, delay);
@@ -342,7 +352,10 @@ const PageManifestoV2: React.FC<{ onNavigate: (view: ViewState) => void }> = ({ 
               }`}>
                 {Array.isArray(line.content) ? (
                   (line.content as TextSegment[]).map((s, idx) => (
-                    <span key={idx} className={s.accent ? 'text-glow brightness-125' : ''}>
+                    <span key={idx} className={`
+                      ${s.accent ? 'text-glow brightness-125' : ''}
+                      ${s.nabla ? 'font-nabla palette-matrix text-2xl md:text-3xl' : ''}
+                    `}>
                       {s.t}
                     </span>
                   ))
@@ -358,7 +371,10 @@ const PageManifestoV2: React.FC<{ onNavigate: (view: ViewState) => void }> = ({ 
               <span className="leading-relaxed lowercase">
                  {/* Render already typed segments of the current line */}
                  {activeLayers[layerIndex].lines[lineIndex].slice(0, segmentIndex).map((s: TextSegment, idx: number) => (
-                   <span key={idx} className={s.accent ? 'text-glow brightness-125' : ''}>
+                   <span key={idx} className={`
+                      ${s.accent ? 'text-glow brightness-125' : ''}
+                      ${s.nabla ? 'font-nabla palette-matrix text-2xl md:text-3xl' : ''}
+                   `}>
                      {s.t}
                    </span>
                  ))}
@@ -366,13 +382,14 @@ const PageManifestoV2: React.FC<{ onNavigate: (view: ViewState) => void }> = ({ 
                  {/* Current typing segment */}
                  <span className={`
                     ${activeLayers[layerIndex].lines[lineIndex][segmentIndex]?.accent ? 'text-glow' : ''} 
+                    ${activeLayers[layerIndex].lines[lineIndex][segmentIndex]?.nabla ? 'font-nabla palette-matrix text-2xl md:text-3xl' : ''}
                     ${isFlashing ? 'brightness-[3] shadow-[0_0_20px_#9ff85d] text-white' : ''}
                     transition-all duration-150
                  `}>
                     {currentText}
                  </span>
                  
-                 <span className="inline-block w-2.5 h-[1.1em] ml-1 bg-[#9ff85d] align-middle shadow-[0_0_8px_#9ff85d] animate-pulse"></span>
+                 <span className="inline-block w-2 h-[1.1em] ml-1 bg-[#9ff85d] align-middle shadow-[0_0_8px_#9ff85d] animate-[cursor-blink_0.8s_step-end_infinite]"></span>
               </span>
             </div>
           )}
@@ -406,6 +423,10 @@ const PageManifestoV2: React.FC<{ onNavigate: (view: ViewState) => void }> = ({ 
         body { background-color: #050505 !important; }
         .text-glow {
           text-shadow: 0 0 5px #9ff85d, 0 0 10px rgba(159, 248, 93, 0.5);
+        }
+        @keyframes cursor-blink {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0; }
         }
         ::selection {
           background-color: #9ff85d;

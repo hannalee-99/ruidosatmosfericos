@@ -91,6 +91,7 @@ export interface ManifestoConfig {
   id: string; // 'landing_manifesto'
   text: string; // Texto da landing page (typewriter)
   layers?: any[]; // Camadas de texto para PageManifestoV2
+  isCustomized?: boolean; // Flag para priorizar sobre DEFAULT_LAYERS
 }
 
 export interface SensorData {
