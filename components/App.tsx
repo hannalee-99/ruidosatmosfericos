@@ -147,7 +147,7 @@ const App: React.FC = () => {
   }
 
   return (
-    <div className="relative w-full h-screen overflow-hidden flex flex-col bg-[var(--bg)] text-[var(--text)] transition-colors duration-700">
+    <div className="relative w-full h-[100dvh] overflow-hidden flex flex-col bg-[var(--bg)] text-[var(--text)] transition-colors duration-700">
       <FaviconManager />
       <CustomCursor />
       <ObserverEffect />
@@ -157,7 +157,7 @@ const App: React.FC = () => {
       )}
 
       <main id="main-scroll" className="flex-grow relative z-10 h-full overflow-y-auto overflow-x-hidden scroll-smooth no-scrollbar">
-        <div className="min-h-screen flex flex-col">
+        <div className="min-h-[100dvh] flex flex-col">
           <div className="flex-grow">{renderView()}</div>
           {view !== ViewState.BACKOFFICE && <Footer />}
         </div>

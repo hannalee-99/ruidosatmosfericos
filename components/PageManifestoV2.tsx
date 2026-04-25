@@ -181,9 +181,12 @@ const PageManifestoV2: React.FC<{ onNavigate: (view: ViewState) => void }> = ({ 
   }, [manifestoData]);
 
   const scrollToEnd = useCallback(() => {
-    if (isComplete) return; // Don't snap to bottom once finished
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [isComplete]);
+    if (isComplete) return; 
+    // Only scroll if content is likely to be near or below the fold
+    if (history.length > 5) {
+      bottomRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
+    }
+  }, [history.length, isComplete]);
 
   useEffect(() => {
     scrollToEnd();
@@ -325,7 +328,7 @@ const PageManifestoV2: React.FC<{ onNavigate: (view: ViewState) => void }> = ({ 
 
   return (
     <div 
-      className="min-h-screen w-full bg-[#050505] text-[#9ff85d] font-mono text-sm md:text-base selection:bg-[#9ff85d] selection:text-black overflow-x-hidden pt-24 pb-20 px-6 md:px-20 relative cursor-pointer" 
+      className="min-h-[100dvh] w-full bg-[#050505] text-[#9ff85d] font-mono text-sm md:text-base selection:bg-[#9ff85d] selection:text-black overflow-x-hidden pt-44 md:pt-48 pb-20 px-6 md:px-20 relative cursor-pointer" 
       onClick={skipLayer}
     >
       {/* Scanline effect override to look more Matrix */}
