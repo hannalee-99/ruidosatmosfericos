@@ -90,20 +90,14 @@ const PageAbout: React.FC<PageAboutProps> = ({ onNavigate, isDarkMode }) => {
            </div>
 
            {/* Botão Estilo Terminal CLI */}
-           <div className="pt-4 md:pt-8 flex items-center">
+            <div className="pt-4 md:pt-8 flex items-center">
              <button 
                 onClick={() => onNavigate(ViewState.CONNECT)}
-                className="group relative flex items-center font-mono text-[11px] md:text-sm tracking-widest lowercase transition-all duration-300 active:scale-95"
+                className="group flex items-center gap-2 font-mono text-[10px] md:text-xs tracking-widest lowercase transition-all duration-300 active:scale-95"
              >
-                <div className="flex items-center gap-2 md:gap-3 py-3 px-5 md:py-4 md:px-8 border border-white/10 [.light-mode_&]:border-black/10 rounded-full bg-black/40 [.light-mode_&]:bg-white/40 backdrop-blur-sm group-hover:border-[var(--accent)] group-hover:bg-black/60 group-hover:shadow-[0_0_20px_rgba(159,248,93,0.15)] transition-all">
-                  <span className="text-[var(--accent)] font-bold">visitor@ruidos:~$</span>
-                  <span className="text-white [.light-mode_&]:text-black opacity-80 group-hover:opacity-100">contact --init</span>
-                  <span className="w-1.5 h-4 md:w-2 md:h-5 bg-[var(--accent)] animate-pulse shadow-[0_0_5px_var(--accent)]"></span>
-                </div>
-                
-                <span className="absolute -bottom-2 left-10 text-[9px] opacity-0 group-hover:opacity-30 transition-opacity font-vt tracking-[0.3em] text-[var(--accent)]">
-                  {">> protocol_uplink_ready"}
-                </span>
+                <span className="text-[var(--accent)] font-bold">visitante@ruidos:~$</span>
+                <span className="text-white [.light-mode_&]:text-black opacity-80 group-hover:opacity-100 text-glow-accent">contato --iniciar</span>
+                <span className="w-1 h-3.5 bg-[var(--accent)] animate-pulse shadow-[0_0_5px_var(--accent)]"></span>
              </button>
            </div>
         </div>
@@ -112,6 +106,9 @@ const PageAbout: React.FC<PageAboutProps> = ({ onNavigate, isDarkMode }) => {
       <style>{`
         @keyframes imageReveal {
           to { opacity: 1; transform: translateY(0); }
+        }
+        .text-glow-accent {
+          text-shadow: 0 0 8px var(--accent);
         }
       `}</style>
     </div>

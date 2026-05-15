@@ -209,7 +209,8 @@ const PageManifestoV2: React.FC<{ onNavigate: (view: ViewState) => void }> = ({ 
       addSys("link estabelecido: 10^-33_cm_tecido", 'success');
       await wait(600);
       addSys("transmissão iniciada.", 'output');
-      await wait(400);
+      await wait(1000);
+      setHistory([]); // Clear terminal before starting manifesto
       setIsBooted(true);
     };
     boot();
@@ -298,13 +299,25 @@ const PageManifestoV2: React.FC<{ onNavigate: (view: ViewState) => void }> = ({ 
     setFlashedSegmentIndex(-1);
   };
 
+  const lastSkipRef = useRef<number>(0);
   const skipLayer = () => {
     if (isComplete) return;
+    
+    // Debounce skip action (200ms) to prevent double-triggers
+    const now = Date.now();
+    if (now - lastSkipRef.current < 200) return;
+    lastSkipRef.current = now;
+
     const layer = activeLayers[layerIndex];
     
+    // Always clear timer to stop any pending automatic commits/transitions
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+      timerRef.current = null;
+    }
+
     // If we are in the pause between paragraphs, skip the wait
     if (layer && !layer.lines[lineIndex]) {
-      if (timerRef.current) clearTimeout(timerRef.current);
       setHistory([]);
       setLayerIndex(prev => prev + 1);
       setLineIndex(0);
@@ -337,12 +350,8 @@ const PageManifestoV2: React.FC<{ onNavigate: (view: ViewState) => void }> = ({ 
       </div>
 
       <div className="max-w-4xl w-full mx-auto relative z-10">
-        <div className="mb-12 opacity-50 text-[10px] uppercase tracking-[0.2em] border-b border-[#9ff85d]/20 pb-4 flex justify-between items-center">
-          <div className="flex gap-4">
-            <span>manifesto_uplink</span>
-            <span className="opacity-30 border-l border-current pl-4 animate-pulse">[ toque para acelerar ]</span>
-          </div>
-          {isComplete && <span className="animate-pulse">fim da transmissão</span>}
+        <div className="mb-12 text-[10px] uppercase tracking-[0.2em] flex justify-center items-center min-h-[20px]">
+          {isComplete && <span className="opacity-40 animate-pulse">fim da transmissão</span>}
         </div>
 
         <div className="space-y-3">
@@ -399,21 +408,19 @@ const PageManifestoV2: React.FC<{ onNavigate: (view: ViewState) => void }> = ({ 
         </div>
 
         {isComplete && (
-          <div className="mt-16 flex flex-col items-center gap-8 border-t border-[#9ff85d]/10 pt-12 animate-in fade-in duration-1000">
+          <div className="mt-16 flex flex-col items-center gap-8 pt-4 animate-in fade-in duration-1000">
              <div className="text-center space-y-8 flex flex-col items-center">
                 <button 
                   onClick={() => onNavigate(ViewState.CONNECT)}
-                  className="group relative flex items-center font-mono text-[11px] md:text-sm tracking-widest lowercase transition-all duration-300 active:scale-95"
+                  className="group flex items-center gap-2 font-mono text-[10px] md:text-xs tracking-widest lowercase transition-all duration-300 active:scale-95"
                 >
-                  <div className="flex items-center gap-2 md:gap-3 py-3 px-6 md:py-4 md:px-10 border border-[#9ff85d]/10 rounded-full bg-black/40 backdrop-blur-sm group-hover:border-[#9ff85d]/40 group-hover:bg-black/60 group-hover:shadow-[0_0_20px_rgba(159,248,93,0.1)] transition-all">
-                    <span className="text-[#9ff85d] font-bold">visitor@ruidos:~$</span>
-                    <span className="text-white opacity-80 group-hover:opacity-100">contact --init</span>
-                    <span className="w-1.5 h-4 md:w-2 md:h-5 bg-[#9ff85d] animate-pulse shadow-[0_0_5px_#9ff85d]"></span>
-                  </div>
+                  <span className="text-[#9ff85d] font-bold">visitante@ruidos:~$</span>
+                  <span className="text-white opacity-80 group-hover:opacity-100 text-glow">contato --iniciar</span>
+                  <span className="w-1 h-3.5 bg-[#9ff85d] animate-pulse shadow-[0_0_5px_#9ff85d]"></span>
                 </button>
              </div>
              <button onClick={handleRestart} className="text-[10px] opacity-20 hover:opacity-100 underline tracking-widest lowercase transition-opacity">
-                reiniciar transmissão
+                reiniciar manifesto
              </button>
           </div>
         )}
@@ -436,6 +443,12 @@ const PageManifestoV2: React.FC<{ onNavigate: (view: ViewState) => void }> = ({ 
           color: #000;
         }
       `}</style>
+      
+      {!isComplete && (
+        <div className="fixed bottom-4 right-6 md:bottom-8 md:right-12 text-[7px] md:text-[8px] text-zinc-600 uppercase tracking-[0.3em] pointer-events-none select-none opacity-30">
+          [ toque para acelerar ]
+        </div>
+      )}
     </div>
   );
 };

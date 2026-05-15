@@ -87,7 +87,7 @@ const PageConnect: React.FC<PageConnectProps> = ({ onNavigate }) => {
 
   const handleCommand = (cmd: string) => {
     const cleanCmd = cmd.trim().toLowerCase();
-    addLine(`visitor@ruidos:~$ ${cmd}`, 'input');
+    addLine(`visitante@ruidos:~$ ${cmd}`, 'input');
 
     if (cleanCmd === 'limpar') {
       setHistory([]);
@@ -144,11 +144,8 @@ const PageConnect: React.FC<PageConnectProps> = ({ onNavigate }) => {
   };
 
   return (
-    <div className="min-h-screen w-full pt-32 pb-20 px-6 md:px-20 font-mono text-sm md:text-base flex flex-col" onClick={() => inputRef.current?.focus()}>
+    <div className="min-h-screen w-full pt-44 md:pt-48 pb-20 px-6 md:px-20 font-mono text-sm md:text-base flex flex-col" onClick={() => inputRef.current?.focus()}>
       <div className="max-w-4xl w-full mx-auto relative z-10">
-        <div className="mb-8 opacity-40 text-[10px] uppercase tracking-widest border-b border-white/10 [.light-mode_&]:border-black/10 pb-4">
-          terminal_uplink /// status: conectado
-        </div>
         <div className="space-y-3">
           {history.map((line) => (
             <div key={line.id} className={`${line.type === 'input' ? 'text-white [.light-mode_&]:text-black' : line.type === 'error' ? 'text-red-400' : line.type === 'success' ? 'text-[var(--accent)]' : 'opacity-70'}`}>
@@ -157,8 +154,8 @@ const PageConnect: React.FC<PageConnectProps> = ({ onNavigate }) => {
           ))}
         </div>
         {!isBooting && (
-          <div className="flex items-center gap-3 mt-6">
-            <span className="text-[var(--accent)] whitespace-nowrap">visitor@ruidos:~$</span>
+          <div className="flex items-center gap-3 mt-8">
+            <span className="text-[var(--accent)] whitespace-nowrap">visitante@ruidos:~$</span>
             <input
               ref={inputRef}
               type="text"

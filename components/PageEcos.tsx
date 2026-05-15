@@ -28,7 +28,9 @@ const PageEcos: React.FC<PageEcosProps> = ({ onNavigate, isDarkMode }) => {
     { 
       id: '03', 
       title: 'redbubble', 
-      status: 'mapeando'
+      description: 'suportes e artefatos globais',
+      url: 'https://www.redbubble.com/people/rdsatmosfericos/',
+      status: 'ativo'
     },
   ];
 

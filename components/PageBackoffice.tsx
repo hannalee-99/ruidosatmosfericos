@@ -595,7 +595,7 @@ export const INITIAL_DATA: {
                   <section className="bg-white/5 p-6 rounded-2xl border border-white/10 animate-in fade-in">
                     <header className="mb-6 flex justify-between items-center">
                       <div className="space-y-1">
-                        <h3 className="text-sm font-electrolize text-[var(--accent)] uppercase tracking-widest">Organizar Destaques (Home)</h3>
+                        <h3 className="text-sm font-electrolize text-[var(--accent)] uppercase tracking-widest">Organizar Destaques (Início)</h3>
                         <p className="text-[10px] opacity-40 lowercase">As primeiras 2 obras desta lista aparecem na página inicial.</p>
                       </div>
                     </header>
@@ -761,7 +761,7 @@ export const INITIAL_DATA: {
                             </label>
                             <label className="flex items-center gap-2 cursor-pointer group">
                                <input type="checkbox" checked={editingWork.isFeatured} onChange={e => setEditingWork({...editingWork, isFeatured: e.target.checked})} className="w-4 h-4 accent-[var(--accent)]" />
-                               <span className="text-xs opacity-60 group-hover:opacity-100">Destaque na Home</span>
+                               <span className="text-xs opacity-60 group-hover:opacity-100">Destaque na Capa</span>
                             </label>
                           </div>
                        </div>

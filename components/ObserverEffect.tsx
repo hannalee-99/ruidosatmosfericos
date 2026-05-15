@@ -64,7 +64,7 @@ const ObserverEffect: React.FC = memo(() => {
   if (!hasHover) return null;
 
   return (
-    <div className="fixed inset-0 pointer-events-none z-[50] overflow-hidden">
+    <div className="fixed inset-0 pointer-events-none z-[5] overflow-hidden">
       {eyes.map((eye) => (
         <div
           key={eye.id}

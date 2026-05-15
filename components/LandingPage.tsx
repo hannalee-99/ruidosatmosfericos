@@ -396,7 +396,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onNavigate, onSignalSelect, i
                 className="relative border border-white/5 p-6 cursor-pointer flex flex-col justify-center items-start text-left group rounded-3xl bg-black/10 hover:bg-black/20 [.light-mode_&]:bg-white/50 [.light-mode_&]:hover:bg-white/80 [.light-mode_&]:border-black/5"
              >
                 <div 
-                  className="font-electrolize text-xl leading-relaxed text-white transition-colors duration-500 lowercase whitespace-pre-wrap [.light-mode_&]:text-black"
+                  className="font-electrolize text-sm md:text-base leading-relaxed text-white transition-colors duration-500 lowercase whitespace-pre-wrap [.light-mode_&]:text-black"
                 >
                   {isVisible && manifestoText && <Typewriter text={manifestoText} speed={60} delay={800} isDarkMode={isDarkMode} />}
                 </div>
