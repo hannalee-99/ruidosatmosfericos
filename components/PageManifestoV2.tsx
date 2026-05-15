@@ -366,7 +366,7 @@ const PageManifestoV2: React.FC<{ onNavigate: (view: ViewState) => void }> = ({ 
                   (line.content as TextSegment[]).map((s, idx) => (
                     <span key={idx} className={`
                       ${s.accent ? 'text-glow brightness-125' : ''}
-                      ${s.nabla ? 'font-nabla palette-matrix text-2xl md:text-3xl' : ''}
+                      ${s.nabla ? 'font-nabla palette-matrix text-5xl md:text-8xl block mt-4 mb-8' : ''}
                     `}>
                       {s.t}
                     </span>
@@ -385,7 +385,7 @@ const PageManifestoV2: React.FC<{ onNavigate: (view: ViewState) => void }> = ({ 
                  {activeLayers[layerIndex].lines[lineIndex].slice(0, segmentIndex).map((s: TextSegment, idx: number) => (
                    <span key={idx} className={`
                       ${s.accent ? 'text-glow brightness-125' : ''}
-                      ${s.nabla ? 'font-nabla palette-matrix text-2xl md:text-3xl' : ''}
+                      ${s.nabla ? 'font-nabla palette-matrix text-5xl md:text-8xl block mt-4 mb-8' : ''}
                    `}>
                      {s.t}
                    </span>
@@ -394,7 +394,7 @@ const PageManifestoV2: React.FC<{ onNavigate: (view: ViewState) => void }> = ({ 
                  {/* Current typing segment */}
                  <span className={`
                     ${activeLayers[layerIndex].lines[lineIndex][segmentIndex]?.accent ? 'text-glow' : ''} 
-                    ${activeLayers[layerIndex].lines[lineIndex][segmentIndex]?.nabla ? 'font-nabla palette-matrix text-2xl md:text-3xl' : ''}
+                    ${activeLayers[layerIndex].lines[lineIndex][segmentIndex]?.nabla ? 'font-nabla palette-matrix text-5xl md:text-8xl block mt-4 mb-8' : ''}
                     ${isFlashing ? 'brightness-[3] shadow-[0_0_20px_#9ff85d] text-white' : ''}
                     transition-all duration-150
                  `}>
