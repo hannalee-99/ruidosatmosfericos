@@ -42,8 +42,13 @@ const PageConnect: React.FC<PageConnectProps> = ({ onNavigate }) => {
     sair: "encerrando conexão."
   };
 
+  const addLine = (content: React.ReactNode, type: TerminalLine['type'] = 'system') => {
+    setHistory(prev => [...prev, { id: Math.random().toString(36).substr(2, 9), type, content }]);
+  };
+
   useEffect(() => {
-    const fetchConfig = async () => {
+    // Carregar config
+    const loadData = async () => {
       try {
         const stored = await storage.get('about', 'connect_config');
         if (stored) setConnectConfig(stored);
@@ -51,34 +56,40 @@ const PageConnect: React.FC<PageConnectProps> = ({ onNavigate }) => {
         console.error("Erro ao carregar conexões", e);
       }
     };
-    fetchConfig();
-  }, []);
+    loadData();
 
-  const addLine = (content: React.ReactNode, type: TerminalLine['type'] = 'system') => {
-    setHistory(prev => [...prev, { id: Math.random().toString(36).substr(2, 9), type, content }]);
-  };
-
-  useEffect(() => {
-    let timeouts: number[] = [];
+    // Sequência de boot
+    let active = true;
     
-    const bootSequence: BootStep[] = [
-      { text: "inicializando interface de conexão...", delay: 200 },
-      { text: "link seguro estabelecido.", delay: 800, type: 'success' },
-      { text: "digite 'ajuda' para comandos.", delay: 1400, type: 'output' }
-    ];
+    const boot = async () => {
+      const wait = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+      
+      setHistory([]); 
+      await wait(500);
+      if (!active) return;
+      
+      addLine("acordando terminal...", 'system');
+      await wait(600);
+      if (!active) return;
+      
+      addLine("link estabelecido: 10^-33_cm_tecido", 'success');
+      await wait(700);
+      if (!active) return;
+      
+      addLine("transmissão iniciada.", 'output');
+      await wait(800);
+      if (!active) return;
+      
+      addLine("digite 'ajuda' para comandos.", 'system');
+      setIsBooting(false);
+      setTimeout(() => inputRef.current?.focus(), 100);
+    };
 
-    bootSequence.forEach((step) => {
-      const t = window.setTimeout(() => {
-        addLine(step.text, step.type || 'system');
-        if (step === bootSequence[bootSequence.length - 1]) {
-          setIsBooting(false);
-          setTimeout(() => inputRef.current?.focus(), 100);
-        }
-      }, step.delay);
-      timeouts.push(t);
-    });
+    boot();
 
-    return () => timeouts.forEach(t => clearTimeout(t));
+    return () => {
+      active = false;
+    };
   }, []);
 
   useEffect(() => {
@@ -144,11 +155,23 @@ const PageConnect: React.FC<PageConnectProps> = ({ onNavigate }) => {
   };
 
   return (
-    <div className="min-h-screen w-full pt-44 md:pt-48 pb-20 px-6 md:px-20 font-mono text-sm md:text-base flex flex-col" onClick={() => inputRef.current?.focus()}>
+    <div className="min-h-[100dvh] w-full bg-[#050505] text-[#9ff85d] pt-44 md:pt-48 pb-20 px-6 md:px-20 font-mono text-sm md:text-base flex flex-col relative" onClick={() => inputRef.current?.focus()}>
+      {/* Efeito de scanline consistente com o Manifesto */}
+      <div className="fixed inset-0 pointer-events-none z-[100] opacity-[0.05] [.light-mode_&]:hidden">
+        <div className="absolute inset-0 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] bg-[length:100%_4px,3px_100%]"></div>
+      </div>
+
       <div className="max-w-4xl w-full mx-auto relative z-10">
         <div className="space-y-3">
           {history.map((line) => (
-            <div key={line.id} className={`${line.type === 'input' ? 'text-white [.light-mode_&]:text-black' : line.type === 'error' ? 'text-red-400' : line.type === 'success' ? 'text-[var(--accent)]' : 'opacity-70'}`}>
+            <div key={line.id} className={`${
+              line.type === 'input' ? 'text-white [.light-mode_&]:text-black' : 
+              line.type === 'error' ? 'text-red-400' : 
+              line.type === 'success' ? 'text-[var(--accent)] font-bold' : 
+              line.type === 'system' ? 'text-white' :
+              line.type === 'output' ? 'opacity-50 italic' :
+              'opacity-70'
+            }`}>
               {line.content}
             </div>
           ))}
@@ -170,6 +193,14 @@ const PageConnect: React.FC<PageConnectProps> = ({ onNavigate }) => {
         )}
         <div ref={bottomRef} />
       </div>
+      
+      <style>{`
+        body { background-color: #050505 !important; }
+        ::selection {
+          background-color: #9ff85d;
+          color: #000;
+        }
+      `}</style>
     </div>
   );
 };

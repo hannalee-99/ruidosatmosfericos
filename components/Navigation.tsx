@@ -72,22 +72,24 @@ const Navigation: React.FC<NavigationProps> = ({
     setClickCount(0);
   };
 
-  const activeColor = isDarkMode ? COLORS.matrixGreen : COLORS.deepBlue;
-  const gradientStart = isDarkMode ? 'rgba(5,5,5,0.98)' : 'rgba(242,242,242,0.98)';
-  const gradientMid = isDarkMode ? 'rgba(5,5,5,0.9)' : 'rgba(242,242,242,0.9)';
+  const isForceDark = [ViewState.MANIFESTO, ViewState.CONNECT].includes(currentView);
+  const activeColor = (isDarkMode || isForceDark) ? COLORS.matrixGreen : COLORS.deepBlue;
+  const navBg = (isDarkMode || isForceDark) ? '#050505' : (isDarkMode ? '#050505' : '#f2f2f2');
 
   return (
     <>
       <nav className="fixed top-0 left-0 w-full z-[200] transition-transform duration-700 translate-y-0">
+        {/* Background base sólido para uniformity total */}
         <div 
-          className={`absolute inset-0 pointer-events-none transition-opacity duration-700 ${isScrolled ? 'opacity-0' : 'opacity-100'}`}
+          className="absolute inset-0 pointer-events-none transition-all duration-500"
           style={{ 
-            background: `linear-gradient(to bottom, ${gradientStart} 0%, ${gradientMid} 60%, transparent 100%)`,
-            backdropFilter: 'blur(4px)'
+            backgroundColor: navBg,
+            opacity: 1, // Totalmente opaco para evitar disparidade de cores
+            boxShadow: isScrolled ? '0 1px 0 rgba(255,255,255,0.05)' : 'none'
           }}
         ></div>
 
-        <div className={`absolute inset-0 pointer-events-none transition-all duration-700 ${isScrolled ? 'opacity-100 bg-black/80 [.light-mode_&]:bg-white/80 backdrop-blur-md border-b border-white/5 [.light-mode_&]:border-black/5' : 'opacity-0 bg-transparent'}`}></div>
+        <div className={`absolute inset-0 pointer-events-none transition-all duration-700 ${isScrolled ? 'opacity-100 backdrop-blur-md' : 'opacity-0 bg-transparent'}`}></div>
 
         <div className="relative px-4 md:px-8 h-20 lg:h-24 flex justify-between items-center max-w-[1800px] mx-auto w-full">
           <div onClick={handleLogoClick} className="cursor-pointer z-50 p-2">

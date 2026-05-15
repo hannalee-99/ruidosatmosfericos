@@ -154,7 +154,7 @@ const Splash: React.FC<SplashProps> = ({ onEnter }) => {
       <div className="absolute inset-0 opacity-[0.03] pointer-events-none bg-[url('https://grainy-gradients.vercel.app/noise.svg')]"></div>
       
       {/* Cabeçalho Estilo Terminal / HUD - Otimizado para Tablet */}
-      <div className="absolute top-8 md:top-12 w-full px-8 md:px-16 flex justify-between items-start opacity-30 text-xs md:text-base tracking-[0.2em] lowercase font-vt mix-blend-screen">
+      <div className="absolute top-8 md:top-12 w-full px-8 md:px-16 flex justify-between items-start opacity-30 text-[9px] md:text-[11px] tracking-[0.2em] lowercase font-vt mix-blend-screen">
         <div className="flex flex-col gap-2 items-start">
           <div className="border-l border-[var(--accent)] pl-3">unificado</div>
           <div className="pl-3 opacity-50">10^-33 cm</div>
@@ -206,13 +206,13 @@ const Splash: React.FC<SplashProps> = ({ onEnter }) => {
       </div>
 
       {!showButton && (
-        <div className="absolute bottom-24 md:bottom-32 font-vt text-[10px] md:text-xs opacity-20 lowercase tracking-widest animate-pulse">
+        <div className="absolute bottom-24 md:bottom-32 font-vt text-[8px] md:text-[9px] opacity-20 lowercase tracking-widest animate-pulse">
           [ toque para pular ]
         </div>
       )}
 
       {/* Rodapé do Sistema */}
-      <div className="absolute bottom-8 md:bottom-12 w-full px-12 font-vt text-[10px] md:text-xs opacity-20 flex justify-center border-t border-[var(--accent)]/10 pt-4">
+      <div className="absolute bottom-8 md:bottom-12 w-full px-12 font-vt text-[8px] md:text-[9px] opacity-20 flex justify-center border-t border-[var(--accent)]/10 pt-4">
         <div className="max-w-md text-center leading-loose tracking-[0.4em] lowercase">
           ruídos atmosféricos // ciclo 21 // 2026
         </div>

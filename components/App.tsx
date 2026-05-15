@@ -37,11 +37,23 @@ const App: React.FC = () => {
   useDataSeeding();
 
   useEffect(() => {
-    const shouldBeLight = !isDarkMode && view !== ViewState.BACKOFFICE;
+    const darkViews = [ViewState.BACKOFFICE, ViewState.MANIFESTO, ViewState.CONNECT];
+    const isDarkView = darkViews.includes(view);
+    const shouldBeLight = !isDarkMode && !isDarkView;
+    
     if (shouldBeLight) {
       document.body.classList.add('light-mode');
     } else {
       document.body.classList.remove('light-mode');
+    }
+
+    // Gerenciar transição de fundo para evitar pisca-pisca
+    if (isDarkView) {
+      document.body.style.transition = 'none';
+      document.body.style.backgroundColor = '#050505';
+    } else {
+      document.body.style.transition = 'background-color 0.8s ease';
+      document.body.style.backgroundColor = '';
     }
   }, [isDarkMode, view]);
 
