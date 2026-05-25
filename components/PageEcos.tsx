@@ -20,9 +20,9 @@ const PageEcos: React.FC<PageEcosProps> = ({ onNavigate, isDarkMode }) => {
     },
     { 
       id: '02', 
-      title: 'instagram', 
+      title: 'pinterest', 
       description: 'fragmentos de processo e ruídos',
-      url: 'https://www.instagram.com/ruidosatmosfericos/',
+      url: 'https://br.pinterest.com/ruidosatmosfericos01/',
       status: 'ativo'
     },
     { 
