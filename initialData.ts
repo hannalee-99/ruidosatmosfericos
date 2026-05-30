@@ -10,7 +10,7 @@ export const INITIAL_DATA: {
     landing_manifesto: ManifestoConfig | null;
   };
 } = {
-  "lastUpdated": 1780020076432,
+  "lastUpdated": 1780108585583,
   "works": [
     {
       "id": "work-1771621176503",
@@ -230,7 +230,7 @@ export const INITIAL_DATA: {
     },
     {
       "id": "work-1771621977364",
-      "title": "velour no black lodge",
+      "title": "a observadora ou velour no black lodge",
       "slug": "velour-no-black-lodge",
       "year": "2023",
       "month": "11",
@@ -243,8 +243,8 @@ export const INITIAL_DATA: {
       "isFeatured": true,
       "featuredOrder": 0,
       "views": 0,
-      "description": "",
-      "seoDescription": ""
+      "description": "\"we are like the dreamer who dreams then lives inside the dreams. but who is the dreamer?\" ",
+      "seoDescription": "\"we are like the dreamer who dreams then lives inside the dreams. but who is the dreamer?\" "
     },
     {
       "id": "work-1771625183870",
@@ -305,7 +305,7 @@ export const INITIAL_DATA: {
   "about": {
     "profile": {
       "id": "profile",
-      "text": "apenas fluxo me movimentando sendo força de natureza autêntica",
+      "text": "hannalee. apenas fluxo me movimentando sendo força de natureza autêntica",
       "imageUrl": "https://res.cloudinary.com/dcxm8yd49/image/upload/v1771623752/yoIeu.avif",
       "faviconUrl": ""
     },
