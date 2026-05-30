@@ -8,6 +8,7 @@ import { getOptimizedUrl } from '../lib/media';
 import SignalRenderer from './SignalRenderer';
 import JsonLd from './JsonLd';
 import BackToTop from './BackToTop';
+import Toast from './Toast';
 
 const calculateReadingTime = (blocks: SignalBlock[]): string => {
   const text = blocks
@@ -54,6 +55,7 @@ const PageSinais: React.FC<PageSinaisProps> = ({
   const [posts, setPosts] = useState<Signal[]>([]);
   const [selectedPost, setSelectedPost] = useState<Signal | null>(null);
   const [showBackButton, setShowBackButton] = useState(true);
+  const [showToast, setShowToast] = useState(false);
   const lastScrollY = useRef(0);
   const { updateMeta, resetMeta } = useMeta();
 
@@ -121,15 +123,24 @@ const PageSinais: React.FC<PageSinaisProps> = ({
     };
   }, [selectedPost]);
 
+  const navigation = useMemo(() => {
+    if (!selectedPost || posts.length <= 1) return { next: null, prev: null };
+    const currentIndex = posts.findIndex(p => p.id === selectedPost.id || p.slug === selectedPost.slug);
+    const prev = currentIndex > 0 ? posts[currentIndex - 1] : null;
+    const next = currentIndex < posts.length - 1 ? posts[currentIndex + 1] : null;
+    return { prev, next };
+  }, [selectedPost, posts]);
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (selectedPost && e.key === 'Escape') {
-        handleClosePost();
-      }
+      if (!selectedPost) return;
+      if (e.key === 'ArrowRight' && navigation.next) handleOpenPost(navigation.next);
+      if (e.key === 'ArrowLeft' && navigation.prev) handleOpenPost(navigation.prev);
+      if (e.key === 'Escape') handleClosePost();
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [selectedPost]);
+  }, [selectedPost, navigation]);
 
   const groupedPosts = useMemo(() => {
     const groups: Record<string, Signal[]> = {};
@@ -169,6 +180,31 @@ const PageSinais: React.FC<PageSinaisProps> = ({
          {articleSchema && <JsonLd data={articleSchema} />}
          <ReadingProgress />
          <BackToTop targetId="post-modal-scroll" bottom="bottom-20" zIndex="z-[160]" />
+
+         {/* Navegação por setas otimizada para Desktop/Web (combinando com Matéria) */}
+         <div className="fixed inset-y-0 left-2 md:left-8 flex items-center z-[160]">
+           {navigation.prev && (
+             <button 
+               onClick={() => handleOpenPost(navigation.prev!)}
+               className="w-10 h-10 md:w-16 md:h-16 flex items-center justify-center rounded-full bg-black/40 md:bg-white/5 backdrop-blur-sm hover:bg-[var(--accent)] hover:text-black border border-white/10 transition-all group opacity-60 md:opacity-20 hover:opacity-100"
+               title="sinal anterior (←)"
+             >
+               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+             </button>
+           )}
+         </div>
+
+         <div className="fixed inset-y-0 right-2 md:right-8 flex items-center z-[160]">
+           {navigation.next && (
+             <button 
+               onClick={() => handleOpenPost(navigation.next!)}
+               className="w-10 h-10 md:w-16 md:h-16 flex items-center justify-center rounded-full bg-black/40 md:bg-white/5 backdrop-blur-sm hover:bg-[var(--accent)] hover:text-black border border-white/10 transition-all group opacity-60 md:opacity-20 hover:opacity-100"
+               title="próximo sinal (→)"
+             >
+               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+             </button>
+           )}
+         </div>
          
          <div className="fixed inset-0 pointer-events-none opacity-[0.03] bg-[url('https://grainy-gradients.vercel.app/noise.svg')] z-0"></div>
          
@@ -202,7 +238,7 @@ const PageSinais: React.FC<PageSinaisProps> = ({
                     <button 
                       onClick={() => {
                         navigator.clipboard.writeText(window.location.href);
-                        alert("link copiado para compartilhar.");
+                        setShowToast(true);
                       }}
                       className="flex items-center gap-2 hover:text-[var(--accent)] transition-colors border-b border-transparent hover:border-[var(--accent)] pb-0.5"
                     >
@@ -219,6 +255,7 @@ const PageSinais: React.FC<PageSinaisProps> = ({
             <article className="max-w-3xl mx-auto pb-32">
                <SignalRenderer signal={selectedPost} />
             </article>
+            <Toast message="link copiado" isVisible={showToast} onClose={() => setShowToast(false)} isDarkMode={isDarkMode} />
          </div>
       </div>
     );

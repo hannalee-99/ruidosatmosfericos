@@ -11,6 +11,8 @@ const CustomCursor: React.FC = memo(() => {
   const cursorRef = useRef<HTMLDivElement>(null);
   const [ripples, setRipples] = useState<Ripple[]>([]);
   const [hasHover, setHasHover] = useState(false);
+  const [isHoveredInteractive, setIsHoveredInteractive] = useState(false);
+  const [isClicked, setIsClicked] = useState(false);
   const lastRippleTime = useRef(0);
 
   useEffect(() => {
@@ -31,15 +33,31 @@ const CustomCursor: React.FC = memo(() => {
     const handleMouseLeave = () => { if (cursorRef.current) cursorRef.current.style.opacity = '0'; };
     const handleMouseEnter = () => { if (cursorRef.current) cursorRef.current.style.opacity = '1'; };
 
+    const handleMouseOver = (e: MouseEvent) => {
+      const target = e.target as HTMLElement | null;
+      if (!target) return;
+      const isInteractive = target.closest('a, button, [role="button"], input, select, textarea, .cursor-pointer, [onclick]') !== null;
+      setIsHoveredInteractive(isInteractive);
+    };
+
+    const handleMouseDown = () => setIsClicked(true);
+    const handleMouseUp = () => setIsClicked(false);
+
     window.addEventListener('mousemove', moveCursor, { passive: true });
     document.addEventListener('mouseleave', handleMouseLeave);
     document.addEventListener('mouseenter', handleMouseEnter);
+    window.addEventListener('mouseover', handleMouseOver, { passive: true });
+    window.addEventListener('mousedown', handleMouseDown, { passive: true });
+    window.addEventListener('mouseup', handleMouseUp, { passive: true });
 
     return () => {
       hoverMedia.removeEventListener('change', handleChange);
       window.removeEventListener('mousemove', moveCursor);
       document.removeEventListener('mouseleave', handleMouseLeave);
       document.removeEventListener('mouseenter', handleMouseEnter);
+      window.removeEventListener('mouseover', handleMouseOver);
+      window.removeEventListener('mousedown', handleMouseDown);
+      window.removeEventListener('mouseup', handleMouseUp);
     };
   }, []);
 
@@ -110,19 +128,29 @@ const CustomCursor: React.FC = memo(() => {
         className="fixed top-0 left-0 pointer-events-none z-[10000] transition-opacity duration-500 text-white [.light-mode_&]:text-black"
         style={{ marginLeft: '-16px', marginTop: '-16px', transform: 'translate3d(-100px, -100px, 0)', willChange: 'transform' }}
       >
-        <svg 
-          width="32" 
-          height="32" 
-          viewBox="0 0 32 32" 
-          fill="currentColor" 
-          xmlns="http://www.w3.org/2000/svg"
-          style={{ animation: 'vortex-rotate 4s linear infinite' }}
+        <div
+          style={{
+            transform: `scale(${isClicked ? 0.85 : (isHoveredInteractive ? 1.7 : 1)})`,
+            transition: 'transform 0.25s cubic-bezier(0.25, 1, 0.5, 1)',
+            filter: isHoveredInteractive ? 'drop-shadow(0 0 8px currentColor)' : 'none',
+          }}
         >
-          <g>
-            {renderBlades()}
-          </g>
-          <circle cx="16" cy="16" r="1.5" fill="currentColor" />
-        </svg>
+          <svg 
+            width="32" 
+            height="32" 
+            viewBox="0 0 32 32" 
+            fill="currentColor" 
+            xmlns="http://www.w3.org/2000/svg"
+            style={{ 
+              animation: isHoveredInteractive ? 'vortex-rotate 1.5s linear infinite' : 'vortex-rotate 4s linear infinite' 
+            }}
+          >
+            <g>
+              {renderBlades()}
+            </g>
+            <circle cx="16" cy="16" r="1.5" fill="currentColor" />
+          </svg>
+        </div>
       </div>
     </>
   );

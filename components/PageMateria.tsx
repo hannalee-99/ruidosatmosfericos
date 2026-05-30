@@ -9,6 +9,7 @@ import { useMeta } from '../lib/hooks';
 import LazyImage from './LazyImage';
 import JsonLd from './JsonLd';
 import Lightbox from './Lightbox';
+import Toast from './Toast';
 
 interface PageMateriaProps {
   isDarkMode: boolean;
@@ -23,11 +24,23 @@ const PageMateria: React.FC<PageMateriaProps> = ({ isDarkMode, workSlug, onNavig
   const [selectedWork, setSelectedWork] = useState<Work | null>(null);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
   const [showBackButton, setShowBackButton] = useState(true);
+  const [isMobile, setIsMobile] = useState(false);
+  const [showToast, setShowToast] = useState(false);
   const lastScrollY = useRef(0);
   const { updateMeta, resetMeta } = useMeta();
   const controls = useAnimation();
 
-  const bind = useDrag(({ active, movement: [, dy], velocity: [, vy], event }) => {
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 1024);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  const bind = useDrag(({ active, movement: [, dy], velocity: [, vy] }) => {
+    if (isMobile) return;
     if (!active && dy > 150 || (vy > 0.5 && dy > 50)) {
       handleBack();
     } else {
@@ -213,10 +226,10 @@ const PageMateria: React.FC<PageMateriaProps> = ({ isDarkMode, workSlug, onNavig
         <div className="relative z-10 w-full max-w-7xl px-6 md:px-20 pt-48 md:pt-64 pb-32 flex flex-col lg:grid lg:grid-cols-12 gap-12 items-center lg:items-start">
           <div className="lg:col-span-8 w-full flex justify-center">
             <motion.div 
-              {...(bind() as any)}
-              animate={controls}
+              {...(isMobile ? {} : (bind() as any))}
+              animate={isMobile ? undefined : controls}
               onClick={() => setIsLightboxOpen(true)}
-              className="relative group max-h-[75vh] w-full flex justify-center touch-none cursor-zoom-in"
+              className={`relative group max-h-[75vh] w-full flex justify-center cursor-zoom-in ${isMobile ? 'touch-auto' : 'touch-none'}`}
             >
               <motion.img 
                 src={formatImageUrl(selectedWork.imageUrl)} 
@@ -280,7 +293,7 @@ const PageMateria: React.FC<PageMateriaProps> = ({ isDarkMode, workSlug, onNavig
                <button 
                   onClick={() => {
                     navigator.clipboard.writeText(window.location.href);
-                    alert("link copiado para compartilhar.");
+                    setShowToast(true);
                   }}
                   className="font-vt text-[10px] tracking-widest flex items-center gap-2 uppercase border-b border-current border-opacity-20 pb-1"
                >
@@ -290,6 +303,7 @@ const PageMateria: React.FC<PageMateriaProps> = ({ isDarkMode, workSlug, onNavig
             </div>
           </div>
         </div>
+        <Toast message="link copiado" isVisible={showToast} onClose={() => setShowToast(false)} isDarkMode={isDarkMode} />
       </div>
     );
   }
