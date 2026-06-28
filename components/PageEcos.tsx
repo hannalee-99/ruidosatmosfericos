@@ -3,7 +3,7 @@ import React from 'react';
 import { motion } from 'motion/react';
 import { ViewState } from '../types';
 import NeobrutalistButton from './NeobrutalistButton';
-import { trackExternalClicked } from './analytics';
+import { trackExternalClicked, trackSocialLinkClicked } from './analytics';
 
 interface PageEcosProps {
   onNavigate: (view: ViewState) => void;
@@ -113,7 +113,10 @@ const PageEcos: React.FC<PageEcosProps> = ({ onNavigate, isDarkMode }) => {
                     target="_blank"
                     rel="noopener noreferrer"
                     className="block"
-                    onClick={() => trackExternalClicked(item.title, item.url)}
+                    onClick={() => {
+                      trackExternalClicked(item.title, item.url);
+                      trackSocialLinkClicked(item.title, item.url, item.title.toLowerCase());
+                    }}
                   >
                     <NeobrutalistButton
                       variant="matrix"

@@ -9,7 +9,7 @@ import SignalRenderer from './SignalRenderer';
 import JsonLd from './JsonLd';
 import BackToTop from './BackToTop';
 import Toast from './Toast';
-import { trackSignalOpened, trackLinkShared } from './analytics';
+import { trackSignalOpened, trackLinkShared, trackSignalSelected } from './analytics';
 
 const calculateReadingTime = (blocks: SignalBlock[]): string => {
   const text = blocks
@@ -94,6 +94,7 @@ const PageSinais: React.FC<PageSinaisProps> = ({
   useEffect(() => {
     if (selectedPost) {
       trackSignalOpened(selectedPost.title, selectedPost.slug || selectedPost.id);
+      trackSignalSelected(selectedPost.slug || selectedPost.id, selectedPost.title);
     }
   }, [selectedPost]);
 
@@ -138,12 +139,30 @@ const PageSinais: React.FC<PageSinaisProps> = ({
     return { prev, next };
   }, [selectedPost, posts]);
 
+  // Teclado para navegar entre sinais e fechar detalhe
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement;
+      if (
+        target.tagName === 'INPUT' || 
+        target.tagName === 'TEXTAREA' || 
+        target.isContentEditable
+      ) {
+        return;
+      }
+
       if (!selectedPost) return;
-      if (e.key === 'ArrowRight' && navigation.next) handleOpenPost(navigation.next);
-      if (e.key === 'ArrowLeft' && navigation.prev) handleOpenPost(navigation.prev);
-      if (e.key === 'Escape') handleClosePost();
+
+      if (e.key === 'ArrowRight' && navigation.next) {
+        e.preventDefault();
+        handleOpenPost(navigation.next);
+      } else if (e.key === 'ArrowLeft' && navigation.prev) {
+        e.preventDefault();
+        handleOpenPost(navigation.prev);
+      } else if (e.key === 'Escape') {
+        e.preventDefault();
+        handleClosePost();
+      }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);

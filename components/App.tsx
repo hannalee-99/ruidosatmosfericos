@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useCallback, Suspense, lazy } from 'react';
 import { ViewState } from '../types';
 import { useTheme, useDataSeeding } from '../lib/hooks';
-import { initAnalytics, trackPageView } from './analytics';
+import { initAnalytics, trackPageView, trackLandingPageViewed } from './analytics';
 
 // Layout & UI (Sempre necessários)
 import Navigation from './Navigation';
@@ -40,6 +40,58 @@ const App: React.FC = () => {
   useEffect(() => {
     initAnalytics();
   }, []);
+
+  // Atalhos de teclado globais para navegação
+  useEffect(() => {
+    if (!hasEntered) return;
+
+    const handleGlobalKeyDown = (e: KeyboardEvent) => {
+      // Ignorar se o usuário estiver digitando em campos de texto ou editáveis
+      const target = e.target as HTMLElement;
+      if (
+        target.tagName === 'INPUT' || 
+        target.tagName === 'TEXTAREA' || 
+        target.isContentEditable
+      ) {
+        return;
+      }
+
+      // Se houver um detalhe ativo de obra ou sinal, a página cuida dos seus atalhos locais
+      if (activeSlug !== null) {
+        return;
+      }
+
+      // Evitar navegação acidental se estiver no painel administrativo
+      if (view === ViewState.BACKOFFICE) {
+        return;
+      }
+
+      const navItems = Object.values(ViewState).filter(v => v !== ViewState.BACKOFFICE);
+      const currentIndex = navItems.indexOf(view);
+
+      if (e.key === 'Escape') {
+        if (view !== ViewState.LANDING) {
+          e.preventDefault();
+          setView(ViewState.LANDING);
+        }
+      } else if (e.key === 'ArrowRight') {
+        if (currentIndex !== -1) {
+          e.preventDefault();
+          const nextIndex = (currentIndex + 1) % navItems.length;
+          setView(navItems[nextIndex]);
+        }
+      } else if (e.key === 'ArrowLeft') {
+        if (currentIndex !== -1) {
+          e.preventDefault();
+          const prevIndex = (currentIndex - 1 + navItems.length) % navItems.length;
+          setView(navItems[prevIndex]);
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleGlobalKeyDown);
+    return () => window.removeEventListener('keydown', handleGlobalKeyDown);
+  }, [hasEntered, view, activeSlug]);
 
   useEffect(() => {
     const darkViews = [ViewState.BACKOFFICE, ViewState.MANIFESTO, ViewState.CONNECT];
@@ -129,6 +181,9 @@ const App: React.FC = () => {
     }
 
     trackPageView(view, activeSlug || undefined);
+    if (view === ViewState.LANDING) {
+      trackLandingPageViewed('home');
+    }
   }, [view, activeSlug, hasEntered]);
 
   const handleEntry = () => {

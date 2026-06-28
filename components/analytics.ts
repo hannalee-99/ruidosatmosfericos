@@ -187,3 +187,51 @@ export const trackTerminalCommand = (command: string, responseType: 'success' | 
     });
   }
 };
+
+/**
+ * Unified Funnel Step Tracker
+ * Captures events 'LandingPage Viewed', 'Signal Selected', 'Materia Read', and 'Social Link Clicked'
+ * with their corresponding slugs for conversion analysis.
+ */
+export const trackFunnelStep = (
+  step: 'LandingPage Viewed' | 'Signal Selected' | 'Materia Read' | 'Social Link Clicked',
+  slug: string,
+  extraProperties?: Record<string, any>
+) => {
+  initAnalytics();
+  const properties = {
+    'Funnel Step': step,
+    'Step Order': step === 'LandingPage Viewed' ? 1 : step === 'Signal Selected' ? 2 : step === 'Materia Read' ? 3 : 4,
+    'Slug': slug,
+    ...extraProperties
+  };
+
+  console.log(`📊 [Mixpanel Funnel Track] ${step}:`, properties, isInitialized ? '(Sending...)' : '(Sandbox/No-Token)');
+  if (isInitialized) {
+    mixpanel.track(step, properties, (response) => {
+      console.log(`📊 [Mixpanel Server Response] ${step}:`, response === 1 ? 'SUCCESS (1)' : 'FAILED (' + response + ')');
+    });
+  }
+};
+
+/**
+ * Specific helpers for funnel tracking
+ */
+export const trackLandingPageViewed = (slug: string = 'home') => {
+  trackFunnelStep('LandingPage Viewed', slug, { 'Page Title': 'Landing Page' });
+};
+
+export const trackSignalSelected = (slug: string, title?: string) => {
+  trackFunnelStep('Signal Selected', slug, { 'Signal Title': title || slug });
+};
+
+export const trackMateriaRead = (slug: string, title?: string) => {
+  trackFunnelStep('Materia Read', slug, { 'Materia Title': title || slug });
+};
+
+export const trackSocialLinkClicked = (channel: string, url: string, slug: string = 'social') => {
+  trackFunnelStep('Social Link Clicked', slug, {
+    'Destination Channel': channel,
+    'Destination URL': url
+  });
+};

@@ -66,6 +66,18 @@ const Lightbox: React.FC<LightboxProps> = ({ isOpen, onClose, src, alt }) => {
     return () => { document.body.style.overflow = ''; };
   }, [isOpen]);
 
+  // Handle Escape key to close
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isOpen) {
+        e.stopPropagation();
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown, true);
+    return () => window.removeEventListener('keydown', handleKeyDown, true);
+  }, [isOpen, onClose]);
+
   return (
     <AnimatePresence>
       {isOpen && (

@@ -10,7 +10,7 @@ import LazyImage from './LazyImage';
 import JsonLd from './JsonLd';
 import Lightbox from './Lightbox';
 import Toast from './Toast';
-import { trackArtworkOpened, trackArtworkZoomed, trackLinkShared } from './analytics';
+import { trackArtworkOpened, trackArtworkZoomed, trackLinkShared, trackMateriaRead } from './analytics';
 
 interface PageMateriaProps {
   isDarkMode: boolean;
@@ -85,6 +85,7 @@ const PageMateria: React.FC<PageMateriaProps> = ({ isDarkMode, workSlug, onNavig
   useEffect(() => {
     if (selectedWork) {
       trackArtworkOpened(selectedWork.title, selectedWork.slug || selectedWork.id);
+      trackMateriaRead(selectedWork.slug || selectedWork.id, selectedWork.title);
     }
   }, [selectedWork]);
 
@@ -155,11 +156,54 @@ const PageMateria: React.FC<PageMateriaProps> = ({ isDarkMode, workSlug, onNavig
     return { prev, next };
   }, [selectedWork, filteredWorks]);
 
+  // Teclado para navegar entre obras e fechar detalhe
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Ignorar se o usuário estiver digitando em campos de texto
+      const target = e.target as HTMLElement;
+      if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable) {
+        return;
+      }
+
+      if (!selectedWork) return;
+
+      // Se a lightbox estiver aberta, deixar ela tratar o Escape e ignorar trocas de obras
+      if (isLightboxOpen) return;
+
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        e.stopPropagation();
+        onWorkSelect(null);
+      } else if (e.key === 'ArrowRight' && navigation.next) {
+        e.preventDefault();
+        onWorkSelect(navigation.next.slug || navigation.next.id);
+      } else if (e.key === 'ArrowLeft' && navigation.prev) {
+        e.preventDefault();
+        onWorkSelect(navigation.prev.slug || navigation.prev.id);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [selectedWork, isLightboxOpen, navigation, onWorkSelect]);
+
   const years = useMemo(() => {
     const y = new Set<string>();
     works.forEach(w => y.add(w.year));
     return ['todos', ...Array.from(y).sort((a, b) => b.localeCompare(a))];
   }, [works]);
+
+  const readingTime = useMemo(() => {
+    if (!selectedWork) return '';
+    const text = [
+      selectedWork.title,
+      selectedWork.description || '',
+      selectedWork.technique || '',
+    ].join(' ');
+    const words = text.trim().split(/\s+/).filter(Boolean).length;
+    const minutes = Math.max(1, Math.ceil(words / 200));
+    return `${minutes} min`;
+  }, [selectedWork]);
 
   const formatImageUrl = (url: string): string => {
     if (!url || url.trim() === '') return DEFAULT_IMAGE;
@@ -276,6 +320,11 @@ const PageMateria: React.FC<PageMateriaProps> = ({ isDarkMode, workSlug, onNavig
                <div className="flex items-center gap-4">
                   <span className="font-vt text-sm tracking-widest text-[var(--accent)] uppercase">{MONTH_NAMES[parseInt(selectedWork.month)-1]} / {selectedWork.year}</span>
                   <div className="h-px flex-grow bg-current opacity-10"></div>
+                  {readingTime && (
+                    <span className="font-mono text-[9px] uppercase tracking-widest opacity-60 bg-[var(--accent)]/10 text-[var(--accent)] px-2 py-0.5 rounded border border-[var(--accent)]/20 font-bold">
+                      {readingTime}
+                    </span>
+                  )}
                </div>
                <h1 className="font-electrolize text-4xl md:text-5xl leading-[0.95] lowercase text-white [.light-mode_&]:text-black">
                 {selectedWork.title}

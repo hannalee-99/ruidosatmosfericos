@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { storage } from '../lib/storage';
 import { ConnectConfig, ViewState } from '../types';
-import { trackTerminalCommand } from './analytics';
+import { trackTerminalCommand, trackSocialLinkClicked } from './analytics';
 
 interface TerminalLine {
   id: string;
@@ -113,7 +113,7 @@ const PageConnect: React.FC<PageConnectProps> = ({ onNavigate }) => {
         addLine(
           <div className="p-4 border border-white/20 [.light-mode_&]:border-black/20 rounded bg-white/5 [.light-mode_&]:bg-black/5 mt-2">
             <span className="opacity-60 block text-xs mb-2 uppercase tracking-widest">canal de voz ativo:</span>
-            <a href={`mailto:${connectConfig.email}`} className="text-xl md:text-2xl text-[var(--accent)] underline hover:no-underline">
+            <a href={`mailto:${connectConfig.email}`} onClick={() => trackSocialLinkClicked('Email', `mailto:${connectConfig.email}`, 'email')} className="text-xl md:text-2xl text-[var(--accent)] underline hover:no-underline">
               {connectConfig.email}
             </a>
           </div>, 
@@ -130,7 +130,7 @@ const PageConnect: React.FC<PageConnectProps> = ({ onNavigate }) => {
           addLine(
             <div className="flex flex-wrap gap-4 mt-2">
               {connectConfig.links.map((link) => (
-                <a key={link.id} href={link.url} target="_blank" rel="noopener noreferrer" className="text-[var(--accent)] underline hover:no-underline font-vt text-lg">
+                <a key={link.id} href={link.url} onClick={() => trackSocialLinkClicked(link.label, link.url, link.label.toLowerCase())} target="_blank" rel="noopener noreferrer" className="text-[var(--accent)] underline hover:no-underline font-vt text-lg">
                   {link.label}
                 </a>
               ))}

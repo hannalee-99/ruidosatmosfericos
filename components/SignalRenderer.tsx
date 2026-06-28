@@ -91,41 +91,209 @@ const parseInline = (text: string) => {
   });
 };
 
+interface Block {
+  type: 'p' | 'h2' | 'h3' | 'h4' | 'blockquote' | 'ul' | 'ol' | 'code' | 'hr';
+  lines: string[];
+  lang?: string;
+}
+
+const parseMarkdown = (text: string): Block[] => {
+  const lines = text.split(/\r?\n/);
+  const blocks: Block[] = [];
+  let currentBlock: Block | null = null;
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    const trimmed = line.trim();
+
+    // 1. Code Blocks
+    if (trimmed.startsWith('```')) {
+      if (currentBlock && currentBlock.type === 'code') {
+        blocks.push(currentBlock);
+        currentBlock = null;
+      } else {
+        if (currentBlock) {
+          blocks.push(currentBlock);
+        }
+        const lang = trimmed.substring(3).trim();
+        currentBlock = { type: 'code', lines: [], lang };
+      }
+      continue;
+    }
+
+    if (currentBlock && currentBlock.type === 'code') {
+      currentBlock.lines.push(line);
+      continue;
+    }
+
+    // 2. Horizontal Rules
+    if (trimmed === '---' || trimmed === '***' || trimmed === '___') {
+      if (currentBlock) {
+        blocks.push(currentBlock);
+        currentBlock = null;
+      }
+      blocks.push({ type: 'hr', lines: [] });
+      continue;
+    }
+
+    // 3. Headers
+    if (trimmed.startsWith('# ')) {
+      if (currentBlock) {
+        blocks.push(currentBlock);
+        currentBlock = null;
+      }
+      blocks.push({ type: 'h2', lines: [trimmed.substring(2)] });
+      continue;
+    }
+    if (trimmed.startsWith('## ')) {
+      if (currentBlock) {
+        blocks.push(currentBlock);
+        currentBlock = null;
+      }
+      blocks.push({ type: 'h3', lines: [trimmed.substring(3)] });
+      continue;
+    }
+    if (trimmed.startsWith('### ')) {
+      if (currentBlock) {
+        blocks.push(currentBlock);
+        currentBlock = null;
+      }
+      blocks.push({ type: 'h4', lines: [trimmed.substring(4)] });
+      continue;
+    }
+
+    // 4. Blockquotes
+    if (trimmed.startsWith('>')) {
+      const quoteText = trimmed.substring(1).trim();
+      if (currentBlock) {
+        blocks.push(currentBlock);
+      }
+      blocks.push({ type: 'blockquote', lines: [quoteText] });
+      currentBlock = null;
+      continue;
+    }
+
+    // 5. Unordered lists
+    const bulletMatch = line.match(/^(\s*)([•\-\*])\s+(.*)/);
+    if (bulletMatch) {
+      const content = bulletMatch[3];
+      if (currentBlock && currentBlock.type === 'ul') {
+        currentBlock.lines.push(content);
+      } else {
+        if (currentBlock) {
+          blocks.push(currentBlock);
+        }
+        currentBlock = { type: 'ul', lines: [content] };
+      }
+      continue;
+    }
+
+    // 6. Ordered lists
+    const orderedMatch = line.match(/^(\s*)(\d+[\.\)])\s+(.*)/);
+    if (orderedMatch) {
+      const content = orderedMatch[3];
+      if (currentBlock && currentBlock.type === 'ol') {
+        currentBlock.lines.push(content);
+      } else {
+        if (currentBlock) {
+          blocks.push(currentBlock);
+        }
+        currentBlock = { type: 'ol', lines: [content] };
+      }
+      continue;
+    }
+
+    // 7. Normal paragraphs: DO NOT merge lines to preserve original line-breaks
+    if (currentBlock) {
+      blocks.push(currentBlock);
+      currentBlock = null;
+    }
+    blocks.push({ type: 'p', lines: [line] });
+  }
+
+  if (currentBlock) {
+    blocks.push(currentBlock);
+  }
+
+  return blocks;
+};
+
 const MarkdownRenderer: React.FC<{ content: string }> = ({ content }) => {
-  const lines = content.split('\n');
+  const blocks = useMemo(() => parseMarkdown(content), [content]);
+
   return (
-    <div className="space-y-6 text-left font-mono text-base md:text-lg font-normal leading-[1.8] opacity-80 text-neutral-300 [.light-mode_&]:text-neutral-800">
-      {lines.map((line, index) => {
-        const trimmed = line.trim();
-        if (trimmed.startsWith('# ')) return <h2 key={index} className="font-electrolize text-3xl md:text-5xl text-white [.light-mode_&]:text-black mt-12 mb-8 opacity-100 lowercase">{trimmed.substring(2)}</h2>;
-        if (trimmed.startsWith('## ')) return <h3 key={index} className="font-electrolize text-2xl md:text-4xl text-white [.light-mode_&]:text-black mt-10 mb-6 opacity-95 lowercase">{trimmed.substring(3)}</h3>;
-        if (trimmed.startsWith('### ')) return <h4 key={index} className="font-electrolize text-xl md:text-3xl text-white [.light-mode_&]:text-black mt-8 mb-4 opacity-90 lowercase">{trimmed.substring(4)}</h4>;
-        if (trimmed.startsWith('> ')) return <blockquote key={index} className="border-l-2 border-[var(--accent)] pl-6 py-2 my-8 italic opacity-70 bg-white/5 [.light-mode_&]:bg-black/5 rounded-r-lg">{parseInline(trimmed.substring(2))}</blockquote>;
-        if (trimmed === '---') return <hr key={index} className="border-t border-white/10 [.light-mode_&]:border-black/10 my-8" />;
-        
-        // Listas Numeradas (1. ou 1))
-        const numberedMatch = line.match(/^(\d+[\.\)])\s+(.*)/);
-        if (numberedMatch) {
-          return (
-            <div key={index} className="flex gap-4 items-start pl-2">
-              <span className="text-[var(--accent)] font-bold shrink-0">{numberedMatch[1]}</span>
-              <div className="flex-grow lowercase">{parseInline(numberedMatch[2])}</div>
-            </div>
-          );
+    <div className="space-y-0 text-left">
+      {blocks.map((block, index) => {
+        switch (block.type) {
+          case 'h2':
+            return (
+              <h2 key={index} className="font-electrolize text-2xl md:text-4xl text-white [.light-mode_&]:text-black mt-16 mb-6 lowercase tracking-wider border-b border-white/10 [.light-mode_&]:border-black/10 pb-3">
+                {block.lines[0]}
+              </h2>
+            );
+          case 'h3':
+            return (
+              <h3 key={index} className="font-electrolize text-xl md:text-3xl text-white [.light-mode_&]:text-black mt-12 mb-4 lowercase tracking-wide">
+                {block.lines[0]}
+              </h3>
+            );
+          case 'h4':
+            return (
+              <h4 key={index} className="font-electrolize text-lg md:text-2xl text-white [.light-mode_&]:text-black mt-8 mb-3 lowercase opacity-90">
+                {block.lines[0]}
+              </h4>
+            );
+          case 'blockquote':
+            return (
+              <blockquote key={index} className="border-l-4 border-[var(--accent)] pl-8 py-4 my-10 bg-[var(--accent)]/5 rounded-r-xl shadow-inner font-vt text-lg md:text-xl text-neutral-200 [.light-mode_&]:text-neutral-800 italic relative leading-relaxed max-w-2xl mx-auto">
+                {parseInline(block.lines.join(' '))}
+              </blockquote>
+            );
+          case 'code':
+            return (
+              <div key={index} className="relative my-10 rounded-xl overflow-hidden border border-white/10 [.light-mode_&]:border-black/10 bg-black/60 [.light-mode_&]:bg-neutral-900 text-left font-mono text-sm leading-relaxed shadow-2xl">
+                <div className="flex items-center justify-between px-4 py-2 border-b border-white/5 [.light-mode_&]:border-black/5 bg-black/40 text-[9px] uppercase tracking-[0.2em] text-neutral-500">
+                  <span>{block.lang || 'registro'}</span>
+                  <span className="animate-pulse">● ativo</span>
+                </div>
+                <pre className="p-5 overflow-x-auto text-emerald-400 [.light-mode_&]:text-teal-700 font-mono select-all">
+                  <code>{block.lines.join('\n')}</code>
+                </pre>
+              </div>
+            );
+          case 'ul':
+            return (
+              <ul key={index} className="space-y-3.5 my-8 pl-4">
+                {block.lines.map((item, idx) => (
+                  <li key={idx} className="flex gap-3 items-start text-base md:text-lg leading-[1.8] lowercase text-neutral-300 [.light-mode_&]:text-neutral-700 font-mono">
+                    <span className="text-[var(--accent)] select-none shrink-0 mt-1.5 opacity-80 text-xs">■</span>
+                    <span className="flex-grow">{parseInline(item)}</span>
+                  </li>
+                ))}
+              </ul>
+            );
+          case 'ol':
+            return (
+              <ol key={index} className="space-y-3.5 my-8 pl-4">
+                {block.lines.map((item, idx) => (
+                  <li key={idx} className="flex gap-3 items-start text-base md:text-lg leading-[1.8] lowercase text-neutral-300 [.light-mode_&]:text-neutral-700 font-mono">
+                    <span className="text-[var(--accent)] font-vt text-lg leading-none shrink-0 mt-0.5 font-bold">{idx + 1}.</span>
+                    <span className="flex-grow">{parseInline(item)}</span>
+                  </li>
+                ))}
+              </ol>
+            );
+          case 'hr':
+            return <hr key={index} className="border-t border-white/15 [.light-mode_&]:border-black/15 my-12" />;
+          case 'p':
+          default:
+            const isEmpty = block.lines[0].trim() === '';
+            return (
+              <p key={index} className={`lowercase leading-[1.9] text-base md:text-[17px] opacity-85 text-neutral-300 [.light-mode_&]:text-neutral-700 font-mono tracking-wide ${isEmpty ? 'min-h-[1.5em]' : 'mb-8 last:mb-0'}`}>
+                {isEmpty ? '\u00A0' : parseInline(block.lines[0])}
+              </p>
+            );
         }
-
-        // Listas com Bullets (•, -, *)
-        const bulletMatch = line.match(/^([•\-\*])\s+(.*)/);
-        if (bulletMatch) {
-          return (
-            <div key={index} className="flex gap-4 items-start pl-2">
-              <span className="text-[var(--accent)] font-bold shrink-0">•</span>
-              <div className="flex-grow lowercase">{parseInline(bulletMatch[2])}</div>
-            </div>
-          );
-        }
-
-        return <p key={index} className="lowercase min-h-[1em]">{parseInline(line)}</p>;
       })}
     </div>
   );
@@ -170,18 +338,22 @@ const SignalRenderer: React.FC<SignalRendererProps> = ({ signal }) => {
         <div key={group.id}>
           {group.type === 'text' && <MarkdownRenderer content={group.content} />}
           {group.type === 'gallery' && (
-            <div className={`my-12 grid gap-12 ${group.images.length === 1 ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2'}`}>
+            <div className={`my-16 grid gap-12 ${group.images.length === 1 ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2'}`}>
               {group.images.map((imgBlock) => (
-                <figure key={imgBlock.id} className="relative w-full flex flex-col">
-                  <div className="relative">
+                <figure key={imgBlock.id} className="relative w-full flex flex-col group/fig">
+                  <div className="relative rounded-2xl overflow-hidden border border-white/10 [.light-mode_&]:border-black/10 shadow-2xl bg-neutral-900 [.light-mode_&]:bg-neutral-100 transition-all duration-700 hover:scale-[1.015] hover:border-[var(--accent)]/40 hover:shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
                     <LazyImage 
                       src={formatImageUrl(imgBlock.content)} 
                       alt="registro visual" 
-                      className="w-full h-auto" 
+                      className="w-full h-auto object-cover" 
                       autoHeight 
                     />
                   </div>
-                  {imgBlock.caption && <figcaption className="mt-4 font-vt text-sm tracking-widest opacity-60 lowercase border-l border-[var(--accent)] pl-3">{imgBlock.caption}</figcaption>}
+                  {imgBlock.caption && (
+                    <figcaption className="mt-4 font-vt text-sm tracking-widest opacity-50 group-hover/fig:opacity-80 transition-opacity lowercase border-l border-[var(--accent)] pl-3">
+                      {imgBlock.caption}
+                    </figcaption>
+                  )}
                 </figure>
               ))}
             </div>

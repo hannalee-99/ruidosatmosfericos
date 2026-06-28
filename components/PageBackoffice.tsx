@@ -17,6 +17,8 @@ const PageBackoffice: React.FC<PageBackofficeProps> = ({ onLogout }) => {
   const [signals, setSignals] = useState<Signal[]>([]);
   const [editingSignal, setEditingSignal] = useState<Signal | null>(null);
   const [isPreviewMode, setIsPreviewMode] = useState(false);
+  const [editorMode, setEditorMode] = useState<'edit' | 'preview' | 'split'>('edit');
+  const [syncStatus, setSyncStatus] = useState<'synced' | 'saving' | 'error'>('synced');
   const [profile, setProfile] = useState<AboutData>({ id: 'profile', text: '', imageUrl: '', faviconUrl: '' });
   const [connect, setConnect] = useState<ConnectConfig>({ id: 'connect_config', email: '', sobreText: '', links: [] });
   const [manifesto, setManifesto] = useState<ManifestoConfig>({ id: 'landing_manifesto', text: '' });
@@ -25,10 +27,18 @@ const PageBackoffice: React.FC<PageBackofficeProps> = ({ onLogout }) => {
   const [exportCode, setExportCode] = useState('');
   const [importCode, setImportCode] = useState('');
   const [isImporting, setIsImporting] = useState(false);
+  const [isFocusMode, setIsFocusMode] = useState(false);
   
   const isSlugPristine = useRef(true);
   const isWorkSlugPristine = useRef(true);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const lastSavedSignalRef = useRef<string>('');
+
+  useEffect(() => {
+    if (!editingSignal) {
+      setIsFocusMode(false);
+    }
+  }, [editingSignal]);
 
   useEffect(() => {
     fetchData();
@@ -160,8 +170,18 @@ export const INITIAL_DATA: {
       seoDescription: '',
       blocks: [{ id: `b-${Date.now()}`, type: 'text', content: 'digite sua mensagem aqui...' }]
     };
+    lastSavedSignalRef.current = JSON.stringify(newSignal);
     setEditingSignal(newSignal);
+    setEditorMode('edit');
     setIsPreviewMode(false);
+  };
+
+  const handleStartEditSignal = (s: Signal) => {
+    lastSavedSignalRef.current = JSON.stringify(s);
+    setEditingSignal(s);
+    setEditorMode('edit');
+    setIsPreviewMode(false);
+    isSlugPristine.current = false;
   };
 
   const handleCreateNewWork = () => {
@@ -276,6 +296,77 @@ export const INITIAL_DATA: {
       blocks: editingSignal.blocks.map(b => b.id === blockId ? { ...b, content, caption } : b)
     });
   };
+
+  const moveBlock = (index: number, direction: 'up' | 'down') => {
+    if (!editingSignal) return;
+    const newBlocks = [...editingSignal.blocks];
+    const targetIndex = direction === 'up' ? index - 1 : index + 1;
+    if (targetIndex < 0 || targetIndex >= newBlocks.length) return;
+    
+    // Swap
+    const temp = newBlocks[index];
+    newBlocks[index] = newBlocks[targetIndex];
+    newBlocks[targetIndex] = temp;
+    
+    setEditingSignal({ ...editingSignal, blocks: newBlocks });
+  };
+
+  // Sincronização automática em segundo plano com Debounce (1.2 segundos)
+  useEffect(() => {
+    if (!editingSignal) {
+      setSyncStatus('synced');
+      return;
+    }
+
+    // Compara se o conteúdo realmente mudou em relação ao último save para evitar loops
+    const currentSerialized = JSON.stringify(editingSignal);
+    if (lastSavedSignalRef.current === currentSerialized) {
+      return;
+    }
+
+    setSyncStatus('saving');
+    
+    const delayDebounce = setTimeout(async () => {
+      try {
+        const finalSlug = editingSignal.slug || createSlug(editingSignal.title);
+        const signalToSave = { ...editingSignal, slug: finalSlug };
+        await storage.save('signals', signalToSave);
+        lastSavedSignalRef.current = JSON.stringify(signalToSave);
+        setSyncStatus('synced');
+        
+        // Atualiza a lista de sinais em background para manter sincronizado
+        const updatedSignals = await storage.getAll('signals');
+        setSignals(updatedSignals.sort((a, b) => {
+          const dateA = a.date.split('/').reverse().join('-');
+          const dateB = b.date.split('/').reverse().join('-');
+          return dateB.localeCompare(dateA);
+        }));
+      } catch (err) {
+        console.error('Erro no salvamento automático:', err);
+        setSyncStatus('error');
+      }
+    }, 1200);
+
+    return () => clearTimeout(delayDebounce);
+  }, [editingSignal]);
+
+  // Ajustar altura de todos os textareas automaticamente na montagem ou quando muda o modo
+  useEffect(() => {
+    if (editingSignal && editorMode !== 'preview') {
+      const resizeTextareas = () => {
+        editingSignal.blocks.forEach(block => {
+          const textarea = document.getElementById(`textarea-${block.id}`) as HTMLTextAreaElement;
+          if (textarea) {
+            textarea.style.height = 'auto';
+            textarea.style.height = textarea.scrollHeight + 'px';
+          }
+        });
+      };
+      
+      const timer = setTimeout(resizeTextareas, 50);
+      return () => clearTimeout(timer);
+    }
+  }, [editingSignal?.id, editorMode, editingSignal?.blocks.length]);
 
   const applyFormatting = (blockId: string, prefix: string, suffix: string = '') => {
     const textarea = document.getElementById(`textarea-${blockId}`) as HTMLTextAreaElement;
@@ -564,26 +655,30 @@ export const INITIAL_DATA: {
   const featuredWorks = works.filter(w => w.isFeatured).sort((a, b) => (a.featuredOrder ?? 999) - (b.featuredOrder ?? 999));
 
   return (
-    <div className="min-h-screen bg-[#050505] text-white font-mono p-4 md:p-8 pt-24 selection:bg-[var(--accent)] selection:text-black">
-      <header className="flex justify-between items-center mb-12 border-b border-white/10 pb-8 max-w-6xl mx-auto">
-        <h1 className="text-xl font-electrolize text-[var(--accent)] lowercase">fluxo /// painel de gestão</h1>
-        <button onClick={onLogout} className="text-[10px] opacity-50 hover:opacity-100 border border-white/20 px-4 py-2 rounded-full transition-all lowercase">encerrar sessão</button>
-      </header>
+    <div className={`min-h-screen bg-[#050505] text-white font-mono p-4 md:p-8 transition-all duration-300 selection:bg-[var(--accent)] selection:text-black ${isFocusMode ? 'pt-8 md:pt-12' : 'pt-24'}`}>
+      {!isFocusMode && (
+        <header className="flex justify-between items-center mb-12 border-b border-white/10 pb-8 max-w-6xl mx-auto">
+          <h1 className="text-xl font-electrolize text-[var(--accent)] lowercase">fluxo /// painel de gestão</h1>
+          <button onClick={onLogout} className="text-[10px] opacity-50 hover:opacity-100 border border-white/20 px-4 py-2 rounded-full transition-all lowercase">encerrar sessão</button>
+        </header>
+      )}
 
-      <div className="flex gap-6 mb-12 overflow-x-auto no-scrollbar max-w-6xl mx-auto">
-        {tabs.map(tab => {
-          const isSelected = activeTab === tab;
-          return (
-            <button 
-              key={tab}
-              onClick={() => { setActiveTab(tab as any); setEditingWork(null); setEditingSignal(null); setIsPreviewMode(false); setExportCode(''); fetchData(); }}
-              className={`text-xs uppercase tracking-[0.3em] pb-2 border-b-2 transition-all ${isSelected ? 'border-[var(--accent)] text-[var(--accent)]' : 'border-transparent opacity-30 hover:opacity-100'}`}
-            >
-              {tabLabels[tab] || tab}
-            </button>
-          );
-        })}
-      </div>
+      {!isFocusMode && (
+        <div className="flex gap-6 mb-12 overflow-x-auto no-scrollbar max-w-6xl mx-auto">
+          {tabs.map(tab => {
+            const isSelected = activeTab === tab;
+            return (
+              <button 
+                key={tab}
+                onClick={() => { setActiveTab(tab as any); setEditingWork(null); setEditingSignal(null); setIsPreviewMode(false); setExportCode(''); fetchData(); }}
+                className={`text-xs uppercase tracking-[0.3em] pb-2 border-b-2 transition-all ${isSelected ? 'border-[var(--accent)] text-[var(--accent)]' : 'border-transparent opacity-30 hover:opacity-100'}`}
+              >
+                {tabLabels[tab] || tab}
+              </button>
+            );
+          })}
+        </div>
+      )}
 
       <div className="max-w-6xl mx-auto">
         {activeTab === ViewState.MATERIA && (
@@ -802,7 +897,7 @@ export const INITIAL_DATA: {
                 </div>
                 <div className="space-y-4">
                   {signals.map(s => (
-                    <div key={s.id} onClick={() => { setEditingSignal(s); isSlugPristine.current = false; }} className="p-6 bg-white/5 border border-white/5 rounded-xl cursor-pointer hover:border-[var(--accent)]/30 transition-all flex justify-between items-center group">
+                    <div key={s.id} onClick={() => handleStartEditSignal(s)} className="p-6 bg-white/5 border border-white/5 rounded-xl cursor-pointer hover:border-[var(--accent)]/30 transition-all flex justify-between items-center group">
                       <div className="flex items-center gap-4">
                         {s.coverImageUrl && <img src={s.coverImageUrl} className="w-12 h-12 rounded object-cover border border-white/10" />}
                         <div>
@@ -820,167 +915,351 @@ export const INITIAL_DATA: {
               </>
             ) : (
               <form onSubmit={handleSaveSignal} className="animate-in fade-in duration-500 pb-24">
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                <div className={editorMode === 'split' ? "grid grid-cols-1 xl:grid-cols-12 gap-8" : isFocusMode ? "block" : "grid grid-cols-1 lg:grid-cols-12 gap-8"}>
                   
                   {/* Editor Principal */}
-                  <div className="lg:col-span-8 space-y-6">
+                  <div className={
+                    editorMode === 'preview' || (isFocusMode && editorMode !== 'split')
+                      ? "col-span-12 space-y-6" 
+                      : editorMode === 'split'
+                        ? "xl:col-span-6 space-y-6"
+                        : "lg:col-span-8 space-y-6"
+                  }>
                     <div className="bg-white/5 p-8 rounded-xl border border-white/10 space-y-6">
-                      <div className="flex justify-between items-center border-b border-white/5 pb-4">
-                        <div className="flex items-center gap-3">
+                      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-white/5 pb-4 gap-4">
+                        <div className="flex flex-wrap items-center gap-3">
                            <span className="text-[10px] text-[var(--accent)] tracking-widest uppercase font-bold">conteúdo da transmissão</span>
                            <span className="text-[9px] opacity-40 font-mono lowercase pt-0.5">({signalWordCount} palavras)</span>
+                           
+                           {/* Status de Sincronização */}
+                           {syncStatus === 'saving' && (
+                             <div className="flex items-center gap-1.5 text-[9px] text-amber-500 bg-amber-500/10 px-2.5 py-0.5 rounded-full border border-amber-500/20 font-mono animate-pulse">
+                               <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-ping" />
+                               salvando...
+                             </div>
+                           )}
+                           {syncStatus === 'synced' && (
+                             <div className="flex items-center gap-1.5 text-[9px] text-emerald-400 bg-emerald-500/10 px-2.5 py-0.5 rounded-full border border-emerald-500/20 font-mono">
+                               <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                               sincronizado
+                             </div>
+                           )}
+                           {syncStatus === 'error' && (
+                             <div className="flex items-center gap-1.5 text-[9px] text-red-400 bg-red-500/10 px-2.5 py-0.5 rounded-full border border-red-500/20 font-mono">
+                               <span className="w-1.5 h-1.5 rounded-full bg-red-500" />
+                               erro de rede
+                             </div>
+                           )}
                         </div>
-                        <div className="flex gap-4">
-                           <button type="button" onClick={() => setIsPreviewMode(!isPreviewMode)} className={`text-[10px] border px-4 py-1.5 rounded-full transition-all ${isPreviewMode ? 'bg-[var(--accent)] text-black border-[var(--accent)]' : 'opacity-60 border-white/20 hover:border-white'}`}>
-                             {isPreviewMode ? 'editar' : 'visualizar'}
-                           </button>
+                        
+                        {/* Seletor de Modo e Modo de Foco */}
+                        <div className="flex flex-wrap items-center gap-3">
+                          <button
+                            type="button"
+                            onClick={() => setIsFocusMode(!isFocusMode)}
+                            className={`text-[9px] px-3.5 py-1.5 rounded-full uppercase tracking-wider font-bold border transition-all flex items-center gap-1.5 ${
+                              isFocusMode
+                                ? 'bg-amber-500/20 text-amber-400 border-amber-500/40 hover:bg-amber-500/30'
+                                : 'border-white/10 hover:border-white/30 text-white/75 hover:text-white'
+                            }`}
+                          >
+                            <span className={`w-1.5 h-1.5 rounded-full ${isFocusMode ? 'bg-amber-400 animate-pulse' : 'bg-white/40'}`} />
+                            {isFocusMode ? 'modo foco: ativo' : 'modo foco'}
+                          </button>
+
+                          <div className="flex items-center gap-1 bg-black/40 p-1 rounded-full border border-white/10">
+                            <button
+                              type="button"
+                              onClick={() => setEditorMode('edit')}
+                              className={`text-[9px] px-3 py-1 rounded-full uppercase tracking-wider transition-all ${
+                                editorMode === 'edit'
+                                  ? 'bg-[var(--accent)] text-black font-bold'
+                                  : 'opacity-50 hover:opacity-100'
+                              }`}
+                            >
+                              código
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setEditorMode('split')}
+                              className={`text-[9px] px-3 py-1 rounded-full uppercase tracking-wider transition-all hidden lg:inline-block ${
+                                editorMode === 'split'
+                                  ? 'bg-[var(--accent)] text-black font-bold'
+                                  : 'opacity-50 hover:opacity-100'
+                              }`}
+                            >
+                              lado a lado
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setEditorMode('preview')}
+                              className={`text-[9px] px-3 py-1 rounded-full uppercase tracking-wider transition-all ${
+                                editorMode === 'preview'
+                                  ? 'bg-[var(--accent)] text-black font-bold'
+                                  : 'opacity-50 hover:opacity-100'
+                              }`}
+                            >
+                              visualizar
+                            </button>
+                          </div>
                         </div>
                       </div>
 
-                      {!isPreviewMode ? (
-                        <>
-                          <input type="text" value={editingSignal.title} onChange={e => {
-                            if (!editingSignal) return;
-                            const val = e.target.value;
-                            const updates: Partial<Signal> = { title: val };
-                            if (isSlugPristine.current) updates.slug = createSlug(val);
-                            setEditingSignal({ ...editingSignal, ...updates });
-                          }} className="w-full bg-transparent border-none outline-none text-4xl font-electrolize placeholder:opacity-20 lowercase" placeholder="título da transmissão" required />
-                          <textarea 
-                            value={editingSignal.subtitle || ''} 
-                            onChange={e => setEditingSignal({...editingSignal, subtitle: e.target.value})} 
-                            className="w-full bg-transparent border-none outline-none text-sm opacity-60 italic resize-none h-12" 
-                            placeholder="subtítulo ou introdução curta..."
-                          />
+                      {editorMode !== 'preview' ? (
+                        <div className="max-w-3xl mx-auto w-full space-y-8 animate-in fade-in duration-300">
+                          {/* Top Heading Inputs */}
+                          <div className="space-y-4 px-1">
+                            <input 
+                              type="text" 
+                              value={editingSignal.title} 
+                              onChange={e => {
+                                if (!editingSignal) return;
+                                const val = e.target.value;
+                                const updates: Partial<Signal> = { title: val };
+                                if (isSlugPristine.current) updates.slug = createSlug(val);
+                                setEditingSignal({ ...editingSignal, ...updates });
+                              }} 
+                              className="w-full bg-transparent border-none outline-none text-3xl md:text-5xl font-electrolize placeholder:opacity-20 lowercase tracking-wide text-white focus:text-[var(--accent)] transition-colors" 
+                              placeholder="título da transmissão" 
+                              required 
+                            />
+                            
+                            <textarea 
+                              value={editingSignal.subtitle || ''} 
+                              onChange={e => setEditingSignal({...editingSignal, subtitle: e.target.value})} 
+                              className="w-full bg-transparent border-none outline-none text-sm md:text-base opacity-50 italic resize-none h-auto font-mono tracking-wide lowercase focus:opacity-90 transition-opacity" 
+                              placeholder="subtítulo ou introdução curta..."
+                            />
+                          </div>
 
-                          <div className="bg-black/40 p-6 md:p-10 space-y-10 rounded-xl mt-8 border border-white/5">
+                          <div className="bg-black/40 p-4 md:p-8 space-y-8 rounded-2xl border border-white/5">
                             {editingSignal.blocks.map((block, index) => (
-                              <div key={block.id} className="group relative">
-                                <div className="absolute -left-12 top-0 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                   <button type="button" onClick={() => { const b = [...editingSignal.blocks]; b.splice(index, 1); setEditingSignal({...editingSignal, blocks: b})}} className="w-8 h-8 rounded-full bg-red-500/10 text-red-500 border border-red-500/20 flex items-center justify-center hover:bg-red-500 hover:text-white transition-all">×</button>
-                                </div>
-                                {block.type === 'text' && (
-                                  <div className="space-y-3 relative">
-                                    <div className="flex flex-wrap gap-1 p-1 bg-white/5 rounded border border-white/10 w-fit">
-                                      <button type="button" onClick={() => applyFormatting(block.id, '**', '**')} className="p-1 px-2 text-[10px] hover:bg-white/10 rounded font-bold" title="negrito">B</button>
-                                      <button type="button" onClick={() => applyFormatting(block.id, '*', '*')} className="p-1 px-2 text-[10px] hover:bg-white/10 rounded italic" title="itálico">I</button>
-                                      <button type="button" onClick={() => applyFormatting(block.id, '~~', '~~')} className="p-1 px-2 text-[10px] hover:bg-white/10 rounded line-through" title="tachado">S</button>
-                                      <button type="button" onClick={() => applyFormatting(block.id, '# ', '')} className="p-1 px-2 text-[10px] hover:bg-white/10 rounded uppercase" title="título 1">H1</button>
-                                      <button type="button" onClick={() => applyFormatting(block.id, '## ', '')} className="p-1 px-2 text-[10px] hover:bg-white/10 rounded uppercase" title="título 2">H2</button>
-                                      <button type="button" onClick={() => applyFormatting(block.id, '### ', '')} className="p-1 px-2 text-[10px] hover:bg-white/10 rounded uppercase" title="título 3">H3</button>
-                                      <button type="button" onClick={() => applyFormatting(block.id, '[', ']')} className="p-1 px-2 text-[10px] hover:bg-white/10 rounded lowercase" title="link">link</button>
-                                      <div className="w-px h-4 bg-white/10 mx-1 self-center" />
-                                      <button type="button" onClick={() => applyFormatting(block.id, '<br/>', '')} className="p-1 px-2 text-[10px] hover:bg-white/10 rounded lowercase" title="quebra de linha">br</button>
-                                      <button type="button" onClick={() => applyFormatting(block.id, '\n---\n', '')} className="p-1 px-2 text-[10px] hover:bg-white/10 rounded lowercase" title="separador">---</button>
-                                      <button type="button" onClick={() => applyFormatting(block.id, '1) ', '')} className="p-1 px-2 text-[10px] hover:bg-white/10 rounded lowercase" title="lista numerada">1)</button>
-                                      <button type="button" onClick={() => applyFormatting(block.id, '• ', '')} className="p-1 px-2 text-[10px] hover:bg-white/10 rounded lowercase" title="lista bullet">•</button>
+                              <React.Fragment key={block.id}>
+                                {/* Inseridor de bloco entre elementos */}
+                                {index > 0 && (
+                                  <div className="relative group/insert h-6 flex items-center justify-center -my-3">
+                                    <div className="absolute inset-x-0 h-px bg-white/5 group-hover/insert:bg-[var(--accent)]/30 transition-colors" />
+                                    <div className="relative opacity-0 group-hover/insert:opacity-100 transition-all duration-200 flex gap-1 bg-[#050505] px-3 py-1 rounded-full border border-white/10 scale-90 group-hover/insert:scale-100 z-10 shadow-lg">
+                                      <button
+                                        type="button"
+                                        onClick={() => handleAddBlock('text', index - 1)}
+                                        className="text-[8px] text-neutral-400 hover:text-[var(--accent)] px-2 py-0.5 rounded hover:bg-white/5 font-mono uppercase tracking-wider transition-all"
+                                      >
+                                        + texto
+                                      </button>
+                                      <button
+                                        type="button"
+                                        onClick={() => handleAddBlock('image', index - 1)}
+                                        className="text-[8px] text-neutral-400 hover:text-[var(--accent)] px-2 py-0.5 rounded hover:bg-white/5 font-mono uppercase tracking-wider transition-all"
+                                      >
+                                        + imagem
+                                      </button>
+                                      <button
+                                        type="button"
+                                        onClick={() => handleAddBlock('embed', index - 1)}
+                                        className="text-[8px] text-neutral-400 hover:text-[var(--accent)] px-2 py-0.5 rounded hover:bg-white/5 font-mono uppercase tracking-wider transition-all"
+                                      >
+                                        + embed
+                                      </button>
                                     </div>
-                                    <textarea id={`textarea-${block.id}`} value={block.content} onChange={e => handleUpdateBlock(block.id, e.target.value)} className="w-full bg-transparent border-none outline-none text-lg leading-relaxed min-h-[150px] resize-none placeholder:opacity-10 lowercase" placeholder="escreva seu sinal..." onInput={e => { e.currentTarget.style.height = 'auto'; e.currentTarget.style.height = e.currentTarget.scrollHeight + 'px'; }} />
                                   </div>
                                 )}
-                                {block.type === 'image' && (
-                                  <div className="bg-white/5 p-6 rounded-md border border-white/10 flex flex-col md:flex-row gap-4">
-                                     <div className="flex-grow space-y-1">
-                                        <label className="text-[8px] opacity-30 uppercase">link da imagem</label>
-                                        <input type="text" value={block.content} onChange={e => handleUpdateBlock(block.id, e.target.value, block.caption)} className="w-full bg-black border border-white/10 p-3 rounded text-xs" placeholder="https://..." />
-                                     </div>
-                                     <div className="w-full md:w-1/3 space-y-1">
-                                        <label className="text-[8px] opacity-30 uppercase">legenda</label>
-                                        <input type="text" value={block.caption || ''} onChange={e => handleUpdateBlock(block.id, block.content, e.target.value)} className="w-full bg-transparent border-b border-white/10 p-2 text-[10px] outline-none" placeholder="opcional..." />
-                                     </div>
+
+                                {/* Bloco Renderizado */}
+                                <div className="group relative bg-[#070707]/60 p-4 md:p-6 rounded-2xl border border-white/5 hover:border-[var(--accent)]/20 focus-within:border-[var(--accent)]/30 focus-within:ring-1 focus-within:ring-[var(--accent)]/5 transition-all space-y-5 max-w-2xl mx-auto w-full">
+                                  {/* Bloco Header com controles */}
+                                  <div className="flex justify-between items-center text-[9px] text-neutral-500 font-mono border-b border-white/5 pb-2">
+                                    <span className="uppercase tracking-widest text-[var(--accent)]/70 font-bold">bloco #{index + 1} // {block.type}</span>
+                                    <div className="flex items-center gap-3">
+                                      <button
+                                        type="button"
+                                        disabled={index === 0}
+                                        onClick={() => moveBlock(index, 'up')}
+                                        className="hover:text-[var(--accent)] disabled:opacity-25 transition-opacity"
+                                        title="subir bloco"
+                                      >
+                                        ▲ subir
+                                      </button>
+                                      <button
+                                        type="button"
+                                        disabled={index === editingSignal.blocks.length - 1}
+                                        onClick={() => moveBlock(index, 'down')}
+                                        className="hover:text-[var(--accent)] disabled:opacity-25 transition-opacity"
+                                        title="descer bloco"
+                                      >
+                                        ▼ descer
+                                      </button>
+                                      <div className="w-px h-3 bg-white/10" />
+                                      <button
+                                        type="button"
+                                        onClick={() => {
+                                          const b = [...editingSignal.blocks];
+                                          b.splice(index, 1);
+                                          setEditingSignal({ ...editingSignal, blocks: b });
+                                        }}
+                                        className="hover:text-red-400 transition-colors"
+                                        title="apagar bloco"
+                                      >
+                                        excluir
+                                      </button>
+                                    </div>
                                   </div>
-                                )}
-                                {block.type === 'embed' && (
-                                  <div className="bg-white/5 p-6 rounded-md border border-white/10 space-y-3">
-                                    <label className="text-[8px] opacity-30 uppercase">link embedded / código iframe</label>
-                                    <textarea 
-                                      value={block.content} 
-                                      onChange={e => handleUpdateBlock(block.id, e.target.value)} 
-                                      className="w-full bg-black border border-white/10 p-3 rounded text-xs min-h-[80px] font-mono" 
-                                      placeholder="link spotify, youtube ou <iframe />"
-                                    />
-                                  </div>
-                                )}
-                              </div>
+
+                                  {block.type === 'text' && (
+                                    <div className="space-y-4 relative">
+                                      <div className="flex flex-wrap gap-0.5 p-1 bg-[#121212]/90 backdrop-blur-md rounded border border-white/10 w-fit shadow-md transition-opacity">
+                                        <button type="button" onClick={() => applyFormatting(block.id, '**', '**')} className="p-1 px-2 text-[10px] text-neutral-400 hover:text-white hover:bg-white/5 rounded font-bold font-mono transition-colors" title="negrito">B</button>
+                                        <button type="button" onClick={() => applyFormatting(block.id, '*', '*')} className="p-1 px-2 text-[10px] text-neutral-400 hover:text-white hover:bg-white/5 rounded italic font-mono transition-colors" title="itálico">I</button>
+                                        <button type="button" onClick={() => applyFormatting(block.id, '~~', '~~')} className="p-1 px-2 text-[10px] text-neutral-400 hover:text-white hover:bg-white/5 rounded line-through font-mono transition-colors" title="tachado">S</button>
+                                        <div className="w-px h-4 bg-white/10 mx-1 self-center" />
+                                        <button type="button" onClick={() => applyFormatting(block.id, '# ', '')} className="p-1 px-2 text-[10px] text-neutral-400 hover:text-white hover:bg-white/5 rounded font-mono transition-colors" title="título 1">H1</button>
+                                        <button type="button" onClick={() => applyFormatting(block.id, '## ', '')} className="p-1 px-2 text-[10px] text-neutral-400 hover:text-white hover:bg-white/5 rounded font-mono transition-colors" title="título 2">H2</button>
+                                        <button type="button" onClick={() => applyFormatting(block.id, '### ', '')} className="p-1 px-2 text-[10px] text-neutral-400 hover:text-white hover:bg-white/5 rounded font-mono transition-colors" title="título 3">H3</button>
+                                        <div className="w-px h-4 bg-white/10 mx-1 self-center" />
+                                        <button type="button" onClick={() => applyFormatting(block.id, '[', ']')} className="p-1 px-2 text-[10px] text-neutral-400 hover:text-white hover:bg-white/5 rounded font-mono transition-colors" title="link">link</button>
+                                        <button type="button" onClick={() => applyFormatting(block.id, '<br/>', '')} className="p-1 px-2 text-[10px] text-neutral-400 hover:text-white hover:bg-white/5 rounded font-mono transition-colors" title="quebra de linha">br</button>
+                                        <button type="button" onClick={() => applyFormatting(block.id, '\n---\n', '')} className="p-1 px-2 text-[10px] text-neutral-400 hover:text-white hover:bg-white/5 rounded font-mono transition-colors" title="separador">---</button>
+                                        <button type="button" onClick={() => applyFormatting(block.id, '1) ', '')} className="p-1 px-2 text-[10px] text-neutral-400 hover:text-white hover:bg-white/5 rounded font-mono transition-colors" title="lista numerada">1)</button>
+                                        <button type="button" onClick={() => applyFormatting(block.id, '• ', '')} className="p-1 px-2 text-[10px] text-neutral-400 hover:text-white hover:bg-white/5 rounded font-mono transition-colors" title="lista bullet">•</button>
+                                      </div>
+                                      <textarea id={`textarea-${block.id}`} value={block.content} onChange={e => handleUpdateBlock(block.id, e.target.value)} className="w-full bg-transparent border-none outline-none font-mono text-base md:text-[17px] leading-[1.9] tracking-wide text-neutral-200 focus:text-white min-h-[180px] resize-none placeholder:opacity-15 lowercase focus:ring-0 p-1" placeholder="escreva seu sinal..." onInput={e => { e.currentTarget.style.height = 'auto'; e.currentTarget.style.height = e.currentTarget.scrollHeight + 'px'; }} />
+                                    </div>
+                                  )}
+
+                                  {block.type === 'image' && (
+                                    <div className="bg-white/5 p-4 rounded-md border border-white/10 flex flex-col md:flex-row gap-4">
+                                       <div className="flex-grow space-y-1">
+                                          <label className="text-[8px] opacity-30 uppercase font-mono">link da imagem</label>
+                                          <input type="text" value={block.content} onChange={e => handleUpdateBlock(block.id, e.target.value, block.caption)} className="w-full bg-black border border-white/10 p-3 rounded text-xs outline-none focus:border-[var(--accent)]" placeholder="https://..." />
+                                       </div>
+                                       <div className="w-full md:w-1/3 space-y-1">
+                                          <label className="text-[8px] opacity-30 uppercase font-mono">legenda</label>
+                                          <input type="text" value={block.caption || ''} onChange={e => handleUpdateBlock(block.id, block.content, e.target.value)} className="w-full bg-transparent border-b border-white/10 p-2 text-[10px] outline-none focus:border-[var(--accent)]" placeholder="opcional..." />
+                                       </div>
+                                    </div>
+                                  )}
+
+                                  {block.type === 'embed' && (
+                                    <div className="bg-white/5 p-4 rounded-md border border-white/10 space-y-3">
+                                      <label className="text-[8px] opacity-30 uppercase font-mono">link embedded / código iframe</label>
+                                      <textarea 
+                                        value={block.content} 
+                                        onChange={e => handleUpdateBlock(block.id, e.target.value)} 
+                                        className="w-full bg-black border border-white/10 p-3 rounded text-xs min-h-[80px] font-mono outline-none focus:border-[var(--accent)]" 
+                                        placeholder="link spotify, youtube ou <iframe />"
+                                      />
+                                    </div>
+                                  )}
+                                </div>
+                              </React.Fragment>
                             ))}
                             <div className="flex flex-wrap justify-center gap-4 pt-10 border-t border-white/5">
                               <button type="button" onClick={() => handleAddBlock('text')} className="text-[10px] border border-white/10 px-6 py-2 rounded-full hover:bg-[var(--accent)] hover:text-black hover:border-[var(--accent)] transition-all uppercase tracking-widest">+ texto</button>
                               <button type="button" onClick={() => handleAddBlock('image')} className="text-[10px] border border-white/10 px-6 py-2 rounded-full hover:bg-[var(--accent)] hover:text-black hover:border-[var(--accent)] transition-all uppercase tracking-widest">+ imagem</button>
                               <button type="button" onClick={() => handleAddBlock('embed')} className="text-[10px] border border-white/10 px-6 py-2 rounded-full hover:bg-[var(--accent)] hover:text-black hover:border-[var(--accent)] transition-all uppercase tracking-widest">+ embed</button>
                             </div>
+
+                            {isFocusMode && (
+                              <div className="pt-12 border-t border-white/5 flex flex-col sm:flex-row justify-center items-center gap-4 max-w-2xl mx-auto w-full">
+                                <NeobrutalistButton variant="matrix" type="submit" className="w-full sm:w-auto px-8 py-4 text-xs uppercase tracking-widest font-bold">concluir e fechar</NeobrutalistButton>
+                                <button type="button" onClick={() => setEditingSignal(null)} className="w-full sm:w-auto px-8 py-4 border border-white/10 rounded-full text-[10px] uppercase tracking-widest opacity-40 hover:opacity-100 transition-opacity">cancelar</button>
+                                <button type="button" onClick={() => setIsFocusMode(false)} className="w-full sm:w-auto px-6 py-4 border border-amber-500/30 text-amber-400 bg-amber-500/5 hover:bg-amber-500/15 rounded-full text-[10px] uppercase tracking-widest transition-all">sair do foco</button>
+                              </div>
+                            )}
                           </div>
-                        </>
+                        </div>
                       ) : (
-                        <div className="max-w-4xl mx-auto py-10 bg-black/20 rounded-xl p-8">
+                        <div className="max-w-4xl mx-auto py-10 bg-black/20 rounded-xl p-8 border border-white/5">
                           <SignalRenderer signal={editingSignal} />
                         </div>
                       )}
                     </div>
                   </div>
 
-                  {/* Sidebar de Configurações do Sinal */}
-                  <div className="lg:col-span-4 space-y-6">
-                    <div className="bg-white/5 p-6 rounded-xl border border-white/10 space-y-8">
-                       <header className="border-b border-white/10 pb-4">
-                         <h3 className="text-[10px] text-[var(--accent)] tracking-[0.3em] uppercase font-bold">configurações do sinal</h3>
-                       </header>
-
-                       <div className="space-y-4">
-                          <div className="space-y-2">
-                             <label className="text-[9px] opacity-40 uppercase tracking-widest">status da transmissão</label>
-                             <select 
-                               value={editingSignal.status} 
-                               onChange={e => setEditingSignal({...editingSignal, status: e.target.value as any})} 
-                               className="w-full bg-black border border-white/10 p-3 rounded text-xs outline-none focus:border-[var(--accent)]"
-                             >
-                                <option value="rascunho">rascunho (oculto)</option>
-                                <option value="publicado">publicado (na rede)</option>
-                             </select>
-                          </div>
-
-                          <div className="space-y-2">
-                             <label className="text-[9px] opacity-40 uppercase tracking-widest">link permanente (slug)</label>
-                             <input 
-                               type="text" 
-                               value={editingSignal.slug || ''} 
-                               onChange={e => { isSlugPristine.current = false; setEditingSignal({...editingSignal, slug: createSlug(e.target.value)}); }} 
-                               className="w-full bg-black border border-white/10 p-3 rounded text-xs outline-none focus:border-[var(--accent)] text-[var(--accent)]" 
-                               placeholder="slug-da-transmissao"
-                             />
-                          </div>
-
-                          <div className="space-y-2">
-                             <label className="text-[9px] opacity-40 uppercase tracking-widest">imagem de capa (hero)</label>
-                             <input 
-                               type="text" 
-                               value={editingSignal.coverImageUrl || ''} 
-                               onChange={e => setEditingSignal({...editingSignal, coverImageUrl: e.target.value})} 
-                               className="w-full bg-black border border-white/10 p-3 rounded text-xs outline-none focus:border-[var(--accent)]" 
-                               placeholder="https://..."
-                             />
-                          </div>
-
-                          <div className="space-y-2">
-                             <label className="text-[9px] opacity-40 uppercase tracking-widest">descrição para redes (seo)</label>
-                             <textarea 
-                               value={editingSignal.seoDescription || ''} 
-                               onChange={e => setEditingSignal({...editingSignal, seoDescription: e.target.value})} 
-                               className="w-full bg-black border border-white/10 p-3 rounded text-xs outline-none focus:border-[var(--accent)] h-24 resize-none" 
-                               placeholder="resumo curto para compartilhamento..."
-                             />
-                          </div>
-                       </div>
-
-                       <div className="pt-6 border-t border-white/10 space-y-4">
-                          <NeobrutalistButton variant="matrix" type="submit" className="w-full py-4 text-sm uppercase tracking-widest">salvar transmissão</NeobrutalistButton>
-                          <button type="button" onClick={() => setEditingSignal(null)} className="w-full py-2 border border-white/10 rounded-full text-[10px] uppercase tracking-widest opacity-40 hover:opacity-100">cancelar</button>
-                          <button type="button" onClick={() => handleDeleteSignal(editingSignal.id)} className="w-full py-2 text-red-500/40 hover:text-red-500 text-[10px] uppercase tracking-widest transition-colors flex items-center justify-center gap-2">
-                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"></path></svg>
-                             excluir permanentemente
-                          </button>
-                       </div>
+                  {/* Lado Direito: Preview Stickado se Split */}
+                  {editorMode === 'split' && (
+                    <div className="xl:col-span-6 space-y-6">
+                      <div className="sticky top-24 bg-white/5 p-8 rounded-xl border border-white/10 space-y-6 max-h-[85vh] overflow-y-auto no-scrollbar">
+                        <header className="border-b border-white/5 pb-4 flex justify-between items-center">
+                          <span className="text-[10px] text-[var(--accent)] tracking-widest uppercase font-bold">transmissão ao vivo // visualização real-time</span>
+                          <span className="text-[8px] opacity-40 font-mono">atualiza a cada tecla</span>
+                        </header>
+                        <div className="bg-black/20 rounded-xl p-6 border border-white/5 min-h-[300px]">
+                          <SignalRenderer signal={editingSignal} />
+                        </div>
+                      </div>
                     </div>
-                  </div>
+                  )}
+
+                  {/* Sidebar de Configurações do Sinal */}
+                  {!isFocusMode && (
+                    <div className={
+                      editorMode === 'split' 
+                        ? "xl:col-span-12 space-y-6" 
+                        : "lg:col-span-4 space-y-6"
+                    }>
+                      <div className="bg-white/5 p-6 rounded-xl border border-white/10 space-y-8">
+                         <header className="border-b border-white/10 pb-4">
+                           <h3 className="text-[10px] text-[var(--accent)] tracking-[0.3em] uppercase font-bold">configurações do sinal</h3>
+                         </header>
+
+                         <div className={editorMode === 'split' ? "grid grid-cols-1 md:grid-cols-4 gap-6" : "space-y-4"}>
+                            <div className="space-y-2">
+                               <label className="text-[9px] opacity-40 uppercase tracking-widest">status da transmissão</label>
+                               <select 
+                                 value={editingSignal.status} 
+                                 onChange={e => setEditingSignal({...editingSignal, status: e.target.value as any})} 
+                                 className="w-full bg-black border border-white/10 p-3 rounded text-xs outline-none focus:border-[var(--accent)]"
+                               >
+                                  <option value="rascunho">rascunho (oculto)</option>
+                                  <option value="publicado">publicado (na rede)</option>
+                               </select>
+                            </div>
+
+                            <div className="space-y-2">
+                               <label className="text-[9px] opacity-40 uppercase tracking-widest">link permanente (slug)</label>
+                               <input 
+                                 type="text" 
+                                 value={editingSignal.slug || ''} 
+                                 onChange={e => { isSlugPristine.current = false; setEditingSignal({...editingSignal, slug: createSlug(e.target.value)}); }} 
+                                 className="w-full bg-black border border-white/10 p-3 rounded text-xs outline-none focus:border-[var(--accent)] text-[var(--accent)]" 
+                                 placeholder="slug-da-transmissao"
+                               />
+                            </div>
+
+                            <div className="space-y-2">
+                               <label className="text-[9px] opacity-40 uppercase tracking-widest">imagem de capa (hero)</label>
+                               <input 
+                                 type="text" 
+                                 value={editingSignal.coverImageUrl || ''} 
+                                 onChange={e => setEditingSignal({...editingSignal, coverImageUrl: e.target.value})} 
+                                 className="w-full bg-black border border-white/10 p-3 rounded text-xs outline-none focus:border-[var(--accent)]" 
+                                 placeholder="https://..."
+                               />
+                            </div>
+
+                            <div className="space-y-2">
+                               <label className="text-[9px] opacity-40 uppercase tracking-widest">descrição para redes (seo)</label>
+                               <textarea 
+                                 value={editingSignal.seoDescription || ''} 
+                                 onChange={e => setEditingSignal({...editingSignal, seoDescription: e.target.value})} 
+                                 className="w-full bg-black border border-white/10 p-3 rounded text-xs outline-none focus:border-[var(--accent)] h-11 resize-none" 
+                                 placeholder="resumo curto para compartilhamento..."
+                               />
+                            </div>
+                         </div>
+
+                         <div className={`pt-6 border-t border-white/10 flex flex-col gap-3 ${editorMode === 'split' ? 'md:flex-row md:items-center' : ''}`}>
+                            <NeobrutalistButton variant="matrix" type="submit" className={`${editorMode === 'split' ? 'md:w-auto md:px-8' : 'w-full'} py-4 text-sm uppercase tracking-widest`}>concluir e fechar</NeobrutalistButton>
+                            <button type="button" onClick={() => setEditingSignal(null)} className={`${editorMode === 'split' ? 'md:w-auto md:px-8' : 'w-full'} py-4 border border-white/10 rounded-full text-[10px] uppercase tracking-widest opacity-40 hover:opacity-100 transition-opacity`}>cancelar</button>
+                            <button type="button" onClick={() => handleDeleteSignal(editingSignal.id)} className={`${editorMode === 'split' ? 'md:w-auto md:ml-auto md:px-6' : 'w-full'} py-4 text-red-500/40 hover:text-red-500 text-[10px] uppercase tracking-widest transition-colors flex items-center justify-center gap-2`}>
+                               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012 2v2"></path></svg>
+                               excluir permanentemente
+                            </button>
+                         </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </form>
             )}
