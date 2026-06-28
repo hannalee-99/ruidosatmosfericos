@@ -2,6 +2,7 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { ViewState, ManifestoConfig } from '../types';
 import { storage } from '../lib/storage';
+import { trackGenericClick } from './analytics';
 
 interface TextSegment {
   t: string;
@@ -411,7 +412,10 @@ const PageManifestoV2: React.FC<{ onNavigate: (view: ViewState) => void }> = ({ 
           <div className="mt-16 flex flex-col items-center gap-8 pt-4 animate-in fade-in duration-1000">
              <div className="text-center space-y-8 flex flex-col items-center">
                 <button 
-                  onClick={() => onNavigate(ViewState.CONNECT)}
+                  onClick={() => {
+                    trackGenericClick('contato_iniciar_manifesto', 'button', { 'From Page': 'manifesto' });
+                    onNavigate(ViewState.CONNECT);
+                  }}
                   className="group flex items-center gap-2 font-mono text-[10px] md:text-xs tracking-widest lowercase transition-all duration-300 active:scale-95"
                 >
                   <span className="text-[#9ff85d] font-bold">visitante@ruidos:~$</span>
@@ -419,7 +423,13 @@ const PageManifestoV2: React.FC<{ onNavigate: (view: ViewState) => void }> = ({ 
                   <span className="w-1 h-3.5 bg-[#9ff85d] animate-pulse shadow-[0_0_5px_#9ff85d]"></span>
                 </button>
              </div>
-             <button onClick={handleRestart} className="text-[10px] opacity-20 hover:opacity-100 underline tracking-widest lowercase transition-opacity">
+             <button 
+               onClick={() => {
+                 trackGenericClick('reiniciar_manifesto', 'button', { 'From Page': 'manifesto' });
+                 handleRestart();
+               }} 
+               className="text-[10px] opacity-20 hover:opacity-100 underline tracking-widest lowercase transition-opacity"
+             >
                 reiniciar manifesto
              </button>
           </div>

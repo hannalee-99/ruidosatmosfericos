@@ -4,6 +4,7 @@ import { storage } from '../lib/storage';
 import { AboutData, ViewState } from '../types';
 import { DEFAULT_IMAGE } from '../constants';
 import LazyImage from './LazyImage';
+import { trackGenericClick } from './analytics';
 
 interface PageAboutProps {
   onNavigate: (view: ViewState) => void;
@@ -92,7 +93,10 @@ const PageAbout: React.FC<PageAboutProps> = ({ onNavigate, isDarkMode }) => {
            {/* Botão Estilo Terminal CLI */}
             <div className="pt-4 md:pt-8 flex items-center">
              <button 
-                onClick={() => onNavigate(ViewState.CONNECT)}
+                onClick={() => {
+                  trackGenericClick('contato_iniciar_sobre', 'button', { 'From Page': 'esse eu' });
+                  onNavigate(ViewState.CONNECT);
+                }}
                 className="group flex items-center gap-2 font-mono text-[10px] md:text-xs tracking-widest lowercase transition-all duration-300 active:scale-95"
              >
                 <span className="text-[var(--accent)] font-bold">visitante@ruidos:~$</span>

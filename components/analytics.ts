@@ -77,6 +77,24 @@ export const initAnalytics = () => {
       'Device Orientation': window.innerWidth > window.innerHeight ? 'Landscape' : 'Portrait'
     });
 
+    // 👤 Update User Profile Properties in Mixpanel Lexicon
+    try {
+      mixpanel.people.set_once({
+        '$created': new Date().toISOString(),
+        'First Acquisition Channel': socialSource,
+        'First Referrer': referrer || 'Direct',
+        'Initial Screen Resolution': `${window.innerWidth}x${window.innerHeight}`
+      });
+
+      mixpanel.people.set({
+        '$last_seen': new Date().toISOString(),
+        'User Language': navigator.language || 'unknown',
+        'Current Screen Resolution': `${window.innerWidth}x${window.innerHeight}`
+      });
+    } catch (profileErr) {
+      console.warn('⚠️ [Mixpanel User Profiles] Failed to set initial people properties:', profileErr);
+    }
+
     isInitialized = true;
     console.log('📊 [Mixpanel]: Successfully initialized with Token:', MIXPANEL_TOKEN, 'and Acquisition Channel:', socialSource);
   } catch (err) {
@@ -101,6 +119,17 @@ export const trackPageView = (viewName: string, slug?: string) => {
     mixpanel.track('Page Viewed', properties, (response) => {
       console.log('📊 [Mixpanel Server Response] Page Viewed:', response === 1 ? 'SUCCESS (1)' : 'FAILED (' + response + ')');
     });
+
+    // Update profile properties in real-time
+    try {
+      mixpanel.people.increment('Total Page Views', 1);
+      mixpanel.people.set({
+        'Last Viewed Page': viewName,
+        '$last_seen': new Date().toISOString()
+      });
+    } catch (e) {
+      console.warn('⚠️ [Mixpanel User Profiles] Failed to increment Page Views:', e);
+    }
   }
 };
 
@@ -120,6 +149,17 @@ export const trackArtworkOpened = (title: string, slug: string) => {
     mixpanel.track('Artwork Opened', properties, (response) => {
       console.log('📊 [Mixpanel Server Response] Artwork Opened:', response === 1 ? 'SUCCESS (1)' : 'FAILED (' + response + ')');
     });
+
+    // Update profile properties in real-time
+    try {
+      mixpanel.people.increment('Artworks Opened Count', 1);
+      mixpanel.people.set({
+        'Last Viewed Artwork': title,
+        '$last_seen': new Date().toISOString()
+      });
+    } catch (e) {
+      console.warn('⚠️ [Mixpanel User Profiles] Failed to update Artwork Opened profile:', e);
+    }
   }
 };
 
@@ -139,6 +179,14 @@ export const trackArtworkZoomed = (title: string, slug: string) => {
     mixpanel.track('Artwork Zoomed', properties, (response) => {
       console.log('📊 [Mixpanel Server Response] Artwork Zoomed:', response === 1 ? 'SUCCESS (1)' : 'FAILED (' + response + ')');
     });
+
+    // Update profile properties in real-time
+    try {
+      mixpanel.people.increment('Artworks Zoomed Count', 1);
+      mixpanel.people.set('$last_seen', new Date().toISOString());
+    } catch (e) {
+      console.warn('⚠️ [Mixpanel User Profiles] Failed to increment Artworks Zoomed:', e);
+    }
   }
 };
 
@@ -157,6 +205,17 @@ export const trackSignalOpened = (title: string, slug: string) => {
     mixpanel.track('Signal Opened', properties, (response) => {
       console.log('📊 [Mixpanel Server Response] Signal Opened:', response === 1 ? 'SUCCESS (1)' : 'FAILED (' + response + ')');
     });
+
+    // Update profile properties in real-time
+    try {
+      mixpanel.people.increment('Signals Read Count', 1);
+      mixpanel.people.set({
+        'Last Read Signal': title,
+        '$last_seen': new Date().toISOString()
+      });
+    } catch (e) {
+      console.warn('⚠️ [Mixpanel User Profiles] Failed to update Signal Opened profile:', e);
+    }
   }
 };
 
@@ -175,6 +234,17 @@ export const trackLinkShared = (type: 'artwork' | 'signal' | 'email', titleOrVal
     mixpanel.track('Link Shared', properties, (response) => {
       console.log('📊 [Mixpanel Server Response] Link Shared:', response === 1 ? 'SUCCESS (1)' : 'FAILED (' + response + ')');
     });
+
+    // Update profile properties in real-time
+    try {
+      mixpanel.people.increment('Links Shared Count', 1);
+      mixpanel.people.set({
+        'Last Shared Content': titleOrValue,
+        '$last_seen': new Date().toISOString()
+      });
+    } catch (e) {
+      console.warn('⚠️ [Mixpanel User Profiles] Failed to update Link Shared profile:', e);
+    }
   }
 };
 
@@ -193,6 +263,18 @@ export const trackExternalClicked = (channel: string, url: string) => {
     mixpanel.track('Outbound Link Clicked', properties, (response) => {
       console.log('📊 [Mixpanel Server Response] Outbound Link Clicked:', response === 1 ? 'SUCCESS (1)' : 'FAILED (' + response + ')');
     });
+
+    // Update profile properties in real-time
+    try {
+      mixpanel.people.increment('Outbound Clicks Count', 1);
+      mixpanel.people.set({
+        'Last Outbound URL': url,
+        'Last Outbound Channel': channel,
+        '$last_seen': new Date().toISOString()
+      });
+    } catch (e) {
+      console.warn('⚠️ [Mixpanel User Profiles] Failed to update Outbound Clicks profile:', e);
+    }
   }
 };
 
@@ -211,6 +293,17 @@ export const trackTerminalCommand = (command: string, responseType: 'success' | 
     mixpanel.track('Terminal Command Run', properties, (response) => {
       console.log('📊 [Mixpanel Server Response] Terminal Command Run:', response === 1 ? 'SUCCESS (1)' : 'FAILED (' + response + ')');
     });
+
+    // Update profile properties in real-time
+    try {
+      mixpanel.people.increment('Terminal Commands Run', 1);
+      mixpanel.people.set({
+        'Last Typed Command': command,
+        '$last_seen': new Date().toISOString()
+      });
+    } catch (e) {
+      console.warn('⚠️ [Mixpanel User Profiles] Failed to update Terminal Commands profile:', e);
+    }
   }
 };
 

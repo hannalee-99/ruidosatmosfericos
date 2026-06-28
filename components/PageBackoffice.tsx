@@ -652,6 +652,33 @@ Device Orientation,Orientação do Dispositivo,A orientação da tela (Landscape
     downloadCsvFile('mixpanel_lexicon_properties.csv', csvContent);
   };
 
+  const handleDownloadProfilePropertiesCsv = () => {
+    const csvContent = `Property,Display Name,Description,Data Type
+$created,Data de Criação,A data e hora em que o perfil do usuário foi registrado no site pela primeira vez.,DateTime
+$last_seen,Última Visualização,A data e hora da última atividade registrada para este usuário.,DateTime
+First Acquisition Channel,Primeiro Canal de Origem,O primeiro canal de marketing ou rede social que trouxe o usuário.,String
+First Referrer,Primeira Página de Origem,A URL da página de origem da primeira sessão do usuário.,String
+User Language,Idioma do Navegador,O idioma configurado no navegador do usuário (ex: pt-BR).,String
+Initial Screen Resolution,Resolução Inicial da Tela,A largura e altura em pixels da tela na primeira sessão do usuário.,String
+Current Screen Resolution,Resolução Atual da Tela,A largura e altura em pixels da tela na sessão atual do usuário.,String
+Total Page Views,Total de Páginas Visualizadas,O número total de páginas visualizadas pelo usuário.,Number
+Last Viewed Page,Última Página Visualizada,O nome da última página/seção visitada pelo usuário.,String
+Artworks Opened Count,Total de Obras de Arte Abertas,A quantidade acumulada de obras de arte que o usuário abriu na galeria.,Number
+Last Viewed Artwork,Última Obra de Arte Visualizada,O título da última obra de arte aberta pelo usuário.,String
+Artworks Zoomed Count,Total de Obras de Arte Ampliadas,A quantidade de vezes que o usuário deu zoom em obras de arte.,Number
+Signals Read Count,Total de Sinais Lidos,A quantidade de vezes que o usuário abriu transmissões de sinais.,Number
+Last Read Signal,Último Sinal Lido,O título do último sinal lido pelo usuário.,String
+Links Shared Count,Total de Compartilhamentos,O número de vezes que o usuário copiou ou compartilhou links do site.,Number
+Last Shared Content,Último Conteúdo Compartilhado,O identificador do último conteúdo cujo link foi compartilhado pelo usuário.,String
+Outbound Clicks Count,Cliques em Links Externos,O número total de links externos de destino clicados pelo usuário.,Number
+Last Outbound URL,Último Link Externo Clicado,A URL do último link externo fora do site clicado pelo usuário.,String
+Last Outbound Channel,Último Canal Externo Acessado,O nome do canal de destino do último link externo clicado (ex: Bandcamp).,String
+Terminal Commands Run,Comandos do Terminal Executados,O número total de comandos executados pelo usuário no terminal interativo.,Number
+Last Typed Command,Último Comando do Terminal,O texto exato do último comando digitado no terminal interativo.,String`;
+
+    downloadCsvFile('mixpanel_lexicon_profile_properties.csv', csvContent);
+  };
+
   const downloadCsvFile = (filename: string, content: string) => {
     const blob = new Blob([content], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
@@ -1540,20 +1567,29 @@ Device Orientation,Orientação do Dispositivo,A orientação da tela (Landscape
                     </p>
                   </div>
                   
-                  <div className="flex flex-col sm:flex-row gap-4">
+                  <div className="flex flex-col gap-3">
+                    <div className="flex flex-col sm:flex-row gap-4">
+                      <button 
+                        type="button" 
+                        onClick={handleDownloadEventsCsv} 
+                        className="flex-1 font-mono text-xs uppercase tracking-wider py-3 bg-neutral-900 border border-neutral-700 text-neutral-300 hover:bg-neutral-800 hover:border-neutral-500 rounded transition-all text-center"
+                      >
+                        ↓ csv de eventos
+                      </button>
+                      <button 
+                        type="button" 
+                        onClick={handleDownloadPropertiesCsv} 
+                        className="flex-1 font-mono text-xs uppercase tracking-wider py-3 bg-neutral-900 border border-neutral-700 text-neutral-300 hover:bg-neutral-800 hover:border-neutral-500 rounded transition-all text-center"
+                      >
+                        ↓ csv de propriedades
+                      </button>
+                    </div>
                     <button 
                       type="button" 
-                      onClick={handleDownloadEventsCsv} 
-                      className="flex-1 font-mono text-xs uppercase tracking-wider py-3 bg-neutral-900 border border-neutral-700 text-neutral-300 hover:bg-neutral-800 hover:border-neutral-500 rounded transition-all text-center"
+                      onClick={handleDownloadProfilePropertiesCsv} 
+                      className="w-full font-mono text-xs uppercase tracking-wider py-3 bg-[#0d1c08] border border-emerald-800 text-emerald-300 hover:bg-emerald-950 hover:border-emerald-700 rounded transition-all text-center"
                     >
-                      ↓ csv de eventos
-                    </button>
-                    <button 
-                      type="button" 
-                      onClick={handleDownloadPropertiesCsv} 
-                      className="flex-1 font-mono text-xs uppercase tracking-wider py-3 bg-neutral-900 border border-neutral-700 text-neutral-300 hover:bg-neutral-800 hover:border-neutral-500 rounded transition-all text-center"
-                    >
-                      ↓ csv de propriedades
+                      ↓ csv de propriedades de perfil (people/user)
                     </button>
                   </div>
                   
@@ -1565,6 +1601,7 @@ Device Orientation,Orientação do Dispositivo,A orientação da tela (Landscape
                       <li>clique em <strong>import</strong> no canto superior direito.</li>
                       <li>escolha <strong>events</strong> e faça o upload do arquivo <code className="text-neutral-200">mixpanel_lexicon_events.csv</code>.</li>
                       <li>repita o processo escolhendo <strong>event properties</strong> para o arquivo <code className="text-neutral-200">mixpanel_lexicon_properties.csv</code>.</li>
+                      <li>por fim, escolha <strong>user properties</strong> (ou profile properties) e envie o arquivo <code className="text-neutral-200">mixpanel_lexicon_profile_properties.csv</code>.</li>
                     </ol>
                   </div>
                 </div>

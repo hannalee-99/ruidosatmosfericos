@@ -108,7 +108,7 @@ const Navigation: React.FC<NavigationProps> = ({
                   <button
                     key={item}
                     onClick={() => handleItemClick(item)}
-                    className={`font-electrolize text-base tracking-widest pb-1 border-b leading-none lowercase ${isSelected ? 'opacity-100 border-current' : 'opacity-40 border-transparent hover:opacity-100'}`}
+                    className={`font-mono text-sm tracking-wider pb-1 border-b leading-none lowercase ${isSelected ? 'opacity-100 border-current' : 'opacity-40 border-transparent hover:opacity-100'}`}
                     style={{ color: isSelected ? activeColor : 'inherit' }}
                   >
                     {VIEW_LABELS[item]}
@@ -154,7 +154,7 @@ const Navigation: React.FC<NavigationProps> = ({
                  <button
                    key={item}
                    onClick={() => handleItemClick(item)}
-                   className={`font-electrolize text-3xl lowercase transition-all duration-700 ${isSelected ? 'text-[var(--accent)] scale-110' : 'text-neutral-500 hover:text-white'}`}
+                   className={`font-mono text-2xl lowercase transition-all duration-700 ${isSelected ? 'text-[var(--accent)] scale-110' : 'text-neutral-500 hover:text-white'}`}
                    style={{ transitionDelay: isMobileMenuOpen ? `${150 + (index * 60)}ms` : '0ms' }}
                  >
                    {VIEW_LABELS[item]}
