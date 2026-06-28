@@ -9,6 +9,7 @@ import SignalRenderer from './SignalRenderer';
 import JsonLd from './JsonLd';
 import BackToTop from './BackToTop';
 import Toast from './Toast';
+import { trackSignalOpened, trackLinkShared } from './analytics';
 
 const calculateReadingTime = (blocks: SignalBlock[]): string => {
   const text = blocks
@@ -89,6 +90,12 @@ const PageSinais: React.FC<PageSinaisProps> = ({
     };
     fetchData();
   }, [activeSignalSlug, updateMeta, resetMeta]);
+
+  useEffect(() => {
+    if (selectedPost) {
+      trackSignalOpened(selectedPost.title, selectedPost.slug || selectedPost.id);
+    }
+  }, [selectedPost]);
 
   useEffect(() => {
     const scrollContainer = document.getElementById('post-modal-scroll');
@@ -239,6 +246,9 @@ const PageSinais: React.FC<PageSinaisProps> = ({
                       onClick={() => {
                         navigator.clipboard.writeText(window.location.href);
                         setShowToast(true);
+                        if (selectedPost) {
+                          trackLinkShared('signal', selectedPost.title);
+                        }
                       }}
                       className="flex items-center gap-2 hover:text-[var(--accent)] transition-colors border-b border-transparent hover:border-[var(--accent)] pb-0.5"
                     >

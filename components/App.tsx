@@ -2,6 +2,7 @@
 import React, { useState, useEffect, useCallback, Suspense, lazy } from 'react';
 import { ViewState } from '../types';
 import { useTheme, useDataSeeding } from '../lib/hooks';
+import { initAnalytics, trackPageView } from './analytics';
 
 // Layout & UI (Sempre necessários)
 import Navigation from './Navigation';
@@ -35,6 +36,10 @@ const App: React.FC = () => {
   const { isDarkMode, toggleTheme } = useTheme();
   
   useDataSeeding();
+
+  useEffect(() => {
+    initAnalytics();
+  }, []);
 
   useEffect(() => {
     const darkViews = [ViewState.BACKOFFICE, ViewState.MANIFESTO, ViewState.CONNECT];
@@ -119,6 +124,8 @@ const App: React.FC = () => {
     if (mainElement) {
       mainElement.scrollTo({ top: 0, behavior: 'smooth' });
     }
+
+    trackPageView(view, activeSlug || undefined);
   }, [view, activeSlug, hasEntered]);
 
   const handleEntry = () => {

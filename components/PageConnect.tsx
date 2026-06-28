@@ -2,6 +2,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { storage } from '../lib/storage';
 import { ConnectConfig, ViewState } from '../types';
+import { trackTerminalCommand } from './analytics';
 
 interface TerminalLine {
   id: string;
@@ -102,10 +103,12 @@ const PageConnect: React.FC<PageConnectProps> = ({ onNavigate }) => {
 
     if (cleanCmd === 'limpar') {
       setHistory([]);
+      trackTerminalCommand(cleanCmd, 'system');
       return;
     }
 
     if (cleanCmd === 'sinal') {
+      trackTerminalCommand(cleanCmd, 'success');
       setTimeout(() => {
         addLine(
           <div className="p-4 border border-white/20 [.light-mode_&]:border-black/20 rounded bg-white/5 [.light-mode_&]:bg-black/5 mt-2">
@@ -121,6 +124,7 @@ const PageConnect: React.FC<PageConnectProps> = ({ onNavigate }) => {
     }
 
     if (cleanCmd === 'outros') {
+      trackTerminalCommand(cleanCmd, 'output');
       setTimeout(() => {
         if (connectConfig.links && connectConfig.links.length > 0) {
           addLine(
@@ -141,6 +145,7 @@ const PageConnect: React.FC<PageConnectProps> = ({ onNavigate }) => {
     }
 
     if (cleanCmd === 'sair') {
+      trackTerminalCommand(cleanCmd, 'system');
       onNavigate(ViewState.LANDING);
       return;
     }
@@ -148,8 +153,10 @@ const PageConnect: React.FC<PageConnectProps> = ({ onNavigate }) => {
     // @ts-ignore
     const response = COMMANDS[cleanCmd];
     if (response) {
+      trackTerminalCommand(cleanCmd, 'output');
       setTimeout(() => addLine(response, 'output'), 200);
     } else if (cleanCmd !== '') {
+      trackTerminalCommand(cleanCmd, 'error');
       setTimeout(() => addLine(`comando desconhecido: ${cleanCmd}. digite 'ajuda'.`, 'error'), 200);
     }
   };

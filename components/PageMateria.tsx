@@ -10,6 +10,7 @@ import LazyImage from './LazyImage';
 import JsonLd from './JsonLd';
 import Lightbox from './Lightbox';
 import Toast from './Toast';
+import { trackArtworkOpened, trackArtworkZoomed, trackLinkShared } from './analytics';
 
 interface PageMateriaProps {
   isDarkMode: boolean;
@@ -80,6 +81,18 @@ const PageMateria: React.FC<PageMateriaProps> = ({ isDarkMode, workSlug, onNavig
     };
     fetchWorks();
   }, [workSlug, updateMeta, resetMeta]);
+
+  useEffect(() => {
+    if (selectedWork) {
+      trackArtworkOpened(selectedWork.title, selectedWork.slug || selectedWork.id);
+    }
+  }, [selectedWork]);
+
+  useEffect(() => {
+    if (isLightboxOpen && selectedWork) {
+      trackArtworkZoomed(selectedWork.title, selectedWork.slug || selectedWork.id);
+    }
+  }, [isLightboxOpen, selectedWork]);
 
   // Lógica de esconder/mostrar botão de retorno baseada no scroll
   useEffect(() => {
@@ -294,6 +307,9 @@ const PageMateria: React.FC<PageMateriaProps> = ({ isDarkMode, workSlug, onNavig
                   onClick={() => {
                     navigator.clipboard.writeText(window.location.href);
                     setShowToast(true);
+                    if (selectedWork) {
+                      trackLinkShared('artwork', selectedWork.title);
+                    }
                   }}
                   className="font-vt text-[10px] tracking-widest flex items-center gap-2 uppercase border-b border-current border-opacity-20 pb-1"
                >
