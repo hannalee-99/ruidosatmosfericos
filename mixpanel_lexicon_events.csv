@@ -1,0 +1,8 @@
+Event,Display Name,Description
+Page Viewed,Visualização de Página,Disparado quando um usuário visita qualquer página do site.
+Artwork Opened,Obra de Arte Aberta,Disparado quando um usuário abre o modal ou visualizador de uma obra de arte na galeria.
+Artwork Zoomed,Obra de Arte Ampliada,Disparado quando um usuário utiliza a ferramenta de zoom interativo em uma obra de arte.
+Signal Opened,Transmissão de Sinal Aberta,Disparado quando um usuário abre e lê uma transmissão de sinal.
+Link Shared,Link Compartilhado,Disparado quando o usuário copia ou compartilha o link de uma obra de arte ou sinal.
+Outbound Link Clicked,Link Externo Clicado,Disparado quando o usuário clica em um link de destino fora do site.
+Terminal Command Run,Comando do Terminal Executado,Disparado quando o usuário digita e executa com sucesso um comando no terminal.

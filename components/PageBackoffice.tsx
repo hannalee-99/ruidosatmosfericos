@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect, useRef, useMemo } from 'react';
+import mixpanel from 'mixpanel-browser';
 import { storage } from '../lib/storage';
 import { Work, Signal, SignalBlock, SignalBlockType, AboutData, ConnectConfig, ViewState, ManifestoConfig } from '../types';
 import { DEFAULT_LAYERS as OFFICIAL_LAYERS } from './PageManifestoV2';
@@ -19,6 +20,8 @@ const PageBackoffice: React.FC<PageBackofficeProps> = ({ onLogout }) => {
   const [isPreviewMode, setIsPreviewMode] = useState(false);
   const [editorMode, setEditorMode] = useState<'edit' | 'preview' | 'split'>('edit');
   const [syncStatus, setSyncStatus] = useState<'synced' | 'saving' | 'error'>('synced');
+  const [testEventStatus, setTestEventStatus] = useState<string>('');
+  const [isTestingMixpanel, setIsTestingMixpanel] = useState(false);
   const [profile, setProfile] = useState<AboutData>({ id: 'profile', text: '', imageUrl: '', faviconUrl: '' });
   const [connect, setConnect] = useState<ConnectConfig>({ id: 'connect_config', email: '', sobreText: '', links: [] });
   const [manifesto, setManifesto] = useState<ManifestoConfig>({ id: 'landing_manifesto', text: '' });
@@ -603,6 +606,128 @@ export const INITIAL_DATA: {
       alert('erro ao importar: ' + (e instanceof Error ? e.message : 'formato inválido'));
     } finally {
       setIsImporting(false);
+    }
+  };
+
+  const handleDownloadEventsCsv = () => {
+    const csvContent = `Event,Display Name,Description
+Page Viewed,Visualização de Página,Disparado quando um usuário visita qualquer página do site.
+Artwork Opened,Obra de Arte Aberta,Disparado quando um usuário abre o modal ou visualizador de uma obra de arte na galeria.
+Artwork Zoomed,Obra de Arte Ampliada,Disparado quando um usuário utiliza a ferramenta de zoom interativo em uma obra de arte.
+Signal Opened,Transmissão de Sinal Aberta,Disparado quando um usuário abre e lê uma transmissão de sinal.
+Link Shared,Link Compartilhado,Disparado quando o usuário copia ou compartilha o link de uma obra de arte ou sinal.
+Outbound Link Clicked,Link Externo Clicado,Disparado quando o usuário clica em um link de destino fora do site.
+Terminal Command Run,Comando do Terminal Executado,Disparado quando o usuário digita e executa com sucesso um comando no terminal.`;
+    
+    downloadCsvFile('mixpanel_lexicon_events.csv', csvContent);
+  };
+
+  const handleDownloadPropertiesCsv = () => {
+    const csvContent = `Property,Display Name,Description,Data Type
+Page Name,Nome da Página,O nome identificador da seção do site visualizada (ex: landing, materia).,String
+Page Path,Caminho da Página,O caminho relativo da página visualizada no navegador (ex: /backoffice).,String
+Has Slug,Possui Slug?,Indica se a página visualizada possui um parâmetro de slug na URL.,Boolean
+View Slug,Slug da Visualização,O valor do parâmetro slug associado à página visualizada.,String
+Artwork Title,Título da Obra de Arte,O título amigável e oficial da obra de arte na galeria.,String
+Artwork Slug,Slug da Obra de Arte,O link permanente da obra de arte visualizada.,String
+Engagement Type,Tipo de Engajamento,O tipo de interação com os detalhes da obra.,String
+Action,Ação Realizada,O tipo de ação executada na interface.,String
+Signal Title,Título do Sinal,O título da transmissão de sinal aberta pelo usuário.,String
+Signal Slug,Slug do Sinal,O link amigável permanente da transmissão (ex: ruidos-cosmicos).,String
+Share Type,Tipo de Compartilhamento,O método utilizado para compartilhar o link (ex: copy, whatsapp, email).,String
+Content Identifier,Identificador do Conteúdo,O valor ou título do conteúdo compartilhado pelo usuário.,String
+Destination Channel,Canal de Destino,O nome da rede social ou canal de destino do link externo clicado.,String
+Destination URL,URL de Destino,O link externo completo clicado pelo usuário.,String
+Command Typed,Comando Digitado,O comando de texto exato digitado no terminal interativo.,String
+Response Type,Tipo de Resposta,A classificação da resposta do terminal (ex: success, error).,String
+Funnel Step,Passo do Funil,O nome unificado do passo dentro do funil de conversão principal.,String
+Step Order,Ordem do Passo,O número de ordenação sequencial do passo dentro do funil.,Number
+Slug,Slug Associado,O identificador amigável associado à ação do funil.,String
+Acquisition Channel,Canal de Aquisição,O canal de marketing ou rede social que trouxe o tráfego do usuário.,String
+Referrer URL,Página de Origem,A URL externa de onde o usuário navegou antes de chegar ao site.,String
+Screen Width,Largura da Tela,A largura em pixels da janela do navegador.,Number
+Screen Height,Altura da Tela,A altura em pixels da janela do navegador.,Number
+Device Orientation,Orientação do Dispositivo,A orientação da tela (Landscape/Portrait) no momento do evento.,String`;
+    
+    downloadCsvFile('mixpanel_lexicon_properties.csv', csvContent);
+  };
+
+  const downloadCsvFile = (filename: string, content: string) => {
+    const blob = new Blob([content], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', filename);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const handleSendTestEvent = () => {
+    setIsTestingMixpanel(true);
+    setTestEventStatus('enviando evento de teste para o mixpanel...');
+    
+    const token = import.meta.env.VITE_MIXPANEL_TOKEN;
+    if (!token) {
+      setTestEventStatus('erro: você não configurou a variável VITE_MIXPANEL_TOKEN no seu arquivo .env ou no painel de controle do AI Studio. configure-a primeiro para enviar dados reais!');
+      setIsTestingMixpanel(false);
+      return;
+    }
+
+    try {
+      const region = import.meta.env.VITE_MIXPANEL_REGION || 'US';
+      const isEU = region.toUpperCase() === 'EU';
+      const apiHost = isEU ? 'https://api-eu.mixpanel.com' : 'https://api-js.mixpanel.com';
+      
+      console.log('📊 [Mixpanel Diagnostics] Inicializando teste com Token:', token, 'na região:', region, `(host: ${apiHost})`);
+      
+      mixpanel.init(token, {
+        debug: true,
+        track_pageview: false,
+        persistence: 'localStorage',
+        ignore_dnt: true,
+        api_host: apiHost,
+        batch_requests: false
+      });
+
+      const testPayload = {
+        'Page Name': 'Backoffice Diagnostics',
+        'Page Path': '/backoffice/diagnostics-test',
+        'Has Slug': false,
+        'View Slug': 'none',
+        'Test Event Run': true,
+        'Region Used': region,
+        'Device Orientation': window.innerWidth > window.innerHeight ? 'Landscape' : 'Portrait',
+        'Screen Width': window.innerWidth,
+        'Screen Height': window.innerHeight,
+        'Timestamp': new Date().toISOString()
+      };
+
+      mixpanel.track('Page Viewed', testPayload, (response) => {
+        console.log('📊 [Mixpanel Diagnostics Response] Código de retorno do servidor:', response);
+        if (response === 1) {
+          setTestEventStatus('sucesso! evento "Page Viewed" enviado e aceito pelo servidor do mixpanel. se os eventos ainda não aparecerem, confira se está visualizando o projeto correto com o token correspondente.');
+        } else {
+          setTestEventStatus(`erro: o servidor do mixpanel recusou o envio (retornou código ${response}). verifique se seu token é válido e se a região "${region}" (${apiHost}) é realmente a mesma do seu projeto mixpanel (verifique as configurações de residência de dados no mixpanel).`);
+        }
+        setIsTestingMixpanel(false);
+      });
+      
+      // Fallback
+      setTimeout(() => {
+        setIsTestingMixpanel((current) => {
+          if (current) {
+            setTestEventStatus('aviso: o disparo foi efetuado, mas o servidor não retornou resposta a tempo. se você estiver usando um bloqueador de anúncios (AdBlock), ele pode estar barrando as requisições para o mixpanel. tente desativá-lo temporariamente!');
+          }
+          return false;
+        });
+      }, 5000);
+
+    } catch (err: any) {
+      console.error('📊 [Mixpanel Diagnostics Error]:', err);
+      setTestEventStatus(`erro inesperado ao disparar: ${err.message || err}`);
+      setIsTestingMixpanel(false);
     }
   };
 
@@ -1393,6 +1518,112 @@ export const INITIAL_DATA: {
                 >
                   {isImporting ? 'processando...' : 'importar e sobrescrever dados locais'}
                 </NeobrutalistButton>
+              </div>
+            </section>
+
+            {/* Seção Mixpanel Diagnostics & Lexicon */}
+            <section className="space-y-8 border-t border-white/10 pt-16 text-left">
+              <div className="space-y-2 text-center">
+                <h2 className="font-electrolize text-3xl text-[var(--accent)] lowercase">diagnóstico & dicionário mixpanel (lexicon)</h2>
+                <p className="font-mono text-sm opacity-60 lowercase max-w-2xl mx-auto">
+                  baixe os esquemas de dados corrigidos para importação perfeita no mixpanel lexicon e teste a conectividade em tempo real do seu ambiente.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-12">
+                {/* Download do Dicionário (Lexicon) */}
+                <div className="bg-white/5 border border-white/10 p-6 rounded-lg space-y-6">
+                  <div className="space-y-2">
+                    <h3 className="font-electrolize text-xl text-neutral-200 lowercase">1. importação de dicionário (lexicon)</h3>
+                    <p className="font-mono text-xs text-neutral-400 leading-relaxed lowercase">
+                      o mixpanel rejeita o esquema de dados se os cabeçalhos de coluna não forem exatos. baixe os arquivos abaixo e envie-os nas seções respectivas do painel <strong>lexicon</strong> ("events" e "event properties").
+                    </p>
+                  </div>
+                  
+                  <div className="flex flex-col sm:flex-row gap-4">
+                    <button 
+                      type="button" 
+                      onClick={handleDownloadEventsCsv} 
+                      className="flex-1 font-mono text-xs uppercase tracking-wider py-3 bg-neutral-900 border border-neutral-700 text-neutral-300 hover:bg-neutral-800 hover:border-neutral-500 rounded transition-all text-center"
+                    >
+                      ↓ csv de eventos
+                    </button>
+                    <button 
+                      type="button" 
+                      onClick={handleDownloadPropertiesCsv} 
+                      className="flex-1 font-mono text-xs uppercase tracking-wider py-3 bg-neutral-900 border border-neutral-700 text-neutral-300 hover:bg-neutral-800 hover:border-neutral-500 rounded transition-all text-center"
+                    >
+                      ↓ csv de propriedades
+                    </button>
+                  </div>
+                  
+                  <div className="bg-black/30 p-4 rounded border border-white/5">
+                    <h4 className="font-mono text-[10px] text-[var(--accent)] uppercase mb-1">como importar no mixpanel:</h4>
+                    <ol className="list-decimal list-inside font-mono text-[10px] text-neutral-400 space-y-1 lowercase">
+                      <li>acesse seu projeto no mixpanel.</li>
+                      <li>vá para <strong>data management</strong> &gt; <strong>lexicon</strong>.</li>
+                      <li>clique em <strong>import</strong> no canto superior direito.</li>
+                      <li>escolha <strong>events</strong> e faça o upload do arquivo <code className="text-neutral-200">mixpanel_lexicon_events.csv</code>.</li>
+                      <li>repita o processo escolhendo <strong>event properties</strong> para o arquivo <code className="text-neutral-200">mixpanel_lexicon_properties.csv</code>.</li>
+                    </ol>
+                  </div>
+                </div>
+
+                {/* Status e Teste de Eventos */}
+                <div className="bg-white/5 border border-white/10 p-6 rounded-lg space-y-6 flex flex-col justify-between">
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <h3 className="font-electrolize text-xl text-neutral-200 lowercase">2. diagnóstico de conexão em tempo real</h3>
+                      <p className="font-mono text-xs text-neutral-400 leading-relaxed lowercase">
+                        se os eventos não estiverem aparecendo no seu mixpanel dashboard (aba "live view"), verifique as credenciais abaixo e dispare um evento de teste direto da interface.
+                      </p>
+                    </div>
+
+                    <div className="space-y-2 font-mono text-xs bg-black/40 p-4 rounded border border-white/5">
+                      <div className="flex justify-between border-b border-white/5 pb-2">
+                        <span className="text-neutral-500">token:</span>
+                        <span className="text-neutral-300 truncate max-w-[200px]" title={import.meta.env.VITE_MIXPANEL_TOKEN || 'Não configurado'}>
+                          {import.meta.env.VITE_MIXPANEL_TOKEN ? `${import.meta.env.VITE_MIXPANEL_TOKEN.substring(0, 8)}...` : 'NÃO CONFIGURADO'}
+                        </span>
+                      </div>
+                      <div className="flex justify-between border-b border-white/5 py-2">
+                        <span className="text-neutral-500">região (servidor):</span>
+                        <span className="text-neutral-300 uppercase font-semibold">
+                          {import.meta.env.VITE_MIXPANEL_REGION || 'US (padrão)'}
+                        </span>
+                      </div>
+                      <div className="flex justify-between pt-2">
+                        <span className="text-neutral-500">api host:</span>
+                        <span className="text-neutral-400 text-[10px]">
+                          {(import.meta.env.VITE_MIXPANEL_REGION || 'US').toUpperCase() === 'EU' ? 'https://api-eu.mixpanel.com' : 'https://api-js.mixpanel.com'}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="space-y-3">
+                    <button
+                      type="button"
+                      onClick={handleSendTestEvent}
+                      disabled={isTestingMixpanel}
+                      className="w-full font-mono text-xs uppercase tracking-wider py-3 bg-[var(--accent)] text-black font-semibold hover:opacity-90 rounded transition-all disabled:opacity-50"
+                    >
+                      {isTestingMixpanel ? 'enviando...' : '⚡ disparar evento de teste'}
+                    </button>
+
+                    {testEventStatus && (
+                      <div className={`p-3 rounded font-mono text-[10px] border ${
+                        testEventStatus.startsWith('sucesso') 
+                          ? 'bg-emerald-950/40 border-emerald-500/30 text-emerald-300' 
+                          : testEventStatus.startsWith('erro')
+                            ? 'bg-red-950/40 border-red-500/30 text-red-300'
+                            : 'bg-amber-950/40 border-amber-500/30 text-amber-300'
+                      }`}>
+                        {testEventStatus}
+                      </div>
+                    )}
+                  </div>
+                </div>
               </div>
             </section>
 

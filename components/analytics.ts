@@ -24,8 +24,34 @@ function getSocialReferrer(referrer: string): string {
 export const initAnalytics = () => {
   if (isInitialized) return;
 
+  const rawToken = import.meta.env.VITE_MIXPANEL_TOKEN;
+  const region = import.meta.env.VITE_MIXPANEL_REGION || 'US';
+  const isEU = region.toUpperCase() === 'EU';
+  const apiHost = isEU ? 'https://api-eu.mixpanel.com' : 'https://api-js.mixpanel.com';
+
+  // Output full Mixpanel initialization diagnostic state
+  console.log('📊 [Mixpanel Diagnostics] Checking initialization state:', {
+    tokenSource: rawToken ? 'Environment Variable' : 'Default/Fallback Constant',
+    tokenValue: MIXPANEL_TOKEN,
+    isDev: IS_DEV,
+    region: region,
+    apiHost: apiHost,
+    isInitialized: isInitialized
+  });
+
+  // Verify VITE_MIXPANEL_TOKEN presence and validity
+  if (!rawToken) {
+    console.warn('⚠️ [Mixpanel Warning]: VITE_MIXPANEL_TOKEN is missing from the environment variables (or .env file). A fallback/temporary token is being used, but your real dashboard will not receive events.');
+  } else {
+    // Check if token format is valid (standard Mixpanel project tokens are exactly 32-character hex strings)
+    const isValidHexToken = /^[0-9a-fA-F]{32}$/.test(rawToken);
+    if (!isValidHexToken) {
+      console.warn(`⚠️ [Mixpanel Warning]: The configured VITE_MIXPANEL_TOKEN ("${rawToken}") appears to be invalid or incomplete. Mixpanel project tokens are typically 32-character hexadecimal strings.`);
+    }
+  }
+
   if (!MIXPANEL_TOKEN) {
-    console.log('📊 [Mixpanel Sandbox]: Token not configured. Mocking tracking calls.');
+    console.warn('📊 [Mixpanel Sandbox]: No token configured (even fallback). Mocking tracking calls.');
     return;
   }
 
@@ -35,7 +61,7 @@ export const initAnalytics = () => {
       track_pageview: false, // We'll handle pageviews manually for SPA precision
       persistence: 'localStorage',
       ignore_dnt: true, // Let's ensure tracking is active for deep analysis
-      api_host: 'https://api-eu.mixpanel.com',
+      api_host: apiHost,
       batch_requests: false // Disable batching to send events immediately
     });
 

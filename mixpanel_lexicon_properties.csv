@@ -1,0 +1,25 @@
+Property,Display Name,Description,Data Type
+Page Name,Nome da Página,O nome identificador da seção do site visualizada (ex: landing, materia).,String
+Page Path,Caminho da Página,O caminho relativo da página visualizada no navegador (ex: /backoffice).,String
+Has Slug,Possui Slug?,Indica se a página visualizada possui um parâmetro de slug na URL.,Boolean
+View Slug,Slug da Visualização,O valor do parâmetro slug associado à página visualizada.,String
+Artwork Title,Título da Obra de Arte,O título amigável e oficial da obra de arte na galeria.,String
+Artwork Slug,Slug da Obra de Arte,O link permanente da obra de arte visualizada.,String
+Engagement Type,Tipo de Engajamento,O tipo de interação com os detalhes da obra.,String
+Action,Ação Realizada,O tipo de ação executada na interface.,String
+Signal Title,Título do Sinal,O título da transmissão de sinal aberta pelo usuário.,String
+Signal Slug,Slug do Sinal,O link amigável permanente da transmissão (ex: ruidos-cosmicos).,String
+Share Type,Tipo de Compartilhamento,O método utilizado para compartilhar o link (ex: copy, whatsapp, email).,String
+Content Identifier,Identificador do Conteúdo,O valor ou título do conteúdo compartilhado pelo usuário.,String
+Destination Channel,Canal de Destino,O nome da rede social ou canal de destino do link externo clicado.,String
+Destination URL,URL de Destino,O link externo completo clicado pelo usuário.,String
+Command Typed,Comando Digitado,O comando de texto exato digitado no terminal interativo.,String
+Response Type,Tipo de Resposta,A classificação da resposta do terminal (ex: success, error).,String
+Funnel Step,Passo do Funil,O nome unificado do passo dentro do funil de conversão principal.,String
+Step Order,Ordem do Passo,O número de ordenação sequencial do passo dentro do funil.,Number
+Slug,Slug Associado,O identificador amigável associado à ação do funil.,String
+Acquisition Channel,Canal de Aquisição,O canal de marketing ou rede social que trouxe o tráfego do usuário.,String
+Referrer URL,Página de Origem,A URL externa de onde o usuário navegou antes de chegar ao site.,String
+Screen Width,Largura da Tela,A largura em pixels da janela do navegador.,Number
+Screen Height,Altura da Tela,A altura em pixels da janela do navegador.,Number
+Device Orientation,Orientação do Dispositivo,A orientação da tela (Landscape/Portrait) no momento do evento.,String
