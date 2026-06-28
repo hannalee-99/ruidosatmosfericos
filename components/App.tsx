@@ -103,7 +103,10 @@ const App: React.FC = () => {
   }, [getViewFromHash]);
 
   useEffect(() => {
-    if (!hasEntered) return;
+    if (!hasEntered) {
+      trackPageView('Splash Screen');
+      return;
+    }
 
     let targetHash = `#/${view}/`;
     

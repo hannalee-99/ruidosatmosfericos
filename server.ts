@@ -25,6 +25,13 @@ async function startServer() {
       res.json({ status: 'ok', server: 'express' });
     });
 
+    // Ensure sw.js is served with no-cache headers to quickly unregister old service workers
+    app.get('/sw.js', (req, res) => {
+      res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+      res.setHeader('Content-Type', 'application/javascript');
+      res.sendFile(path.join(__dirname, 'sw.js'));
+    });
+
     // Vite middleware for development
     if (process.env.NODE_ENV !== 'production') {
       const vite = await createViteServer({

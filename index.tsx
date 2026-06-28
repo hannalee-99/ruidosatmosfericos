@@ -3,6 +3,28 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './components/App';
 
+// Unregister any active service worker and clear all cache buckets to prevent index caching issues
+if (typeof window !== 'undefined') {
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.getRegistrations().then((registrations) => {
+      for (const registration of registrations) {
+        registration.unregister().then(() => {
+          console.log('🧹 [ServiceWorker] Unregistered active service worker');
+        });
+      }
+    });
+  }
+  if ('caches' in window) {
+    caches.keys().then((keys) => {
+      keys.forEach((key) => {
+        caches.delete(key).then(() => {
+          console.log('🧹 [Cache] Cleared cache bucket:', key);
+        });
+      });
+    });
+  }
+}
+
 // Suppress benign WebSocket errors in the AI Studio environment
 if (typeof window !== 'undefined') {
   const isWebSocketError = (err: any) => {

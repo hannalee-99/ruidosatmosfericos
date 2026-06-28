@@ -1,6 +1,6 @@
 import mixpanel from 'mixpanel-browser';
 
-const MIXPANEL_TOKEN = import.meta.env.VITE_MIXPANEL_TOKEN || '';
+const MIXPANEL_TOKEN = import.meta.env.VITE_MIXPANEL_TOKEN || '8cfbdd06c994726e27988cbe0818d4c';
 const IS_DEV = import.meta.env.DEV || false;
 
 let isInitialized = false;
@@ -25,18 +25,18 @@ export const initAnalytics = () => {
   if (isInitialized) return;
 
   if (!MIXPANEL_TOKEN) {
-    if (IS_DEV) {
-      console.log('📊 [Mixpanel Sandbox]: Token not configured. Mocking tracking calls.');
-    }
+    console.log('📊 [Mixpanel Sandbox]: Token not configured. Mocking tracking calls.');
     return;
   }
 
   try {
     mixpanel.init(MIXPANEL_TOKEN, {
-      debug: IS_DEV,
+      debug: true, // Always enable debug so the user sees detailed internal SDK logs in console
       track_pageview: false, // We'll handle pageviews manually for SPA precision
       persistence: 'localStorage',
-      ignore_dnt: true // Let's ensure tracking is active for deep analysis
+      ignore_dnt: true, // Let's ensure tracking is active for deep analysis
+      api_host: 'https://api-eu.mixpanel.com',
+      batch_requests: false // Disable batching to send events immediately
     });
 
     const referrer = document.referrer;
@@ -52,9 +52,7 @@ export const initAnalytics = () => {
     });
 
     isInitialized = true;
-    if (IS_DEV) {
-      console.log('📊 [Mixpanel]: Successfully initialized with Acquisition Channel:', socialSource);
-    }
+    console.log('📊 [Mixpanel]: Successfully initialized with Token:', MIXPANEL_TOKEN, 'and Acquisition Channel:', socialSource);
   } catch (err) {
     console.error('📊 [Mixpanel] Initialization failed:', err);
   }
@@ -72,10 +70,11 @@ export const trackPageView = (viewName: string, slug?: string) => {
     'View Slug': slug || 'none'
   };
 
+  console.log('📊 [Mixpanel Track] Page Viewed:', properties, isInitialized ? '(Sending...)' : '(Sandbox/No-Token)');
   if (isInitialized) {
-    mixpanel.track('Page Viewed', properties);
-  } else if (IS_DEV) {
-    console.log('📊 [Mixpanel Sandbox] Page Viewed:', properties);
+    mixpanel.track('Page Viewed', properties, (response) => {
+      console.log('📊 [Mixpanel Server Response] Page Viewed:', response === 1 ? 'SUCCESS (1)' : 'FAILED (' + response + ')');
+    });
   }
 };
 
@@ -90,10 +89,11 @@ export const trackArtworkOpened = (title: string, slug: string) => {
     'Engagement Type': 'Detail View'
   };
 
+  console.log('📊 [Mixpanel Track] Artwork Opened:', properties, isInitialized ? '(Sending...)' : '(Sandbox/No-Token)');
   if (isInitialized) {
-    mixpanel.track('Artwork Opened', properties);
-  } else if (IS_DEV) {
-    console.log('📊 [Mixpanel Sandbox] Artwork Opened:', properties);
+    mixpanel.track('Artwork Opened', properties, (response) => {
+      console.log('📊 [Mixpanel Server Response] Artwork Opened:', response === 1 ? 'SUCCESS (1)' : 'FAILED (' + response + ')');
+    });
   }
 };
 
@@ -108,10 +108,11 @@ export const trackArtworkZoomed = (title: string, slug: string) => {
     'Action': 'Zoom Lightbox'
   };
 
+  console.log('📊 [Mixpanel Track] Artwork Zoomed:', properties, isInitialized ? '(Sending...)' : '(Sandbox/No-Token)');
   if (isInitialized) {
-    mixpanel.track('Artwork Zoomed', properties);
-  } else if (IS_DEV) {
-    console.log('📊 [Mixpanel Sandbox] Artwork Zoomed:', properties);
+    mixpanel.track('Artwork Zoomed', properties, (response) => {
+      console.log('📊 [Mixpanel Server Response] Artwork Zoomed:', response === 1 ? 'SUCCESS (1)' : 'FAILED (' + response + ')');
+    });
   }
 };
 
@@ -125,10 +126,11 @@ export const trackSignalOpened = (title: string, slug: string) => {
     'Signal Slug': slug
   };
 
+  console.log('📊 [Mixpanel Track] Signal Opened:', properties, isInitialized ? '(Sending...)' : '(Sandbox/No-Token)');
   if (isInitialized) {
-    mixpanel.track('Signal Opened', properties);
-  } else if (IS_DEV) {
-    console.log('📊 [Mixpanel Sandbox] Signal Opened:', properties);
+    mixpanel.track('Signal Opened', properties, (response) => {
+      console.log('📊 [Mixpanel Server Response] Signal Opened:', response === 1 ? 'SUCCESS (1)' : 'FAILED (' + response + ')');
+    });
   }
 };
 
@@ -142,10 +144,11 @@ export const trackLinkShared = (type: 'artwork' | 'signal' | 'email', titleOrVal
     'Content Identifier': titleOrValue
   };
 
+  console.log('📊 [Mixpanel Track] Link Shared:', properties, isInitialized ? '(Sending...)' : '(Sandbox/No-Token)');
   if (isInitialized) {
-    mixpanel.track('Link Shared', properties);
-  } else if (IS_DEV) {
-    console.log('📊 [Mixpanel Sandbox] Link Shared:', properties);
+    mixpanel.track('Link Shared', properties, (response) => {
+      console.log('📊 [Mixpanel Server Response] Link Shared:', response === 1 ? 'SUCCESS (1)' : 'FAILED (' + response + ')');
+    });
   }
 };
 
@@ -159,10 +162,11 @@ export const trackExternalClicked = (channel: string, url: string) => {
     'Destination URL': url
   };
 
+  console.log('📊 [Mixpanel Track] Outbound Link Clicked:', properties, isInitialized ? '(Sending...)' : '(Sandbox/No-Token)');
   if (isInitialized) {
-    mixpanel.track('Outbound Link Clicked', properties);
-  } else if (IS_DEV) {
-    console.log('📊 [Mixpanel Sandbox] Outbound Link Clicked:', properties);
+    mixpanel.track('Outbound Link Clicked', properties, (response) => {
+      console.log('📊 [Mixpanel Server Response] Outbound Link Clicked:', response === 1 ? 'SUCCESS (1)' : 'FAILED (' + response + ')');
+    });
   }
 };
 
@@ -176,9 +180,10 @@ export const trackTerminalCommand = (command: string, responseType: 'success' | 
     'Response Type': responseType
   };
 
+  console.log('📊 [Mixpanel Track] Terminal Command Run:', properties, isInitialized ? '(Sending...)' : '(Sandbox/No-Token)');
   if (isInitialized) {
-    mixpanel.track('Terminal Command Run', properties);
-  } else if (IS_DEV) {
-    console.log('📊 [Mixpanel Sandbox] Terminal Command Run:', properties);
+    mixpanel.track('Terminal Command Run', properties, (response) => {
+      console.log('📊 [Mixpanel Server Response] Terminal Command Run:', response === 1 ? 'SUCCESS (1)' : 'FAILED (' + response + ')');
+    });
   }
 };
