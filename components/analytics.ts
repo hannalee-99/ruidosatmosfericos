@@ -261,3 +261,28 @@ export const trackSocialLinkClicked = (channel: string, url: string, slug: strin
     'Destination URL': url
   });
 };
+
+/**
+ * Generic tracking utility for interface elements (buttons, navigation tabs, links)
+ * Useful for checking which nav items, buttons, or links are most frequently clicked.
+ */
+export const trackGenericClick = (
+  elementName: string,
+  category: 'navigation' | 'button' | 'link' | 'tab',
+  extraProperties?: Record<string, any>
+) => {
+  initAnalytics();
+  const properties = {
+    'Element Name': elementName,
+    'Element Category': category,
+    ...extraProperties
+  };
+
+  console.log(`📊 [Mixpanel Generic Click] ${elementName} [${category}]:`, properties, isInitialized ? '(Sending...)' : '(Sandbox/No-Token)');
+  if (isInitialized) {
+    mixpanel.track('Generic Click', properties, (response) => {
+      console.log(`📊 [Mixpanel Server Response] Generic Click (${elementName}):`, response === 1 ? 'SUCCESS (1)' : 'FAILED (' + response + ')');
+    });
+  }
+};
+

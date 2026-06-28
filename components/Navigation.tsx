@@ -4,6 +4,8 @@ import { ViewState } from '../types';
 import { COLORS } from '../constants';
 import Logo from './Logo';
 import Toast from './Toast';
+import { trackGenericClick } from './analytics';
+
 
 interface NavigationProps {
   currentView: ViewState;
@@ -50,6 +52,7 @@ const Navigation: React.FC<NavigationProps> = ({
   const navItems = Object.values(ViewState).filter(v => v !== ViewState.BACKOFFICE);
 
   const handleLogoClick = () => {
+    trackGenericClick('logo_home', 'navigation', { 'From View': currentView });
     if (currentView === ViewState.LANDING) {
       const nextCount = clickCount + 1;
       if (nextCount >= 5) {
@@ -67,6 +70,7 @@ const Navigation: React.FC<NavigationProps> = ({
   };
 
   const handleItemClick = (item: ViewState) => {
+    trackGenericClick(VIEW_LABELS[item] || item, 'navigation', { 'View State': item });
     onNavigate(item);
     setIsMobileMenuOpen(false);
     setClickCount(0);
