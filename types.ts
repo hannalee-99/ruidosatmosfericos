@@ -52,6 +52,11 @@ export interface SignalBlock {
   caption?: string;
 }
 
+export interface SignalMetadataItem {
+  question: string;
+  answer: string;
+}
+
 export interface Signal {
   id: string;
   slug?: string;
@@ -65,6 +70,7 @@ export interface Signal {
   seoDescription?: string; // Breve descrição para SEO/Cards
   seoTitle?: string;
   seoImage?: string;
+  metadata?: SignalMetadataItem[]; // Metadados de Campo (DeviantArt style)
 }
 
 export interface AboutData {
@@ -98,3 +104,17 @@ export interface SensorData {
   id: string; // ex: 'sensor_metrics'
   clicks: number;
 }
+
+export interface EcoLink {
+  id: string;
+  title: string;
+  description: string;
+  url: string;
+  status: 'ativo' | 'mapeando' | string;
+}
+
+export interface EcosConfig {
+  id: string; // 'ecos_config'
+  links: EcoLink[];
+}
+

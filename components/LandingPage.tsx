@@ -221,7 +221,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onNavigate, onSignalSelect, i
       <div className="relative z-10 px-4 md:px-8 pt-24 md:pt-32 max-w-[1800px] mx-auto flex flex-col gap-4">
         
         {/* HEADER */}
-        <header className={`mt-4 md:mt-8 mb-4 md:mb-12 relative border-b border-white/10 pb-8 [.light-mode_&]:border-black/10 ${transitionBase} ${headerState}`}>
+        <header className={`mt-4 md:mt-8 mb-4 md:mb-12 relative pb-8 ${transitionBase} ${headerState}`}>
           <div className="flex flex-col md:flex-row items-start md:items-end justify-between">
             <div className="flex flex-col gap-4 w-full">
               {/* Título com Tipografia Fluida */}
@@ -358,7 +358,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onNavigate, onSignalSelect, i
                                   if (onSignalSelect) onSignalSelect(sinal.slug || sinal.id);
                                   onNavigate(ViewState.SINAIS);
                                 }}
-                                className="flex justify-between items-center border-b border-white/5 py-3 group-hover:border-white/20 transition-colors [.light-mode_&]:border-black/5 [.light-mode_&]:group-hover:border-black/20 cursor-pointer"
+                                className="flex justify-between items-center py-3 cursor-pointer"
                             >
                                 <div className="flex items-center gap-2 overflow-hidden">
                                     <span className="font-vt text-[10px] tracking-widest text-[var(--accent)] opacity-80 flex-shrink-0">

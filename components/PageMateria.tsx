@@ -259,10 +259,10 @@ const PageMateria: React.FC<PageMateriaProps> = ({ isDarkMode, workSlug, onNavig
           {navigation.prev && (
             <button 
               onClick={() => handleWorkClick(navigation.prev!)}
-              className="w-10 h-10 md:w-16 md:h-16 flex items-center justify-center rounded-full bg-black/40 md:bg-white/5 backdrop-blur-sm hover:bg-[var(--accent)] hover:text-black border border-white/10 transition-all group opacity-60 md:opacity-20 hover:opacity-100"
+              className="w-8 h-8 md:w-11 md:h-11 flex items-center justify-center rounded-full bg-black/40 md:bg-white/5 backdrop-blur-sm hover:bg-[var(--accent)] hover:text-black transition-all group opacity-60 md:opacity-30 hover:opacity-100 hover:scale-105"
               title="obra anterior (←)"
             >
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
             </button>
           )}
         </div>
@@ -271,10 +271,10 @@ const PageMateria: React.FC<PageMateriaProps> = ({ isDarkMode, workSlug, onNavig
           {navigation.next && (
             <button 
               onClick={() => handleWorkClick(navigation.next!)}
-              className="w-10 h-10 md:w-16 md:h-16 flex items-center justify-center rounded-full bg-black/40 md:bg-white/5 backdrop-blur-sm hover:bg-[var(--accent)] hover:text-black border border-white/10 transition-all group opacity-60 md:opacity-20 hover:opacity-100"
+              className="w-8 h-8 md:w-11 md:h-11 flex items-center justify-center rounded-full bg-black/40 md:bg-white/5 backdrop-blur-sm hover:bg-[var(--accent)] hover:text-black transition-all group opacity-60 md:opacity-30 hover:opacity-100 hover:scale-105"
               title="próxima obra (→)"
             >
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18l6-6-6-6"/></svg>
             </button>
           )}
         </div>
@@ -319,24 +319,18 @@ const PageMateria: React.FC<PageMateriaProps> = ({ isDarkMode, workSlug, onNavig
             <header className="space-y-4">
                <div className="flex items-center gap-4">
                   <span className="font-vt text-sm tracking-widest text-[var(--accent)] uppercase">{MONTH_NAMES[parseInt(selectedWork.month)-1]} / {selectedWork.year}</span>
-                  <div className="h-px flex-grow bg-current opacity-10"></div>
-                  {readingTime && (
-                    <span className="font-mono text-[9px] uppercase tracking-widest opacity-60 bg-[var(--accent)]/10 text-[var(--accent)] px-2 py-0.5 rounded border border-[var(--accent)]/20 font-bold">
-                      {readingTime}
-                    </span>
-                  )}
                </div>
                <h1 className="font-electrolize text-4xl md:text-5xl leading-[0.95] lowercase text-white [.light-mode_&]:text-black">
                 {selectedWork.title}
                </h1>
             </header>
 
-            <div className="space-y-6 font-mono text-xs md:text-sm lowercase">
-              <div className="pb-4 border-b border-current border-opacity-5 flex justify-between items-baseline">
+            <div className="space-y-4 font-mono text-xs md:text-sm lowercase">
+              <div className="flex justify-between items-baseline py-1">
                 <span className="opacity-40 uppercase tracking-widest text-[9px]">técnica</span>
                 <span className="opacity-80 text-right">{selectedWork.technique}</span>
               </div>
-              <div className="pb-4 border-b border-current border-opacity-5 flex justify-between items-baseline">
+              <div className="flex justify-between items-baseline py-1">
                 <span className="opacity-40 uppercase tracking-widest text-[9px]">dimensões</span>
                 <span className="opacity-80 text-right">{selectedWork.dimensions}</span>
               </div>

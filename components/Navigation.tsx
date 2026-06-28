@@ -89,7 +89,7 @@ const Navigation: React.FC<NavigationProps> = ({
           style={{ 
             backgroundColor: navBg,
             opacity: 1, // Totalmente opaco para evitar disparidade de cores
-            boxShadow: isScrolled ? '0 1px 0 rgba(255,255,255,0.05)' : 'none'
+            boxShadow: 'none'
           }}
         ></div>
 
@@ -117,7 +117,7 @@ const Navigation: React.FC<NavigationProps> = ({
               })}
             </div>
             
-            <div className="flex items-center gap-4 lg:ml-8 lg:pl-10 lg:border-l border-current border-opacity-10">
+            <div className="flex items-center gap-4 lg:ml-8 lg:pl-10">
               <button onClick={onToggleTheme} className="w-8 h-8 flex items-center justify-center opacity-60 hover:opacity-100">
                 {isDarkMode ? (
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="12" cy="12" r="5" /><line x1="12" y1="1" x2="12" y2="3" /><line x1="12" y1="21" x2="12" y2="23" /><line x1="4.22" y1="4.22" x2="5.64" y2="5.64" /><line x1="1" y1="12" x2="3" y2="12" /><line x1="21" y1="12" x2="23" y2="12" /></svg>

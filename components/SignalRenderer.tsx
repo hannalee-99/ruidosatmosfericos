@@ -227,7 +227,7 @@ const MarkdownRenderer: React.FC<{ content: string }> = ({ content }) => {
         switch (block.type) {
           case 'h2':
             return (
-              <h2 key={index} className="font-electrolize text-2xl md:text-4xl text-white [.light-mode_&]:text-black mt-16 mb-6 lowercase tracking-wider border-b border-white/10 [.light-mode_&]:border-black/10 pb-3">
+              <h2 key={index} className="font-electrolize text-2xl md:text-4xl text-white [.light-mode_&]:text-black mt-16 mb-6 lowercase tracking-wider">
                 {block.lines[0]}
               </h2>
             );
@@ -251,8 +251,8 @@ const MarkdownRenderer: React.FC<{ content: string }> = ({ content }) => {
             );
           case 'code':
             return (
-              <div key={index} className="relative my-10 rounded-xl overflow-hidden border border-white/10 [.light-mode_&]:border-black/10 bg-black/60 [.light-mode_&]:bg-neutral-900 text-left font-mono text-sm leading-relaxed shadow-2xl">
-                <div className="flex items-center justify-between px-4 py-2 border-b border-white/5 [.light-mode_&]:border-black/5 bg-black/40 text-[9px] uppercase tracking-[0.2em] text-neutral-500">
+              <div key={index} className="relative my-10 rounded-xl overflow-hidden bg-black/60 [.light-mode_&]:bg-neutral-900 text-left font-mono text-sm leading-relaxed shadow-2xl">
+                <div className="flex items-center justify-between px-4 py-2 bg-black/40 text-[9px] uppercase tracking-[0.2em] text-neutral-500">
                   <span>{block.lang || 'registro'}</span>
                   <span className="animate-pulse">● ativo</span>
                 </div>
@@ -284,7 +284,7 @@ const MarkdownRenderer: React.FC<{ content: string }> = ({ content }) => {
               </ol>
             );
           case 'hr':
-            return <hr key={index} className="border-t border-white/15 [.light-mode_&]:border-black/15 my-12" />;
+            return <div key={index} className="my-12 h-1 bg-transparent" />;
           case 'p':
           default:
             const isEmpty = block.lines[0].trim() === '';
@@ -341,7 +341,7 @@ const SignalRenderer: React.FC<SignalRendererProps> = ({ signal }) => {
             <div className={`my-16 grid gap-12 ${group.images.length === 1 ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2'}`}>
               {group.images.map((imgBlock) => (
                 <figure key={imgBlock.id} className="relative w-full flex flex-col group/fig">
-                  <div className="relative rounded-2xl overflow-hidden border border-white/10 [.light-mode_&]:border-black/10 shadow-2xl bg-neutral-900 [.light-mode_&]:bg-neutral-100 transition-all duration-700 hover:scale-[1.015] hover:border-[var(--accent)]/40 hover:shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
+                  <div className="relative rounded-2xl overflow-hidden shadow-2xl bg-neutral-900 [.light-mode_&]:bg-neutral-100 transition-all duration-700 hover:scale-[1.015] hover:shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
                     <LazyImage 
                       src={formatImageUrl(imgBlock.content)} 
                       alt="registro visual" 
@@ -361,6 +361,24 @@ const SignalRenderer: React.FC<SignalRendererProps> = ({ signal }) => {
           {group.type === 'embed' && <SmartEmbed url={group.content} />}
         </div>
       ))}
+
+      {/* Bloco de Metadados de Campo (estilo DeviantArt Journal) */}
+      {signal.metadata && signal.metadata.some(m => m.answer?.trim()) && (
+        <div className="mt-20 p-6 md:p-8 rounded-2xl bg-white/[0.02] [.light-mode_&]:bg-black/[0.02] backdrop-blur-sm space-y-6 max-w-xl transition-all duration-500 hover:bg-white/[0.04] [.light-mode_&]:hover:bg-black/[0.03]">
+          <div className="flex items-center gap-3">
+            <span className="w-1.5 h-1.5 rounded-full bg-[var(--accent)] animate-pulse" />
+            <h5 className="font-vt text-[10px] tracking-[0.25em] uppercase text-[var(--accent)] opacity-80">metadados de campo // registros adicionais</h5>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4 font-mono text-[11px] md:text-xs lowercase">
+            {signal.metadata.filter(m => m.answer?.trim()).map((item, idx) => (
+              <div key={idx} className="flex flex-col gap-1">
+                <span className="opacity-40 uppercase tracking-widest text-[8px]">{item.question}</span>
+                <span className="opacity-80 font-medium pl-1 text-[var(--accent)] [.light-mode_&]:text-teal-600">{item.answer}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 };

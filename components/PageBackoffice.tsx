@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import mixpanel from 'mixpanel-browser';
 import { storage } from '../lib/storage';
-import { Work, Signal, SignalBlock, SignalBlockType, AboutData, ConnectConfig, ViewState, ManifestoConfig } from '../types';
+import { Work, Signal, SignalBlock, SignalBlockType, AboutData, ConnectConfig, ViewState, ManifestoConfig, EcosConfig, EcoLink } from '../types';
 import { DEFAULT_LAYERS as OFFICIAL_LAYERS } from './PageManifestoV2';
 import NeobrutalistButton from './NeobrutalistButton';
 import SignalRenderer from './SignalRenderer';
@@ -11,8 +11,25 @@ interface PageBackofficeProps {
   onLogout: () => void;
 }
 
+const getTemplateQuestions = (): string[] => {
+  try {
+    const saved = localStorage.getItem('custom_metadata_questions');
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        return parsed;
+      }
+    }
+  } catch (e) {
+    console.error('Erro ao ler custom_metadata_questions', e);
+  }
+  return ['ouvindo', 'humor', 'lugar', 'clima', 'suporte'];
+};
+
 const PageBackoffice: React.FC<PageBackofficeProps> = ({ onLogout }) => {
-  const [activeTab, setActiveTab] = useState<ViewState | 'sincronizar'>(ViewState.LANDING);
+  const [activeTab, setActiveTab] = useState<ViewState | 'sincronizar' | 'questions'>(ViewState.LANDING);
+  const [customQuestions, setCustomQuestions] = useState<string[]>([]);
+  const [savedSuccess, setSavedSuccess] = useState(false);
   const [works, setWorks] = useState<Work[]>([]);
   const [editingWork, setEditingWork] = useState<Work | null>(null);
   const [signals, setSignals] = useState<Signal[]>([]);
@@ -24,6 +41,8 @@ const PageBackoffice: React.FC<PageBackofficeProps> = ({ onLogout }) => {
   const [isTestingMixpanel, setIsTestingMixpanel] = useState(false);
   const [profile, setProfile] = useState<AboutData>({ id: 'profile', text: '', imageUrl: '', faviconUrl: '' });
   const [connect, setConnect] = useState<ConnectConfig>({ id: 'connect_config', email: '', sobreText: '', links: [] });
+  const [ecosConfig, setEcosConfig] = useState<EcosConfig>({ id: 'ecos_config', links: [] });
+  const [ecosSavedSuccess, setEcosSavedSuccess] = useState(false);
   const [manifesto, setManifesto] = useState<ManifestoConfig>({ id: 'landing_manifesto', text: '' });
   const [isSaving, setIsSaving] = useState(false);
   const [isProcessingImage, setIsProcessingImage] = useState(false);
@@ -48,12 +67,13 @@ const PageBackoffice: React.FC<PageBackofficeProps> = ({ onLogout }) => {
   }, []);
 
   const fetchData = async () => {
-    const [w, s, p, c, m] = await Promise.all([
+    const [w, s, p, c, m, ec] = await Promise.all([
       storage.getAll('works'),
       storage.getAll('signals'),
       storage.get('about', 'profile'),
       storage.get('about', 'connect_config'),
-      storage.get('about', 'landing_manifesto')
+      storage.get('about', 'landing_manifesto'),
+      storage.get('about', 'ecos_config')
     ]);
     setWorks(w.sort((a, b) => b.date.localeCompare(a.date)));
     setSignals(s.sort((a, b) => {
@@ -63,6 +83,36 @@ const PageBackoffice: React.FC<PageBackofficeProps> = ({ onLogout }) => {
     }));
     if (p) setProfile(p);
     if (c) setConnect(c);
+    if (ec) {
+      setEcosConfig(ec);
+    } else {
+      setEcosConfig({
+        id: 'ecos_config',
+        links: [
+          { 
+            id: '01', 
+            title: 'colab55', 
+            description: 'impressões e objetos de ritos',
+            url: 'https://www.colab55.com/@ruidosatmosfericos',
+            status: 'ativo'
+          },
+          { 
+            id: '02', 
+            title: 'pinterest', 
+            description: 'fragmentos de processo e ruídos',
+            url: 'https://br.pinterest.com/ruidosatmosfericos01/',
+            status: 'ativo'
+          },
+          { 
+            id: '03', 
+            title: 'redbubble', 
+            description: 'suportes e artefatos globais',
+            url: 'https://www.redbubble.com/people/rdsatmosfericos/',
+            status: 'ativo'
+          }
+        ]
+      });
+    }
     if (m) {
       if (!m.layers || m.layers.length === 0) {
         setManifesto({ ...m, layers: OFFICIAL_LAYERS });
@@ -73,6 +123,7 @@ const PageBackoffice: React.FC<PageBackofficeProps> = ({ onLogout }) => {
       // If manifesto doesn't exist in storage yet, initialize with official layers
       setManifesto({ id: 'landing_manifesto', text: '', layers: OFFICIAL_LAYERS });
     }
+    setCustomQuestions(getTemplateQuestions());
   };
 
   const compressAndResizeImage = (base64Str: string): Promise<string> => {
@@ -171,7 +222,11 @@ export const INITIAL_DATA: {
       views: 0,
       coverImageUrl: '',
       seoDescription: '',
-      blocks: [{ id: `b-${Date.now()}`, type: 'text', content: 'digite sua mensagem aqui...' }]
+      blocks: [{ id: `b-${Date.now()}`, type: 'text', content: 'digite sua mensagem aqui...' }],
+      metadata: (customQuestions.length > 0 ? customQuestions : getTemplateQuestions()).map(q => ({
+        question: q,
+        answer: ''
+      }))
     };
     lastSavedSignalRef.current = JSON.stringify(newSignal);
     setEditingSignal(newSignal);
@@ -470,6 +525,21 @@ export const INITIAL_DATA: {
       await storage.save('about', { ...manifesto, isCustomized: true });
       fetchData();
       alert('sistema de manifesto atualizado.');
+    } finally { setIsSaving(false); }
+  };
+
+  const handleSaveEcos = async (e: React.FormEvent) => {
+    if (e) e.preventDefault();
+    setIsSaving(true);
+    try {
+      await storage.save('about', ecosConfig);
+      fetchData();
+      setEcosSavedSuccess(true);
+      setTimeout(() => setEcosSavedSuccess(false), 3000);
+      alert('links do ecos salvos com sucesso.');
+    } catch (err) {
+      console.error(err);
+      alert('erro ao salvar links do ecos.');
     } finally { setIsSaving(false); }
   };
 
@@ -792,12 +862,14 @@ Last Typed Command,Último Comando do Terminal,O texto exato do último comando 
     return textContent.split(/\s+/).filter(word => word.length > 0).length;
   }, [editingSignal]);
 
-  const tabs = [ViewState.MATERIA, ViewState.SINAIS, ViewState.MANIFESTO, ViewState.ABOUT, ViewState.CONNECT, 'sincronizar'];
+  const tabs = [ViewState.MATERIA, ViewState.SINAIS, 'questions', ViewState.ECOS, ViewState.MANIFESTO, ViewState.ABOUT, ViewState.CONNECT, 'sincronizar'];
   
   // Mapeamento de ViewState para Label amigável (consistente com Navigation.tsx)
   const tabLabels: Record<string, string> = {
     [ViewState.MATERIA]: 'matéria',
     [ViewState.SINAIS]: 'sinais',
+    'questions': 'perguntas',
+    [ViewState.ECOS]: 'ecos',
     [ViewState.MANIFESTO]: 'manifesto',
     [ViewState.ABOUT]: 'esse eu',
     [ViewState.CONNECT]: 'contato',
@@ -1390,7 +1462,7 @@ Last Typed Command,Último Comando do Terminal,O texto exato do último comando 
                                />
                             </div>
 
-                            <div className="space-y-2">
+                             <div className="space-y-2">
                                <label className="text-[9px] opacity-40 uppercase tracking-widest">descrição para redes (seo)</label>
                                <textarea 
                                  value={editingSignal.seoDescription || ''} 
@@ -1398,8 +1470,93 @@ Last Typed Command,Último Comando do Terminal,O texto exato do último comando 
                                  className="w-full bg-black border border-white/10 p-3 rounded text-xs outline-none focus:border-[var(--accent)] h-11 resize-none" 
                                  placeholder="resumo curto para compartilhamento..."
                                />
-                            </div>
-                         </div>
+                             </div>
+                          </div>
+
+                          {/* Metadados de Campo (Estilo DeviantArt) */}
+                          <div className="pt-6 border-t border-white/10 space-y-4 text-left">
+                             <div className="flex justify-between items-center">
+                               <h4 className="text-[9px] text-[var(--accent)] tracking-[0.2em] uppercase font-bold">metadados de campo (estilo deviantart)</h4>
+                               <button 
+                                 type="button"
+                                 onClick={() => {
+                                   const currentMeta = editingSignal.metadata || [];
+                                   setEditingSignal({
+                                     ...editingSignal,
+                                     metadata: [...currentMeta, { question: 'novo campo', answer: '' }]
+                                   });
+                                 }}
+                                 className="text-[9px] text-[var(--accent)] hover:underline opacity-80 hover:opacity-100 font-mono tracking-wider lowercase"
+                               >
+                                 + novo campo
+                               </button>
+                             </div>
+                             
+                             <div className="space-y-3 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
+                               {((editingSignal.metadata && editingSignal.metadata.length > 0) ? editingSignal.metadata : [
+                                 { question: 'ouvindo', answer: '' },
+                                 { question: 'humor', answer: '' },
+                                 { question: 'lugar', answer: '' },
+                                 { question: 'clima', answer: '' },
+                                 { question: 'suporte', answer: '' }
+                               ]).map((item, idx) => (
+                                 <div key={idx} className="flex gap-2 items-center bg-black/40 p-2 rounded border border-white/5">
+                                   <input 
+                                     type="text" 
+                                     value={item.question}
+                                     onChange={e => {
+                                       const currentMeta = [...(editingSignal.metadata || [
+                                         { question: 'ouvindo', answer: '' },
+                                         { question: 'humor', answer: '' },
+                                         { question: 'lugar', answer: '' },
+                                         { question: 'clima', answer: '' },
+                                         { question: 'suporte', answer: '' }
+                                       ])];
+                                       currentMeta[idx] = { ...currentMeta[idx], question: e.target.value };
+                                       setEditingSignal({ ...editingSignal, metadata: currentMeta });
+                                     }}
+                                     className="w-1/3 bg-transparent border-r border-white/10 pr-2 text-xs font-mono text-[var(--accent)] outline-none lowercase"
+                                     placeholder="pergunta"
+                                   />
+                                   <input 
+                                     type="text" 
+                                     value={item.answer}
+                                     onChange={e => {
+                                       const currentMeta = [...(editingSignal.metadata || [
+                                         { question: 'ouvindo', answer: '' },
+                                         { question: 'humor', answer: '' },
+                                         { question: 'lugar', answer: '' },
+                                         { question: 'clima', answer: '' },
+                                         { question: 'suporte', answer: '' }
+                                       ])];
+                                       currentMeta[idx] = { ...currentMeta[idx], answer: e.target.value };
+                                       setEditingSignal({ ...editingSignal, metadata: currentMeta });
+                                     }}
+                                     className="flex-grow bg-transparent text-xs outline-none text-white/80 lowercase"
+                                     placeholder="resposta..."
+                                   />
+                                   <button 
+                                     type="button"
+                                     onClick={() => {
+                                       const currentMeta = [...(editingSignal.metadata || [
+                                         { question: 'ouvindo', answer: '' },
+                                         { question: 'humor', answer: '' },
+                                         { question: 'lugar', answer: '' },
+                                         { question: 'clima', answer: '' },
+                                         { question: 'suporte', answer: '' }
+                                       ])];
+                                       const filtered = currentMeta.filter((_, i) => i !== idx);
+                                       setEditingSignal({ ...editingSignal, metadata: filtered });
+                                     }}
+                                     className="text-red-500/50 hover:text-red-500 font-mono text-xs px-2"
+                                     title="remover campo"
+                                   >
+                                     ×
+                                   </button>
+                                 </div>
+                               ))}
+                             </div>
+                          </div>
 
                          <div className={`pt-6 border-t border-white/10 flex flex-col gap-3 ${editorMode === 'split' ? 'md:flex-row md:items-center' : ''}`}>
                             <NeobrutalistButton variant="matrix" type="submit" className={`${editorMode === 'split' ? 'md:w-auto md:px-8' : 'w-full'} py-4 text-sm uppercase tracking-widest`}>concluir e fechar</NeobrutalistButton>
@@ -1415,6 +1572,293 @@ Last Typed Command,Último Comando do Terminal,O texto exato do último comando 
                 </div>
               </form>
             )}
+          </div>
+        )}
+
+         {activeTab === 'questions' && (
+          <div className="space-y-8 animate-in fade-in max-w-3xl mx-auto pb-32">
+            <div className="bg-white/5 p-8 rounded-2xl border border-white/10 space-y-6">
+              <header className="border-b border-white/10 pb-4">
+                 <h2 className="text-sm font-electrolize text-[var(--accent)] tracking-[0.2em] uppercase">editor de questions /// metadados de transmissão</h2>
+                 <p className="text-[10px] opacity-40 mt-1">Configure perguntas e metadados que serão pré-carregados automaticamente ao criar qualquer nova transmissão em "sinais".</p>
+              </header>
+
+              <div className="space-y-4">
+                <div className="flex justify-between items-center pb-2">
+                  <span className="text-[10px] uppercase tracking-widest text-white/40">perguntas padrão configuradas</span>
+                  <button 
+                    type="button"
+                    onClick={() => setCustomQuestions([...customQuestions, ''])}
+                    className="text-[10px] text-[var(--accent)] hover:underline flex items-center gap-1.5 lowercase"
+                  >
+                    + adicionar nova pergunta
+                  </button>
+                </div>
+
+                <div className="space-y-3">
+                  {customQuestions.map((q, idx) => (
+                    <div key={idx} className="flex gap-3 items-center bg-black/40 p-3 rounded-lg border border-white/5">
+                      <span className="font-mono text-white/30 text-xs w-6">{String(idx + 1).padStart(2, '0')}.</span>
+                      <input 
+                        type="text" 
+                        value={q}
+                        onChange={e => {
+                          const updated = [...customQuestions];
+                          updated[idx] = e.target.value;
+                          setCustomQuestions(updated);
+                        }}
+                        className="flex-grow bg-transparent text-xs text-white/80 outline-none border-b border-white/10 focus:border-[var(--accent)] pb-1 lowercase"
+                        placeholder="ex: música ouvindo, humor atual..."
+                      />
+                      <div className="flex gap-1">
+                        <button 
+                          type="button"
+                          disabled={idx === 0}
+                          onClick={() => {
+                            const updated = [...customQuestions];
+                            const temp = updated[idx];
+                            updated[idx] = updated[idx - 1];
+                            updated[idx - 1] = temp;
+                            setCustomQuestions(updated);
+                          }}
+                          className="text-white/40 hover:text-white disabled:opacity-20 text-xs px-1.5 py-1"
+                          title="subir"
+                        >
+                          ↑
+                        </button>
+                        <button 
+                          type="button"
+                          disabled={idx === customQuestions.length - 1}
+                          onClick={() => {
+                            const updated = [...customQuestions];
+                            const temp = updated[idx];
+                            updated[idx] = updated[idx + 1];
+                            updated[idx + 1] = temp;
+                            setCustomQuestions(updated);
+                          }}
+                          className="text-white/40 hover:text-white disabled:opacity-20 text-xs px-1.5 py-1"
+                          title="descer"
+                        >
+                          ↓
+                        </button>
+                        <button 
+                          type="button"
+                          onClick={() => {
+                            const updated = customQuestions.filter((_, i) => i !== idx);
+                            setCustomQuestions(updated);
+                          }}
+                          className="text-red-500/40 hover:text-red-500 text-xs px-2 py-1"
+                          title="excluir"
+                        >
+                          ×
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+
+                  {customQuestions.length === 0 && (
+                    <div className="text-center py-8 border border-dashed border-white/10 rounded-lg opacity-40 text-xs lowercase">
+                      nenhuma pergunta padrão cadastrada. adicione uma nova pergunta acima.
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="pt-6 border-t border-white/10 flex flex-col sm:flex-row gap-4 items-center justify-between">
+                <p className="text-[10px] opacity-40 text-center sm:text-left">as alterações só terão efeito nos novos posts criados a partir de agora.</p>
+                <div className="flex gap-4 items-center">
+                  {savedSuccess && (
+                    <span className="text-[10px] text-[var(--accent)] font-mono tracking-wider animate-pulse">[salvo com sucesso!]</span>
+                  )}
+                  <button 
+                    type="button"
+                    onClick={() => {
+                      const cleaned = customQuestions.filter(q => q.trim());
+                      localStorage.setItem('custom_metadata_questions', JSON.stringify(cleaned));
+                      setCustomQuestions(cleaned);
+                      setSavedSuccess(true);
+                      setTimeout(() => setSavedSuccess(false), 3000);
+                    }}
+                    className="bg-[var(--accent)] text-black px-6 py-2.5 rounded-full hover:scale-105 transition-all text-xs font-mono tracking-wider uppercase font-bold"
+                  >
+                    salvar perguntas padrão
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+         {activeTab === ViewState.ECOS && (
+          <div className="space-y-8 animate-in fade-in max-w-4xl mx-auto pb-32">
+            <form onSubmit={handleSaveEcos} className="bg-white/5 p-8 rounded-2xl border border-white/10 space-y-6">
+              <header className="border-b border-white/10 pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                 <div>
+                   <h2 className="text-sm font-electrolize text-[var(--accent)] tracking-[0.2em] uppercase">gerenciar botões /// ecos</h2>
+                   <p className="text-[10px] opacity-40 mt-1">configure os links de transmissão, objetos e UTMs exibidos na página "ecos".</p>
+                 </div>
+                 <button 
+                   type="button"
+                   onClick={() => {
+                     const newLink: EcoLink = {
+                       id: `eco-${Date.now()}`,
+                       title: 'novo canal',
+                       description: 'descrição curta do canal ou rede...',
+                       url: '',
+                       status: 'ativo'
+                     };
+                     setEcosConfig({
+                       ...ecosConfig,
+                       links: [...(ecosConfig.links || []), newLink]
+                     });
+                   }}
+                   className="text-[10px] bg-white/10 hover:bg-white/20 border border-white/10 px-4 py-2 rounded-full transition-all lowercase flex items-center gap-2 text-white"
+                 >
+                   + novo link
+                 </button>
+              </header>
+
+              <div className="space-y-6">
+                {(ecosConfig.links || []).map((link, idx) => (
+                  <div key={link.id} className="p-6 bg-black/40 border border-white/5 rounded-xl space-y-4 relative group">
+                    <div className="flex justify-between items-center border-b border-white/5 pb-3">
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono text-white/20 text-xs font-bold">#{String(idx + 1).padStart(2, '0')}</span>
+                        <span className="text-[10px] uppercase tracking-widest bg-[var(--accent)]/10 text-[var(--accent)] px-2 py-0.5 rounded">
+                          {link.status}
+                        </span>
+                      </div>
+                      <div className="flex gap-2">
+                        <button
+                          type="button"
+                          disabled={idx === 0}
+                          onClick={() => {
+                            const updated = [...ecosConfig.links];
+                            const temp = updated[idx];
+                            updated[idx] = updated[idx - 1];
+                            updated[idx - 1] = temp;
+                            setEcosConfig({ ...ecosConfig, links: updated });
+                          }}
+                          className="p-1 text-white/40 hover:text-white disabled:opacity-20 text-xs"
+                          title="subir"
+                        >
+                          ↑
+                        </button>
+                        <button
+                          type="button"
+                          disabled={idx === (ecosConfig.links || []).length - 1}
+                          onClick={() => {
+                            const updated = [...ecosConfig.links];
+                            const temp = updated[idx];
+                            updated[idx] = updated[idx + 1];
+                            updated[idx + 1] = temp;
+                            setEcosConfig({ ...ecosConfig, links: updated });
+                          }}
+                          className="p-1 text-white/40 hover:text-white disabled:opacity-20 text-xs"
+                          title="descer"
+                        >
+                          ↓
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const updated = ecosConfig.links.filter(l => l.id !== link.id);
+                            setEcosConfig({ ...ecosConfig, links: updated });
+                          }}
+                          className="p-1 text-red-500/50 hover:text-red-500 text-xs ml-2"
+                          title="remover"
+                        >
+                          remover
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-1">
+                        <label className="text-[10px] uppercase tracking-wider text-white/40">título</label>
+                        <input 
+                          type="text"
+                          value={link.title}
+                          onChange={e => {
+                            const updated = ecosConfig.links.map(l => l.id === link.id ? { ...l, title: e.target.value } : l);
+                            setEcosConfig({ ...ecosConfig, links: updated });
+                          }}
+                          className="w-full bg-black/60 border border-white/10 rounded-lg p-2.5 text-xs text-white outline-none focus:border-[var(--accent)] lowercase"
+                          placeholder="ex: colab55, pinterest..."
+                        />
+                      </div>
+
+                      <div className="space-y-1">
+                        <label className="text-[10px] uppercase tracking-wider text-white/40">status</label>
+                        <select
+                          value={link.status}
+                          onChange={e => {
+                            const updated = ecosConfig.links.map(l => l.id === link.id ? { ...l, status: e.target.value } : l);
+                            setEcosConfig({ ...ecosConfig, links: updated });
+                          }}
+                          className="w-full bg-black/60 border border-white/10 rounded-lg p-2.5 text-xs text-white outline-none focus:border-[var(--accent)] lowercase"
+                        >
+                          <option value="ativo">ativo (botão visível e funcional)</option>
+                          <option value="mapeando">mapeando (placeholder esmaecido)</option>
+                        </select>
+                      </div>
+
+                      <div className="space-y-1 md:col-span-2">
+                        <label className="text-[10px] uppercase tracking-wider text-white/40">descrição do canal / artefato</label>
+                        <input 
+                          type="text"
+                          value={link.description}
+                          onChange={e => {
+                            const updated = ecosConfig.links.map(l => l.id === link.id ? { ...l, description: e.target.value } : l);
+                            setEcosConfig({ ...ecosConfig, links: updated });
+                          }}
+                          className="w-full bg-black/60 border border-white/10 rounded-lg p-2.5 text-xs text-white outline-none focus:border-[var(--accent)] lowercase"
+                          placeholder="ex: impressões, suportes e fragmentos de processo..."
+                        />
+                      </div>
+
+                      <div className="space-y-1 md:col-span-2">
+                        <label className="text-[10px] uppercase tracking-wider text-white/40">url de destino (adicione seus links utm aqui)</label>
+                        <input 
+                          type="text"
+                          value={link.url}
+                          onChange={e => {
+                            const updated = ecosConfig.links.map(l => l.id === link.id ? { ...l, url: e.target.value } : l);
+                            setEcosConfig({ ...ecosConfig, links: updated });
+                          }}
+                          className="w-full bg-black/60 border border-white/10 rounded-lg p-2.5 text-xs text-white outline-none focus:border-[var(--accent)]"
+                          placeholder="ex: https://site.com/?utm_source=ecos&utm_medium=click"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+
+                {(ecosConfig.links || []).length === 0 && (
+                  <div className="text-center py-12 border border-dashed border-white/10 rounded-xl opacity-30 text-xs lowercase">
+                    nenhum link cadastrado. clique em "+ novo link" acima para iniciar.
+                  </div>
+                )}
+              </div>
+
+              <div className="pt-6 border-t border-white/10 flex flex-col sm:flex-row gap-4 items-center justify-between">
+                <p className="text-[10px] opacity-40 text-center sm:text-left">
+                  as alterações salvas se refletirão diretamente na aba pública de ecos do site.
+                </p>
+                <div className="flex gap-4 items-center">
+                  {ecosSavedSuccess && (
+                    <span className="text-[10px] text-[var(--accent)] font-mono tracking-wider animate-pulse">[configurações de ecos salvas!]</span>
+                  )}
+                  <button 
+                    type="submit"
+                    disabled={isSaving}
+                    className="bg-[var(--accent)] text-black px-6 py-2.5 rounded-full hover:scale-105 transition-all text-xs font-mono tracking-wider uppercase font-bold disabled:opacity-50"
+                  >
+                    {isSaving ? 'salvando...' : 'salvar botões do ecos'}
+                  </button>
+                </div>
+              </div>
+            </form>
           </div>
         )}
 

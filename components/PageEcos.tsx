@@ -1,9 +1,10 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
-import { ViewState } from '../types';
+import { ViewState, EcoLink, EcosConfig } from '../types';
 import NeobrutalistButton from './NeobrutalistButton';
 import { trackExternalClicked, trackSocialLinkClicked } from './analytics';
+import { storage } from '../lib/storage';
 
 interface PageEcosProps {
   onNavigate: (view: ViewState) => void;
@@ -11,29 +12,45 @@ interface PageEcosProps {
 }
 
 const PageEcos: React.FC<PageEcosProps> = ({ onNavigate, isDarkMode }) => {
-  const items = [
-    { 
-      id: '01', 
-      title: 'colab55', 
-      description: 'impressões e objetos de ritos',
-      url: 'https://www.colab55.com/@ruidosatmosfericos',
-      status: 'ativo'
-    },
-    { 
-      id: '02', 
-      title: 'pinterest', 
-      description: 'fragmentos de processo e ruídos',
-      url: 'https://br.pinterest.com/ruidosatmosfericos01/',
-      status: 'ativo'
-    },
-    { 
-      id: '03', 
-      title: 'redbubble', 
-      description: 'suportes e artefatos globais',
-      url: 'https://www.redbubble.com/people/rdsatmosfericos/',
-      status: 'ativo'
-    },
-  ];
+  const [items, setItems] = useState<EcoLink[]>([]);
+
+  useEffect(() => {
+    const loadEcos = async () => {
+      try {
+        const config = await storage.get('about', 'ecos_config') as EcosConfig | null;
+        if (config && Array.isArray(config.links)) {
+          setItems(config.links);
+        } else {
+          setItems([
+            { 
+              id: '01', 
+              title: 'colab55', 
+              description: 'impressões e objetos de ritos',
+              url: 'https://www.colab55.com/@ruidosatmosfericos',
+              status: 'ativo'
+            },
+            { 
+              id: '02', 
+              title: 'pinterest', 
+              description: 'fragmentos de processo e ruídos',
+              url: 'https://br.pinterest.com/ruidosatmosfericos01/',
+              status: 'ativo'
+            },
+            { 
+              id: '03', 
+              title: 'redbubble', 
+              description: 'suportes e artefatos globais',
+              url: 'https://www.redbubble.com/people/rdsatmosfericos/',
+              status: 'ativo'
+            },
+          ]);
+        }
+      } catch (e) {
+        console.error("Erro ao carregar ecos", e);
+      }
+    };
+    loadEcos();
+  }, []);
 
   return (
     <div className="relative w-full min-h-screen flex flex-col pt-32 pb-24 px-6 md:px-12 selection:bg-[var(--accent)] selection:text-black">

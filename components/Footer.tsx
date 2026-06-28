@@ -3,7 +3,7 @@ import React from 'react';
 
 const Footer: React.FC = () => {
   return (
-    <footer className="w-full h-[60px] border-t border-white/5 [.light-mode_&]:border-black/5 relative flex flex-row justify-center items-center px-8 md:px-12 mt-auto bg-transparent z-50 text-white [.light-mode_&]:text-black transition-colors duration-500">
+    <footer className="w-full h-[60px] relative flex flex-row justify-center items-center px-8 md:px-12 mt-auto bg-transparent z-50 text-white [.light-mode_&]:text-black transition-colors duration-500">
       
       {/* Centro: Marquee (Discreto e em minúsculo) */}
       <div className="absolute inset-0 flex items-center overflow-hidden opacity-10 pointer-events-none">

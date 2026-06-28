@@ -156,12 +156,12 @@ const Splash: React.FC<SplashProps> = ({ onEnter }) => {
       {/* Cabeçalho Estilo Terminal / HUD - Otimizado para Tablet */}
       <div className="absolute top-8 md:top-12 w-full px-8 md:px-16 flex justify-between items-start opacity-30 text-[9px] md:text-[11px] tracking-[0.2em] lowercase font-vt mix-blend-screen">
         <div className="flex flex-col gap-2 items-start">
-          <div className="border-l border-[var(--accent)] pl-3">unificado</div>
-          <div className="pl-3 opacity-50">10^-33 cm</div>
+          <div>unificado</div>
+          <div className="opacity-50">10^-33 cm</div>
         </div>
         <div className="flex flex-col gap-2 items-end text-right">
-          <div className="border-r border-[var(--accent)] pr-3">∿ ∿ ∿</div>
-          <div className="pr-3 opacity-50">presente</div>
+          <div>∿ ∿ ∿</div>
+          <div className="opacity-50">presente</div>
         </div>
       </div>
 
@@ -212,7 +212,7 @@ const Splash: React.FC<SplashProps> = ({ onEnter }) => {
       )}
 
       {/* Rodapé do Sistema */}
-      <div className="absolute bottom-8 md:bottom-12 w-full px-12 font-vt text-[8px] md:text-[9px] opacity-20 flex justify-center border-t border-[var(--accent)]/10 pt-4">
+      <div className="absolute bottom-8 md:bottom-12 w-full px-12 font-vt text-[8px] md:text-[9px] opacity-20 flex justify-center">
         <div className="max-w-md text-center leading-loose tracking-[0.4em] lowercase">
           ruídos atmosféricos // ciclo 21 // 2026
         </div>

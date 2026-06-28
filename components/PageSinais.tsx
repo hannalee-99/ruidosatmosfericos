@@ -257,23 +257,10 @@ const PageSinais: React.FC<PageSinaisProps> = ({
             )}
 
             <header className="mb-16 md:mb-24 relative max-w-3xl mx-auto text-left">
-               <div className="flex flex-col md:flex-row md:items-end justify-between border-t border-white/20 pt-4 mb-8 gap-4">
+               <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
                  <div className="flex flex-wrap gap-4 font-mono text-[10px] md:text-xs tracking-widest lowercase opacity-60 items-center">
                     <span className="bg-white/10 px-2 py-1 rounded">data: {selectedPost.date}</span>
                     <span className="bg-[var(--accent)]/10 text-[var(--accent)] px-2 py-1 rounded font-bold">{readingTime}</span>
-                    <button 
-                      onClick={() => {
-                        navigator.clipboard.writeText(window.location.href);
-                        setShowToast(true);
-                        if (selectedPost) {
-                          trackLinkShared('signal', selectedPost.title);
-                        }
-                      }}
-                      className="flex items-center gap-2 hover:text-[var(--accent)] transition-colors border-b border-transparent hover:border-[var(--accent)] pb-0.5"
-                    >
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
-                      compartilhar
-                    </button>
                  </div>
                </div>
                <h1 className="font-electrolize text-4xl md:text-7xl lg:text-8xl leading-[1.1] md:leading-[0.9] text-[var(--accent)] mb-8 lowercase">{selectedPost.title}</h1>
@@ -283,6 +270,23 @@ const PageSinais: React.FC<PageSinaisProps> = ({
             </header>
             <article className="max-w-3xl mx-auto pb-32">
                <SignalRenderer signal={selectedPost} />
+
+               {/* Botão de Compartilhar no Final do Artigo */}
+               <div className="mt-16 flex items-center justify-start">
+                  <button 
+                    onClick={() => {
+                      navigator.clipboard.writeText(window.location.href);
+                      setShowToast(true);
+                      if (selectedPost) {
+                        trackLinkShared('signal', selectedPost.title);
+                      }
+                    }}
+                    className="flex items-center gap-3 bg-[var(--accent)]/10 text-[var(--accent)] [.light-mode_&]:bg-teal-500/10 [.light-mode_&]:text-teal-600 px-5 py-2.5 rounded-full hover:bg-[var(--accent)] hover:text-black [.light-mode_&]:hover:bg-teal-500 [.light-mode_&]:hover:text-white transition-all text-xs font-mono tracking-widest lowercase"
+                  >
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
+                    copiar link para compartilhar
+                  </button>
+               </div>
             </article>
             <Toast message="link copiado" isVisible={showToast} onClose={() => setShowToast(false)} isDarkMode={isDarkMode} />
          </div>
@@ -319,7 +323,7 @@ const PageSinais: React.FC<PageSinaisProps> = ({
                          </div>
 
                          {/* Content & Image Wrapper */}
-                         <div className="flex-grow flex flex-col md:flex-row gap-10 items-start md:items-center border-l border-white/5 group-hover/item:border-[var(--accent)]/30 pl-8 md:pl-12 transition-all duration-500">
+                         <div className="flex-grow flex flex-col md:flex-row gap-10 items-start md:items-center pl-8 md:pl-12 transition-all duration-500">
                             
                             {/* Image - Now on the left of the text on desktop */}
                             {post.coverImageUrl && (

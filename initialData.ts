@@ -1,4 +1,4 @@
-import { Work, Signal, AboutData, ConnectConfig, ManifestoConfig } from './types';
+import { Work, Signal, AboutData, ConnectConfig, ManifestoConfig, EcosConfig } from './types';
 
 export const INITIAL_DATA: {
   lastUpdated: number;
@@ -8,6 +8,7 @@ export const INITIAL_DATA: {
     profile: AboutData | null;
     connect_config: ConnectConfig | null;
     landing_manifesto: ManifestoConfig | null;
+    ecos_config: EcosConfig | null;
   };
 } = {
   "lastUpdated": Date.now(),
@@ -346,6 +347,32 @@ export const INITIAL_DATA: {
         { "n": "09", "scale": "cósmica++", "name": "sinais", "lines": [[{ "t": "sinais", "accent": true }, { "t": " atravessam o " }, { "t": "tecido cósmico", "accent": true }]] },
         { "n": "10", "scale": "dualidades", "name": "atrito", "lines": [[{ "t": "entre o atrito" }], [{ "t": "do vazio com a forma" }], [{ "t": "do corpo com o mundo" }], [{ "t": "do controle com o fluxo" }], [{ "t": "do eu com o " }, { "t": "outro", "accent": true }]] },
         { "n": "11", "scale": "meta", "name": "criando", "lines": [[{ "t": "e é nessa fenda que observo os " }, { "t": "ruídos", "accent": true }], [{ "t": "criando.", "accent": true }]] }
+      ]
+    },
+    "ecos_config": {
+      "id": "ecos_config",
+      "links": [
+        { 
+          "id": "01", 
+          "title": "colab55", 
+          "description": "impressões e objetos de ritos",
+          "url": "https://www.colab55.com/@ruidosatmosfericos",
+          "status": "ativo"
+        },
+        { 
+          "id": "02", 
+          "title": "pinterest", 
+          "description": "fragmentos de processo e ruídos",
+          "url": "https://br.pinterest.com/ruidosatmosfericos01/",
+          "status": "ativo"
+        },
+        { 
+          "id": "03", 
+          "title": "redbubble", 
+          "description": "suportes e artefatos globais",
+          "url": "https://www.redbubble.com/people/rdsatmosfericos/",
+          "status": "ativo"
+        }
       ]
     }
   }
