@@ -298,7 +298,7 @@ const PageSinais: React.FC<PageSinaisProps> = ({
     <div className="pt-32 md:pt-40 pb-40 px-6 md:px-12 max-w-[1800px] mx-auto min-h-screen">
       <header className="mb-16 md:mb-20 flex flex-col gap-8 items-start">
         <div className="flex-shrink-0 space-y-4">
-          <h2 className={`font-nabla text-7xl md:text-9xl lowercase ${isDarkMode ? 'palette-matrix' : 'palette-matrix-blue'}`}>sinais</h2>
+          <h1 className={`font-nabla text-7xl md:text-9xl lowercase ${isDarkMode ? 'palette-matrix' : 'palette-matrix-blue'}`}>sinais</h1>
           <p className="font-mono text-sm opacity-60 lowercase tracking-widest">captura de frequências e registros de campo</p>
         </div>
       </header>
@@ -338,9 +338,9 @@ const PageSinais: React.FC<PageSinaisProps> = ({
                             )}
 
                             <div className="flex-grow space-y-6">
-                              <h3 className="text-4xl md:text-6xl font-electrolize lowercase text-white [.light-mode_&]:text-black group-hover/item:text-[var(--accent)] transition-colors leading-[0.9]">
+                              <h2 className="text-4xl md:text-6xl font-electrolize lowercase text-white [.light-mode_&]:text-black group-hover/item:text-[var(--accent)] transition-colors leading-[0.9]">
                                 {post.title}
-                              </h3>
+                              </h2>
                               {post.subtitle && (
                                 <p className="font-mono text-sm opacity-40 group-hover/item:opacity-80 transition-opacity lowercase leading-relaxed max-w-lg">
                                   {post.subtitle}

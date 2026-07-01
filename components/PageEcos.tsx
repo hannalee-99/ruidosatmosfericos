@@ -95,9 +95,9 @@ const PageEcos: React.FC<PageEcosProps> = ({ onNavigate, isDarkMode }) => {
               <div className={`flex-grow flex flex-col ${item.status === 'mapeando' ? 'items-center justify-center text-center' : 'space-y-6 pt-6'}`}>
                 {item.status === 'mapeando' ? (
                    <div className="space-y-4">
-                      <h3 className="font-electrolize text-3xl md:text-4xl tracking-tighter lowercase opacity-40">
+                      <h2 className="font-electrolize text-3xl md:text-4xl tracking-tighter lowercase opacity-40">
                         {item.title}
-                      </h3>
+                      </h2>
                       <div className="flex items-center justify-center gap-2">
                          <div className="w-1 h-1 rounded-full bg-current opacity-20"></div>
                          <span className="font-mono text-[9px] uppercase tracking-[0.3em] opacity-30 italic">{item.status}</span>
@@ -112,9 +112,9 @@ const PageEcos: React.FC<PageEcosProps> = ({ onNavigate, isDarkMode }) => {
                       </div>
                     </div>
 
-                    <h3 className="font-electrolize text-3xl md:text-4xl tracking-tighter lowercase group-hover:text-[var(--accent)] transition-colors duration-700 leading-none">
+                    <h2 className="font-electrolize text-3xl md:text-4xl tracking-tighter lowercase group-hover:text-[var(--accent)] transition-colors duration-700 leading-none">
                       {item.title}
-                    </h3>
+                    </h2>
                     <p className="font-mono text-xs opacity-40 leading-relaxed lowercase text-left relative max-w-[240px]">
                       {item.description}
                     </p>

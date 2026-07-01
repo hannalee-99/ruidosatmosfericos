@@ -163,6 +163,7 @@ const PageConnect: React.FC<PageConnectProps> = ({ onNavigate }) => {
 
   return (
     <div className="min-h-[100dvh] w-full bg-[#050505] text-[#9ff85d] pt-44 md:pt-48 pb-20 px-6 md:px-20 font-mono text-sm md:text-base flex flex-col relative" onClick={() => inputRef.current?.focus()}>
+      <h1 className="sr-only">conectar /// terminal de contato</h1>
       {/* Efeito de scanline consistente com o Manifesto */}
       <div className="fixed inset-0 pointer-events-none z-[100] opacity-[0.05] [.light-mode_&]:hidden">
         <div className="absolute inset-0 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] bg-[length:100%_4px,3px_100%]"></div>

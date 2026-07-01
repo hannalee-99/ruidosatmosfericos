@@ -345,6 +345,7 @@ const PageManifestoV2: React.FC<{ onNavigate: (view: ViewState) => void }> = ({ 
       className="min-h-[100dvh] w-full bg-[#050505] text-[#9ff85d] font-mono text-sm md:text-base selection:bg-[#9ff85d] selection:text-black overflow-x-hidden pt-44 md:pt-48 pb-20 px-6 md:px-20 relative cursor-pointer" 
       onClick={skipLayer}
     >
+      <h1 className="sr-only">manifesto /// desconformidade controlada</h1>
       {/* Scanline effect override to look more Matrix */}
       <div className="fixed inset-0 pointer-events-none z-[100] opacity-[0.05] [.light-mode_&]:hidden">
         <div className="absolute inset-0 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] bg-[length:100%_4px,3px_100%]"></div>

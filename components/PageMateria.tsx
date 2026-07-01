@@ -371,7 +371,7 @@ const PageMateria: React.FC<PageMateriaProps> = ({ isDarkMode, workSlug, onNavig
     <div className="pt-32 pb-40 px-6 md:px-12 max-w-[1800px] mx-auto min-h-screen">
       <header className="mb-16 md:mb-24 flex flex-col gap-12 items-start">
         <div className="flex-shrink-0 space-y-4">
-          <h2 className={`font-nabla text-7xl md:text-9xl lowercase ${isDarkMode ? 'palette-matrix' : 'palette-matrix-blue'}`}>matéria</h2>
+          <h1 className={`font-nabla text-7xl md:text-9xl lowercase ${isDarkMode ? 'palette-matrix' : 'palette-matrix-blue'}`}>matéria</h1>
           <p className="font-mono text-sm opacity-60 lowercase tracking-widest">registros de presença física e digital</p>
         </div>
         
@@ -414,7 +414,7 @@ const PageMateria: React.FC<PageMateriaProps> = ({ isDarkMode, workSlug, onNavig
             </div>
             <div className="flex flex-col gap-1 px-2">
               <div className="flex justify-between items-baseline">
-                <h3 className="font-electrolize text-xl md:text-2xl lowercase leading-none">{work.title}</h3>
+                <h2 className="font-electrolize text-xl md:text-2xl lowercase leading-none">{work.title}</h2>
                 <span className="font-mono text-[10px] opacity-40">{work.year}</span>
               </div>
               <p className="font-mono text-[10px] opacity-40 uppercase tracking-widest">{work.technique}</p>
