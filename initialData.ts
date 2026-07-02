@@ -1,4 +1,4 @@
-import { Work, Signal, AboutData, ConnectConfig, ManifestoConfig } from './types';
+import { Work, Signal, AboutData, ConnectConfig, ManifestoConfig, EcosConfig } from './types';
 
 export const INITIAL_DATA: {
   lastUpdated: number;
@@ -8,6 +8,7 @@ export const INITIAL_DATA: {
     profile: AboutData | null;
     connect_config: ConnectConfig | null;
     landing_manifesto: ManifestoConfig | null;
+    ecos_config: EcosConfig | null;
   };
 } = {
   "lastUpdated": 1782955434698,
@@ -684,6 +685,32 @@ export const INITIAL_DATA: {
               }
             ]
           ]
+        }
+      ]
+    },
+    "ecos_config": {
+      "id": "ecos_config",
+      "links": [
+        { 
+          "id": "01", 
+          "title": "colab55", 
+          "description": "impressões e objetos de ritos",
+          "url": "https://www.colab55.com/@ruidosatmosfericos",
+          "status": "ativo"
+        },
+        { 
+          "id": "02", 
+          "title": "pinterest", 
+          "description": "fragmentos de processo e ruídos",
+          "url": "https://br.pinterest.com/ruidosatmosfericos01/",
+          "status": "ativo"
+        },
+        { 
+          "id": "03", 
+          "title": "redbubble", 
+          "description": "suportes e artefatos globais",
+          "url": "https://www.redbubble.com/people/rdsatmosfericos/",
+          "status": "ativo"
         }
       ]
     }
