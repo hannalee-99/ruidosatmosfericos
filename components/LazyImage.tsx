@@ -80,8 +80,10 @@ const LazyImage: React.FC<LazyImageProps> = ({
               src={optimizedSrc}
               alt={alt}
               onLoad={handleImageLoad}
-                className={`w-full ${autoHeight ? 'h-auto block' : 'h-full object-cover'} ${isLoaded ? 'opacity-100' : 'opacity-0'}`}
+              className={`w-full select-none ${autoHeight ? 'h-auto block' : 'h-full object-cover'} ${isLoaded ? 'opacity-100' : 'opacity-0'}`}
               style={!autoHeight ? { objectFit } : {}}
+              draggable={false}
+              onContextMenu={(e) => e.preventDefault()}
             />
       )}
     </div>

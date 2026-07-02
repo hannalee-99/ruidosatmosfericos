@@ -39,6 +39,30 @@ const App: React.FC = () => {
 
   useEffect(() => {
     initAnalytics();
+
+    // Bloquear clique direito nas imagens para evitar downloads
+    const handleContextMenu = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (target.tagName === 'IMG' || target.closest('.no-download')) {
+        e.preventDefault();
+      }
+    };
+
+    // Bloquear arrastar imagens
+    const handleDragStart = (e: DragEvent) => {
+      const target = e.target as HTMLElement;
+      if (target.tagName === 'IMG') {
+        e.preventDefault();
+      }
+    };
+
+    document.addEventListener('contextmenu', handleContextMenu);
+    document.addEventListener('dragstart', handleDragStart);
+
+    return () => {
+      document.removeEventListener('contextmenu', handleContextMenu);
+      document.removeEventListener('dragstart', handleDragStart);
+    };
   }, []);
 
   // Atalhos de teclado globais para navegação

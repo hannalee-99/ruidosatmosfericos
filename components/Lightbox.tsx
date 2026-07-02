@@ -24,8 +24,10 @@ const Lightbox: React.FC<LightboxProps> = ({ isOpen, onClose, src, alt }) => {
     {
       onPinch: ({ offset: [d, a], memo }) => {
         // d is the distance between fingers
-        // We want to scale based on that
-        setCrop(prev => ({ ...prev, scale: 1 + d / 100 }));
+        // Limit maximum scale to 1.8 to avoid extreme, pixelated zoom
+        const rawScale = 1 + d / 100;
+        const limitedScale = Math.min(Math.max(1, rawScale), 1.8);
+        setCrop(prev => ({ ...prev, scale: limitedScale }));
         return memo;
       },
       onDrag: ({ offset: [x, y] }) => {
@@ -34,18 +36,18 @@ const Lightbox: React.FC<LightboxProps> = ({ isOpen, onClose, src, alt }) => {
         }
       },
       onWheel: ({ event, memo }) => {
-        // Desktop zoom with wheel
+        // Desktop zoom with wheel - limited to max 1.8 for clean, polished detailing
         const delta = event.deltaY;
         setCrop(prev => ({
           ...prev,
-          scale: Math.min(Math.max(1, prev.scale - delta / 500), 5)
+          scale: Math.min(Math.max(1, prev.scale - delta / 500), 1.8)
         }));
       },
       onDoubleClick: () => {
-        // Toggle zoom on double click
+        // Toggle zoom on double click - toggle to a safe 1.5 scale
         setCrop(prev => ({
           ...prev,
-          scale: prev.scale > 1 ? 1 : 2.5,
+          scale: prev.scale > 1 ? 1 : 1.5,
           x: 0,
           y: 0
         }));
@@ -85,10 +87,11 @@ const Lightbox: React.FC<LightboxProps> = ({ isOpen, onClose, src, alt }) => {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/95 backdrop-blur-sm touch-none"
+          className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/95 backdrop-blur-sm touch-none select-none"
           onClick={(e) => {
             if (e.target === e.currentTarget) onClose();
           }}
+          onContextMenu={(e) => e.preventDefault()}
         >
           {/* Close Button */}
           <button
