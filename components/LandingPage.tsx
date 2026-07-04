@@ -175,14 +175,18 @@ const LandingPage: React.FC<LandingPageProps> = ({ onNavigate, onSignalSelect, i
         }
         setFeaturedWorks(currentFeatured);
 
+        // Busca a configuração global de SEO do site
+        const seoData = await storage.get('about', 'seo_config');
+        const seoTitle = seoData?.title || 'ruídos atmosféricos';
+        const seoDescription = seoData?.description || 'espere nada, aprecie tudo. registros de presença digital e física.';
+
         // Atualiza Meta Tags para a Home
-        if (currentFeatured.length > 0) {
-          updateMeta({
-            description: "espere nada, aprecie tudo. registros de presença digital e física.",
-            image: currentFeatured[0].imageUrl,
-            url: "https://ruidosatmosfericos.online"
-          });
-        }
+        updateMeta({
+          title: seoTitle,
+          description: seoDescription,
+          image: seoData?.image || (currentFeatured.length > 0 ? currentFeatured[0].imageUrl : "https://64.media.tumblr.com/2469fc83feaecaf0b7a97fa55f6793d6/670f92e2b0934e32-bb/s2048x3072/3b1cf9f39410af90a8d0607d572f83c0024b2472.jpg"),
+          url: "https://ruidosatmosfericos.online"
+        });
 
         const signals = await storage.getAll('signals');
         const sortedSignals = signals.filter((s: any) => s.status === 'publicado').sort((a,b) => {

@@ -99,6 +99,9 @@ export const useDataSeeding = () => {
           if (INITIAL_DATA.about.ecos_config) {
             await storage.save('about', INITIAL_DATA.about.ecos_config);
           }
+          if (INITIAL_DATA.about.seo_config) {
+            await storage.save('about', INITIAL_DATA.about.seo_config);
+          }
 
           localStorage.setItem('ra_last_sync', codeVersion.toString());
           console.log("Sincronização concluída.");
@@ -111,6 +114,7 @@ export const useDataSeeding = () => {
             if (INITIAL_DATA.about.connect_config) await storage.save('about', INITIAL_DATA.about.connect_config);
             if (INITIAL_DATA.about.landing_manifesto) await storage.save('about', INITIAL_DATA.about.landing_manifesto);
             if (INITIAL_DATA.about.ecos_config) await storage.save('about', INITIAL_DATA.about.ecos_config);
+            if (INITIAL_DATA.about.seo_config) await storage.save('about', INITIAL_DATA.about.seo_config);
             localStorage.setItem('ra_last_sync', codeVersion.toString());
           }
         }

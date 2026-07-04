@@ -2,10 +2,11 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import mixpanel from 'mixpanel-browser';
 import { storage } from '../lib/storage';
-import { Work, Signal, SignalBlock, SignalBlockType, AboutData, ConnectConfig, ViewState, ManifestoConfig, EcosConfig, EcoLink } from '../types';
+import { Work, Signal, SignalBlock, SignalBlockType, AboutData, ConnectConfig, ViewState, ManifestoConfig, EcosConfig, EcoLink, SeoConfig } from '../types';
 import { DEFAULT_LAYERS as OFFICIAL_LAYERS } from './PageManifestoV2';
 import NeobrutalistButton from './NeobrutalistButton';
 import SignalRenderer from './SignalRenderer';
+import { useMeta } from '../lib/hooks';
 
 interface PageBackofficeProps {
   onLogout: () => void;
@@ -27,7 +28,8 @@ const getTemplateQuestions = (): string[] => {
 };
 
 const PageBackoffice: React.FC<PageBackofficeProps> = ({ onLogout }) => {
-  const [activeTab, setActiveTab] = useState<ViewState | 'sincronizar' | 'questions'>(ViewState.LANDING);
+  const { updateMeta } = useMeta();
+  const [activeTab, setActiveTab] = useState<ViewState | 'sincronizar' | 'questions' | 'seo'>(ViewState.LANDING);
   const [customQuestions, setCustomQuestions] = useState<string[]>([]);
   const [savedSuccess, setSavedSuccess] = useState(false);
   const [works, setWorks] = useState<Work[]>([]);
@@ -43,6 +45,8 @@ const PageBackoffice: React.FC<PageBackofficeProps> = ({ onLogout }) => {
   const [connect, setConnect] = useState<ConnectConfig>({ id: 'connect_config', email: '', sobreText: '', links: [] });
   const [ecosConfig, setEcosConfig] = useState<EcosConfig>({ id: 'ecos_config', links: [] });
   const [ecosSavedSuccess, setEcosSavedSuccess] = useState(false);
+  const [seoConfig, setSeoConfig] = useState<SeoConfig>({ id: 'seo_config', title: 'ruídos atmosféricos', description: '', image: '' });
+  const [seoSavedSuccess, setSeoSavedSuccess] = useState(false);
   const [manifesto, setManifesto] = useState<ManifestoConfig>({ id: 'landing_manifesto', text: '' });
   const [isSaving, setIsSaving] = useState(false);
   const [isProcessingImage, setIsProcessingImage] = useState(false);
@@ -67,13 +71,14 @@ const PageBackoffice: React.FC<PageBackofficeProps> = ({ onLogout }) => {
   }, []);
 
   const fetchData = async () => {
-    const [w, s, p, c, m, ec] = await Promise.all([
+    const [w, s, p, c, m, ec, seo] = await Promise.all([
       storage.getAll('works'),
       storage.getAll('signals'),
       storage.get('about', 'profile'),
       storage.get('about', 'connect_config'),
       storage.get('about', 'landing_manifesto'),
-      storage.get('about', 'ecos_config')
+      storage.get('about', 'ecos_config'),
+      storage.get('about', 'seo_config')
     ]);
     setWorks(w.sort((a, b) => b.date.localeCompare(a.date)));
     setSignals(s.sort((a, b) => {
@@ -83,6 +88,7 @@ const PageBackoffice: React.FC<PageBackofficeProps> = ({ onLogout }) => {
     }));
     if (p) setProfile(p);
     if (c) setConnect(c);
+    if (seo) setSeoConfig(seo);
     if (ec) {
       setEcosConfig(ec);
     } else {
@@ -178,10 +184,16 @@ const PageBackoffice: React.FC<PageBackofficeProps> = ({ onLogout }) => {
       lastUpdated: Date.now(),
       works,
       signals,
-      about: { profile, connect_config: connect, landing_manifesto: manifesto }
+      about: { 
+        profile, 
+        connect_config: connect, 
+        landing_manifesto: manifesto, 
+        ecos_config: ecosConfig,
+        seo_config: seoConfig 
+      }
     };
 
-    setExportCode(`import { Work, Signal, AboutData, ConnectConfig, ManifestoConfig } from './types';
+    setExportCode(`import { Work, Signal, AboutData, ConnectConfig, ManifestoConfig, EcosConfig, SeoConfig } from './types';
 
 export const INITIAL_DATA: {
   lastUpdated: number;
@@ -191,6 +203,8 @@ export const INITIAL_DATA: {
     profile: AboutData | null;
     connect_config: ConnectConfig | null;
     landing_manifesto: ManifestoConfig | null;
+    ecos_config: EcosConfig | null;
+    seo_config: SeoConfig | null;
   };
 } = ${JSON.stringify(data, null, 2)};`);
   };
@@ -543,6 +557,54 @@ export const INITIAL_DATA: {
     } finally { setIsSaving(false); }
   };
 
+  const handleSaveSeo = async (e: React.FormEvent) => {
+    if (e) e.preventDefault();
+    setIsSaving(true);
+    try {
+      await storage.save('about', seoConfig);
+
+      // Manipulação direta de DOM para atualizar as tags <meta> do index.html em tempo real
+      if (typeof document !== 'undefined') {
+        const titleVal = seoConfig.title || 'ruídos atmosféricos';
+        const descVal = seoConfig.description || '';
+        const firstFeaturedWork = works.find(w => w.isFeatured);
+        const imageVal = seoConfig.image || (firstFeaturedWork ? firstFeaturedWork.imageUrl : "https://64.media.tumblr.com/2469fc83feaecaf0b7a97fa55f6793d6/670f92e2b0934e32-bb/s2048x3072/3b1cf9f39410af90a8d0607d572f83c0024b2472.jpg");
+
+        // Atualiza título do browser
+        document.title = titleVal.toLowerCase();
+
+        // Helper para atualizar ou criar meta tag
+        const setMetaTag = (selector: string, attrName: 'name' | 'property', attrValue: string, contentValue: string) => {
+          let element = document.querySelector(selector);
+          if (!element) {
+            element = document.createElement('meta');
+            element.setAttribute(attrName, attrValue);
+            document.head.appendChild(element);
+          }
+          element.setAttribute('content', contentValue);
+        };
+
+        // Atualização direta das tags no Head
+        setMetaTag('meta[name="description"]', 'name', 'description', descVal);
+        setMetaTag('meta[property="og:title"]', 'property', 'og:title', titleVal);
+        setMetaTag('meta[property="og:description"]', 'property', 'og:description', descVal);
+        setMetaTag('meta[property="og:image"]', 'property', 'og:image', imageVal);
+        setMetaTag('meta[property="og:url"]', 'property', 'og:url', window.location.origin);
+        setMetaTag('meta[name="twitter:title"]', 'name', 'twitter:title', titleVal);
+        setMetaTag('meta[name="twitter:description"]', 'name', 'twitter:description', descVal);
+        setMetaTag('meta[name="twitter:image"]', 'name', 'twitter:image', imageVal);
+      }
+
+      fetchData();
+      setSeoSavedSuccess(true);
+      setTimeout(() => setSeoSavedSuccess(false), 3000);
+      alert('SEO configurado com sucesso! Atualizado no site em tempo real.');
+    } catch (err) {
+      console.error(err);
+      alert('erro ao salvar configuração de SEO.');
+    } finally { setIsSaving(false); }
+  };
+
   const handleAddManifestoLayer = () => {
     const newLayer = {
       n: (manifesto.layers?.length || 0) + 1,
@@ -665,6 +727,8 @@ export const INITIAL_DATA: {
       if (data.about.profile) await storage.save('about', data.about.profile);
       if (data.about.connect_config) await storage.save('about', data.about.connect_config);
       if (data.about.landing_manifesto) await storage.save('about', data.about.landing_manifesto);
+      if (data.about.ecos_config) await storage.save('about', data.about.ecos_config);
+      if (data.about.seo_config) await storage.save('about', data.about.seo_config);
 
       // Atualiza timestamp de sincronização para evitar que o seed antigo do código rode
       localStorage.setItem('ra_last_sync', (data.lastUpdated || Date.now()).toString());
@@ -862,7 +926,7 @@ Last Typed Command,Último Comando do Terminal,O texto exato do último comando 
     return textContent.split(/\s+/).filter(word => word.length > 0).length;
   }, [editingSignal]);
 
-  const tabs = [ViewState.MATERIA, ViewState.SINAIS, 'questions', ViewState.ECOS, ViewState.MANIFESTO, ViewState.ABOUT, ViewState.CONNECT, 'sincronizar'];
+  const tabs = [ViewState.MATERIA, ViewState.SINAIS, 'questions', ViewState.ECOS, ViewState.MANIFESTO, ViewState.ABOUT, ViewState.CONNECT, 'seo', 'sincronizar'];
   
   // Mapeamento de ViewState para Label amigável (consistente com Navigation.tsx)
   const tabLabels: Record<string, string> = {
@@ -873,6 +937,7 @@ Last Typed Command,Último Comando do Terminal,O texto exato do último comando 
     [ViewState.MANIFESTO]: 'manifesto',
     [ViewState.ABOUT]: 'esse eu',
     [ViewState.CONNECT]: 'contato',
+    'seo': 'seo',
     'sincronizar': 'sincronizar'
   };
 
@@ -1946,6 +2011,111 @@ Last Typed Command,Último Comando do Terminal,O texto exato do último comando 
             <NeobrutalistButton variant="matrix" type="submit" className="w-full py-4">salvar conexões</NeobrutalistButton>
           </form>
         )}
+
+        {activeTab === 'seo' && (() => {
+          const firstFeaturedWork = works.find(w => w.isFeatured);
+          const seoPreviewImage = seoConfig.image || (firstFeaturedWork ? firstFeaturedWork.imageUrl : "https://64.media.tumblr.com/2469fc83feaecaf0b7a97fa55f6793d6/670f92e2b0934e32-bb/s2048x3072/3b1cf9f39410af90a8d0607d572f83c0024b2472.jpg");
+
+          return (
+            <form onSubmit={handleSaveSeo} className="space-y-12 animate-in fade-in max-w-4xl mx-auto">
+              <header className="border-b border-white/10 pb-4">
+                <h2 className="text-sm font-electrolize text-[var(--accent)] tracking-[0.2em] uppercase">otimização de busca e compartilhamento /// SEO</h2>
+              </header>
+              
+              <div className="space-y-8">
+                <div className="bg-white/5 p-6 rounded-xl border border-white/10 space-y-4">
+                  <h3 className="text-xs font-electrolize text-[var(--accent)] uppercase tracking-wider">Como funciona?</h3>
+                  <p className="text-xs text-neutral-300 leading-relaxed">
+                    As configurações abaixo definem como o seu site é apresentado nos motores de busca (como o Google) e em prévias de compartilhamento nas redes sociais (WhatsApp, Telegram, Twitter, LinkedIn, etc.).
+                  </p>
+                  <p className="text-[10px] text-neutral-400">
+                    * Nota: Os motores de busca podem levar alguns dias para re-indexar o site após a atualização dos metadados. No entanto, a sincronização atualiza as tags HTML do site em tempo real para os visitantes.
+                  </p>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-[10px] opacity-40 uppercase tracking-widest block">Título SEO do Site (Aparece na aba e nos resultados de busca)</label>
+                  <input 
+                    type="text" 
+                    value={seoConfig.title} 
+                    onChange={e => setSeoConfig({...seoConfig, title: e.target.value})} 
+                    className="w-full bg-black border border-white/10 p-4 rounded-md outline-none text-sm focus:border-[var(--accent)]" 
+                    placeholder="ruídos atmosféricos" 
+                    required
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-[10px] opacity-40 uppercase tracking-widest block">Descrição Meta (SEO) do Site (Aparece no Google e em compartilhamentos)</label>
+                  <textarea 
+                    value={seoConfig.description} 
+                    onChange={e => setSeoConfig({...seoConfig, description: e.target.value})} 
+                    className="w-full bg-black border border-white/10 p-4 h-32 outline-none rounded-md text-sm focus:border-[var(--accent)] resize-none" 
+                    placeholder="uma descrição objetiva e atraente sobre seu manifesto artístico e suas obras..." 
+                    required
+                  />
+                  <div className="flex justify-between text-[10px] opacity-40">
+                    <span>Recomendado: 120-160 caracteres</span>
+                    <span>{seoConfig.description?.length || 0} caracteres</span>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-[10px] opacity-40 uppercase tracking-widest block">URL da Imagem de Compartilhamento (og:image) (Opcional)</label>
+                  <input 
+                    type="text" 
+                    value={seoConfig.image || ''} 
+                    onChange={e => setSeoConfig({...seoConfig, image: e.target.value})} 
+                    className="w-full bg-black border border-white/10 p-4 rounded-md outline-none text-sm focus:border-[var(--accent)]" 
+                    placeholder="Deixe em branco para usar automaticamente a imagem da primeira obra em destaque." 
+                  />
+                  <p className="text-[10px] text-neutral-400">
+                    * Se deixado em branco, usará o fundo do quadro ou a imagem da sua primeira obra em destaque. Você pode colar o link direto de qualquer imagem do site.
+                  </p>
+                </div>
+
+                {/* Pré-visualização Google & Social */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4">
+                  <div className="border border-white/10 bg-black/40 p-6 rounded-xl space-y-3">
+                    <span className="text-[10px] opacity-40 uppercase tracking-wider block font-electrolize">Prévia de Busca (Google)</span>
+                    <div className="font-sans text-left space-y-1">
+                      <span className="text-[#8ab4f8] text-lg hover:underline cursor-pointer block truncate font-medium">
+                        {seoConfig.title || 'ruídos atmosféricos'}
+                      </span>
+                      <span className="text-[#34a853] text-xs block truncate">
+                        https://ruidosatmosfericos.online
+                      </span>
+                      <p className="text-neutral-400 text-xs leading-relaxed line-clamp-2">
+                        {seoConfig.description || 'Nenhuma descrição meta configurada.'}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="border border-white/10 bg-black/40 p-6 rounded-xl space-y-3">
+                    <span className="text-[10px] opacity-40 uppercase tracking-wider block font-electrolize">Prévia de Compartilhamento (Card Social)</span>
+                    <div className="border border-white/10 rounded-lg overflow-hidden bg-[#151515] text-left">
+                      <div className="h-28 bg-neutral-900 flex items-center justify-center text-xs text-neutral-500 overflow-hidden relative">
+                        <span className="relative z-10 font-electrolize text-[var(--accent)] tracking-widest">ruídos atmosféricos</span>
+                        <div className="absolute inset-0 bg-cover bg-center opacity-40" style={{ backgroundImage: `url(${seoPreviewImage})` }} />
+                      </div>
+                      <div className="p-3 space-y-1 font-sans">
+                        <span className="text-[10px] text-neutral-500 uppercase tracking-wider block">ruidosatmosfericos.online</span>
+                        <h4 className="text-sm font-semibold text-neutral-200 line-clamp-1">
+                          {seoConfig.title || 'ruídos atmosféricos'}
+                        </h4>
+                        <p className="text-xs text-neutral-400 line-clamp-2 leading-relaxed">
+                          {seoConfig.description || 'Nenhuma descrição meta configurada.'}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <NeobrutalistButton variant="matrix" type="submit" className="w-full py-4">salvar configuração de seo</NeobrutalistButton>
+            </form>
+          );
+        })()}
 
         {activeTab === 'sincronizar' && (
           <div className="space-y-16 animate-in fade-in max-w-4xl mx-auto py-12">

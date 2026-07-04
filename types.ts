@@ -118,3 +118,11 @@ export interface EcosConfig {
   links: EcoLink[];
 }
 
+export interface SeoConfig {
+  id: string; // 'seo_config'
+  title: string;
+  description: string;
+  image?: string;
+}
+
+

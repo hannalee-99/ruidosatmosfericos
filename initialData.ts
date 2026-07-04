@@ -1,4 +1,4 @@
-import { Work, Signal, AboutData, ConnectConfig, ManifestoConfig, EcosConfig } from './types';
+import { Work, Signal, AboutData, ConnectConfig, ManifestoConfig, EcosConfig, SeoConfig } from './types';
 
 export const INITIAL_DATA: {
   lastUpdated: number;
@@ -9,9 +9,10 @@ export const INITIAL_DATA: {
     connect_config: ConnectConfig | null;
     landing_manifesto: ManifestoConfig | null;
     ecos_config: EcosConfig | null;
+    seo_config: SeoConfig | null;
   };
 } = {
-  "lastUpdated": 1782955434698,
+  "lastUpdated": 1782955534698,
   "works": [
     {
       "id": "work-1771621176503",
@@ -713,6 +714,12 @@ export const INITIAL_DATA: {
           "status": "ativo"
         }
       ]
+    },
+    "seo_config": {
+      "id": "seo_config",
+      "title": "ruídos atmosféricos",
+      "description": "uma experiência imersiva de arte digital e manifesto artístico. registros de presença, sensações e desequilíbrio controlado entre o físico e o digital.",
+      "image": ""
     }
   }
 };
