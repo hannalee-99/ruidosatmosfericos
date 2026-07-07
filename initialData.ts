@@ -12,7 +12,7 @@ export const INITIAL_DATA: {
     seo_config: SeoConfig | null;
   };
 } = {
-  "lastUpdated": 1782955534698,
+  "lastUpdated": 1783387617191,
   "works": [
     {
       "id": "work-1771621176503",
@@ -287,6 +287,49 @@ export const INITIAL_DATA: {
   ],
   "signals": [
     {
+      "id": "signal-1783384700290",
+      "slug": "transmutacoes-no-samsara",
+      "title": "transmutações no samsara ",
+      "subtitle": "",
+      "date": "06/07/2026",
+      "status": "publicado",
+      "views": 0,
+      "coverImageUrl": "",
+      "seoDescription": "",
+      "blocks": [
+        {
+          "id": "b-1783384700290",
+          "type": "text",
+          "content": "\ncombatemos os \ntentáculos mundanos descontrolados \ncom o fluxo do agora\namígdala, centro de tudo\nfluido, o meio\n\nondas ressoam\nenquanto a palavra é falha\neu dissolvo\n\no silêncio surge\nem estados de alteração contínua\n\nobservo\n\ne recomeça"
+        },
+        {
+          "id": "b-1783386157732-ddxb6",
+          "type": "image",
+          "content": "https://res.cloudinary.com/dcxm8yd49/image/upload/v1782955076/processos_em_transmuta%C3%A7%C3%A3o_2026_Hannalee_hihad1_ad642a.avif",
+          "caption": "sintetizando 2025 ~~ processos em transmutação, jan/26"
+        },
+        {
+          "id": "b-1783386488404-yl1ps",
+          "type": "embed",
+          "content": "https://music.youtube.com/watch?v=w0O9L7KXkC0&si=9qflgxjaaWyUg27Q"
+        }
+      ],
+      "metadata": [
+        {
+          "question": "observando",
+          "answer": "mundinho gatos (observar meus parceiros de existência Chiquinho, Björk, Béla Lugosi e Cheetos"
+        },
+        {
+          "question": "lendo",
+          "answer": "água viva da clarice lispector"
+        },
+        {
+          "question": "clima",
+          "answer": "na mesma vybe que craque neto comentando copa"
+        }
+      ]
+    },
+    {
       "id": "signal-1771101541489",
       "slug": "primeiratransmissao",
       "title": "primeira transmissão",
@@ -308,7 +351,7 @@ export const INITIAL_DATA: {
     "profile": {
       "id": "profile",
       "text": "apenas fluxo me movimentando sendo força de natureza autêntica",
-      "imageUrl": "https://res.cloudinary.com/dcxm8yd49/image/upload/v1771623752/yoIeu.avif",
+      "imageUrl": "https://res.cloudinary.com/dcxm8yd49/image/upload/v1783387514/esseeu.png",
       "faviconUrl": ""
     },
     "connect_config": {
@@ -692,23 +735,23 @@ export const INITIAL_DATA: {
     "ecos_config": {
       "id": "ecos_config",
       "links": [
-        { 
-          "id": "01", 
-          "title": "colab55", 
+        {
+          "id": "01",
+          "title": "colab55",
           "description": "impressões e objetos de ritos",
           "url": "https://www.colab55.com/@ruidosatmosfericos",
           "status": "ativo"
         },
-        { 
-          "id": "02", 
-          "title": "pinterest", 
+        {
+          "id": "02",
+          "title": "pinterest",
           "description": "fragmentos de processo e ruídos",
           "url": "https://br.pinterest.com/ruidosatmosfericos01/",
           "status": "ativo"
         },
-        { 
-          "id": "03", 
-          "title": "redbubble", 
+        {
+          "id": "03",
+          "title": "redbubble",
           "description": "suportes e artefatos globais",
           "url": "https://www.redbubble.com/people/rdsatmosfericos/",
           "status": "ativo"
