@@ -12,7 +12,7 @@ export const INITIAL_DATA: {
     seo_config: SeoConfig | null;
   };
 } = {
-  "lastUpdated": 1783387617191,
+  "lastUpdated": 1783392765942,
   "works": [
     {
       "id": "work-1771621176503",
@@ -293,14 +293,20 @@ export const INITIAL_DATA: {
       "subtitle": "",
       "date": "06/07/2026",
       "status": "publicado",
-      "views": 0,
-      "coverImageUrl": "",
-      "seoDescription": "",
+      "views": 3,
+      "coverImageUrl": "https://res.cloudinary.com/dcxm8yd49/image/upload/v1783392076/detalhes_processoss.png",
+      "seoDescription": "o silêncio surge em estados de alteração contínua",
       "blocks": [
         {
           "id": "b-1783384700290",
           "type": "text",
           "content": "\ncombatemos os \ntentáculos mundanos descontrolados \ncom o fluxo do agora\namígdala, centro de tudo\nfluido, o meio\n\nondas ressoam\nenquanto a palavra é falha\neu dissolvo\n\no silêncio surge\nem estados de alteração contínua\n\nobservo\n\ne recomeça"
+        },
+        {
+          "id": "b-1783392503770-t6cse",
+          "type": "image",
+          "content": "https://res.cloudinary.com/dcxm8yd49/image/upload/v1783392040/processos-transmutacao.jpg",
+          "caption": "rascunhando processos"
         },
         {
           "id": "b-1783386157732-ddxb6",
@@ -336,7 +342,7 @@ export const INITIAL_DATA: {
       "subtitle": "alô? pronto!",
       "date": "14/02/2026",
       "status": "publicado",
-      "views": 1,
+      "views": 3,
       "blocks": [
         {
           "id": "b-1771101541489",
