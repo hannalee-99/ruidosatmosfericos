@@ -6,6 +6,7 @@ import { Work, Signal, SignalBlock, SignalBlockType, AboutData, ConnectConfig, V
 import { DEFAULT_LAYERS as OFFICIAL_LAYERS } from './PageManifestoV2';
 import NeobrutalistButton from './NeobrutalistButton';
 import SignalRenderer from './SignalRenderer';
+import Toast from './Toast';
 import { useMeta } from '../lib/hooks';
 
 interface PageBackofficeProps {
@@ -54,6 +55,13 @@ const PageBackoffice: React.FC<PageBackofficeProps> = ({ onLogout }) => {
   const [importCode, setImportCode] = useState('');
   const [isImporting, setIsImporting] = useState(false);
   const [isFocusMode, setIsFocusMode] = useState(false);
+  const [toastMessage, setToastMessage] = useState<string>('');
+  const [showToast, setShowToast] = useState<boolean>(false);
+
+  const triggerToast = (msg: string) => {
+    setToastMessage(msg);
+    setShowToast(true);
+  };
   
   const isSlugPristine = useRef(true);
   const isWorkSlugPristine = useRef(true);
@@ -171,9 +179,20 @@ const PageBackoffice: React.FC<PageBackofficeProps> = ({ onLogout }) => {
     setIsProcessingImage(true);
     const reader = new FileReader();
     reader.onload = async (event) => {
-      const base64 = event.target?.result as string;
-      const optimized = await compressAndResizeImage(base64);
-      setEditingWork({ ...editingWork, imageUrl: optimized });
+      try {
+        const base64 = event.target?.result as string;
+        const optimized = await compressAndResizeImage(base64);
+        setEditingWork({ ...editingWork, imageUrl: optimized });
+        triggerToast('mídia carregada e otimizada');
+      } catch (err) {
+        console.error(err);
+        triggerToast('erro ao processar mídia');
+      } finally {
+        setIsProcessingImage(false);
+      }
+    };
+    reader.onerror = () => {
+      triggerToast('erro ao carregar arquivo de mídia');
       setIsProcessingImage(false);
     };
     reader.readAsDataURL(file);
@@ -211,7 +230,7 @@ export const INITIAL_DATA: {
 
   const copyToClipboard = () => {
     navigator.clipboard.writeText(exportCode);
-    alert("código copiado! substitua o conteúdo do arquivo initialData.ts no github.");
+    triggerToast("código copiado! substitua no initialData.ts");
   };
 
   const createSlug = (text: string) => 
@@ -314,6 +333,10 @@ export const INITIAL_DATA: {
       });
       setEditingWork(null);
       fetchData();
+      triggerToast('matéria e mídias salvas com sucesso');
+    } catch (err) {
+      console.error(err);
+      triggerToast('erro ao atualizar banco de dados da matéria');
     } finally { setIsSaving(false); }
   };
 
@@ -416,6 +439,7 @@ export const INITIAL_DATA: {
       } catch (err) {
         console.error('Erro no salvamento automático:', err);
         setSyncStatus('error');
+        triggerToast('erro na sincronização automática do sinal');
       }
     }, 1200);
 
@@ -495,6 +519,10 @@ export const INITIAL_DATA: {
       await storage.save('signals', { ...editingSignal, slug: finalSlug });
       setEditingSignal(null);
       fetchData();
+      triggerToast('sinal e mídias salvos com sucesso');
+    } catch (err) {
+      console.error(err);
+      triggerToast('erro ao atualizar banco de dados do sinal');
     } finally { setIsSaving(false); }
   };
 
@@ -518,7 +546,10 @@ export const INITIAL_DATA: {
     try {
       await storage.save('about', profile);
       fetchData();
-      alert('perfil salvo.');
+      triggerToast('perfil salvo com sucesso');
+    } catch (err) {
+      console.error(err);
+      triggerToast('erro ao atualizar perfil');
     } finally { setIsSaving(false); }
   };
 
@@ -528,7 +559,10 @@ export const INITIAL_DATA: {
     try {
       await storage.save('about', connect);
       fetchData();
-      alert('configurações salvas.');
+      triggerToast('configurações salvas com sucesso');
+    } catch (err) {
+      console.error(err);
+      triggerToast('erro ao salvar conexões');
     } finally { setIsSaving(false); }
   };
 
@@ -538,7 +572,10 @@ export const INITIAL_DATA: {
     try {
       await storage.save('about', { ...manifesto, isCustomized: true });
       fetchData();
-      alert('sistema de manifesto atualizado.');
+      triggerToast('sistema de manifesto atualizado');
+    } catch (err) {
+      console.error(err);
+      triggerToast('erro ao salvar manifesto');
     } finally { setIsSaving(false); }
   };
 
@@ -550,10 +587,10 @@ export const INITIAL_DATA: {
       fetchData();
       setEcosSavedSuccess(true);
       setTimeout(() => setEcosSavedSuccess(false), 3000);
-      alert('links do ecos salvos com sucesso.');
+      triggerToast('links do ecos salvos com sucesso');
     } catch (err) {
       console.error(err);
-      alert('erro ao salvar links do ecos.');
+      triggerToast('erro ao salvar links do ecos');
     } finally { setIsSaving(false); }
   };
 
@@ -598,10 +635,10 @@ export const INITIAL_DATA: {
       fetchData();
       setSeoSavedSuccess(true);
       setTimeout(() => setSeoSavedSuccess(false), 3000);
-      alert('SEO configurado com sucesso! Atualizado no site em tempo real.');
+      triggerToast('configuração de SEO salva e atualizada em tempo real');
     } catch (err) {
       console.error(err);
-      alert('erro ao salvar configuração de SEO.');
+      triggerToast('erro ao salvar configuração de SEO');
     } finally { setIsSaving(false); }
   };
 
@@ -1073,6 +1110,14 @@ Last Typed Command,Último Comando do Terminal,O texto exato do último comando 
                         <label className="text-[9px] opacity-40 uppercase tracking-widest block">url da imagem (opcional)</label>
                         <input type="text" value={editingWork.imageUrl} onChange={e => setEditingWork({...editingWork, imageUrl: e.target.value})} className="w-full bg-black border border-white/10 p-3 rounded-md outline-none text-[10px] focus:border-[var(--accent)] font-mono" placeholder="https://..." />
                       </div>
+                      <div className="p-3 bg-white/[0.02] border border-white/5 rounded-lg space-y-1 text-[10px] text-neutral-400 font-mono leading-relaxed mt-2">
+                        <div className="flex items-center gap-1.5 text-[var(--accent)] text-[9px] uppercase tracking-wider font-bold">
+                          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                          tamanho recomendado para matérias
+                        </div>
+                        <p className="lowercase">as matérias na galeria usam um layout dinâmico vertical (estilo bento/mosaico). qualquer proporção de imagem é aceita (vertical, horizontal ou quadrada) e será exibida por completo sem cortes automáticos.</p>
+                        <p className="opacity-60 lowercase mt-1"><strong className="text-white">resolução ideal:</strong> entre 1000px e 2000px de largura. prefira formatos leves (.webp, .jpg) para carregamento rápido.</p>
+                      </div>
                     </div>
 
                     <div className="bg-white/5 p-6 rounded-xl border border-white/10 space-y-4">
@@ -1416,15 +1461,20 @@ Last Typed Command,Último Comando do Terminal,O texto exato do último comando 
                                   )}
 
                                   {block.type === 'image' && (
-                                    <div className="bg-white/5 p-4 rounded-md border border-white/10 flex flex-col md:flex-row gap-4">
-                                       <div className="flex-grow space-y-1">
-                                          <label className="text-[8px] opacity-30 uppercase font-mono">link da imagem</label>
-                                          <input type="text" value={block.content} onChange={e => handleUpdateBlock(block.id, e.target.value, block.caption)} className="w-full bg-black border border-white/10 p-3 rounded text-xs outline-none focus:border-[var(--accent)]" placeholder="https://..." />
-                                       </div>
-                                       <div className="w-full md:w-1/3 space-y-1">
-                                          <label className="text-[8px] opacity-30 uppercase font-mono">legenda</label>
-                                          <input type="text" value={block.caption || ''} onChange={e => handleUpdateBlock(block.id, block.content, e.target.value)} className="w-full bg-transparent border-b border-white/10 p-2 text-[10px] outline-none focus:border-[var(--accent)]" placeholder="opcional..." />
-                                       </div>
+                                    <div className="space-y-2 w-full">
+                                      <div className="bg-white/5 p-4 rounded-md border border-white/10 flex flex-col md:flex-row gap-4">
+                                         <div className="flex-grow space-y-1">
+                                            <label className="text-[8px] opacity-30 uppercase font-mono">link da imagem</label>
+                                            <input type="text" value={block.content} onChange={e => handleUpdateBlock(block.id, e.target.value, block.caption)} className="w-full bg-black border border-white/10 p-3 rounded text-xs outline-none focus:border-[var(--accent)]" placeholder="https://..." />
+                                         </div>
+                                         <div className="w-full md:w-1/3 space-y-1">
+                                            <label className="text-[8px] opacity-30 uppercase font-mono">legenda</label>
+                                            <input type="text" value={block.caption || ''} onChange={e => handleUpdateBlock(block.id, block.content, e.target.value)} className="w-full bg-transparent border-b border-white/10 p-2 text-[10px] outline-none focus:border-[var(--accent)]" placeholder="opcional..." />
+                                         </div>
+                                      </div>
+                                      <p className="text-[9px] opacity-40 lowercase px-1 font-mono leading-normal">
+                                        <span className="text-[var(--accent)]">💡 bloco de galeria:</span> exibido em 1 coluna (se único) ou em 2 colunas com altura automática (<span className="text-white">h-auto</span>). qualquer proporção funciona perfeitamente. largura recomendada: ~1000px.
+                                      </p>
                                     </div>
                                   )}
 
@@ -1518,6 +1568,14 @@ Last Typed Command,Último Comando do Terminal,O texto exato do último comando 
 
                             <div className="space-y-2">
                                <label className="text-[9px] opacity-40 uppercase tracking-widest">imagem de capa (hero)</label>
+                               <div className="p-3 bg-white/[0.02] border border-white/5 rounded-lg space-y-1 text-[10px] text-neutral-400 font-mono leading-relaxed mt-1 mb-2">
+                                 <div className="flex items-center gap-1.5 text-[var(--accent)] text-[9px] uppercase tracking-wider font-bold">
+                                   <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                   tamanho recomendado para capa
+                                  </div>
+                                 <p className="lowercase">a miniatura na listagem de sinais usa proporção <strong className="text-white">4:3</strong>. dentro do sinal, a imagem vira um banner horizontal de altura fixa (<strong className="text-white">object-cover</strong>).</p>
+                                 <p className="opacity-60 lowercase mt-1"><strong className="text-white">orientação:</strong> prefira imagens em paisagem (landscape, ex: 4:3 ou 16:9). <strong className="text-white">resolução ideal:</strong> 1200x900px ou 1920x1080px.</p>
+                               </div>
                                <input 
                                  type="text" 
                                  value={editingSignal.coverImageUrl || ''} 
@@ -2281,6 +2339,7 @@ Last Typed Command,Último Comando do Terminal,O texto exato do último comando 
           </div>
         )}
       </div>
+      <Toast message={toastMessage} isVisible={showToast} onClose={() => setShowToast(false)} isDarkMode={true} />
     </div>
   );
 };
