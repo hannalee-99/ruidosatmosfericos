@@ -16,7 +16,7 @@ import React, { useState, useEffect } from 'react';
  */
 
 // Hash SHA-256 padrão da senha (hex). Sobrescrevível por VITE_ADMIN_PASSWORD_HASH.
-const DEFAULT_ADMIN_HASH = '__ADMIN_HASH__';
+const DEFAULT_ADMIN_HASH = '1c4e5effc9aefbf01c2b4ec491a0d56c67f290e6b0dc9bff2d9194cf5686208f';
 
 const ADMIN_HASH = (
   import.meta.env.VITE_ADMIN_PASSWORD_HASH || DEFAULT_ADMIN_HASH
