@@ -12,7 +12,7 @@ export const INITIAL_DATA: {
     seo_config: SeoConfig | null;
   };
 } = {
-  "lastUpdated": 1783563023731,
+  "lastUpdated": 1783640450792,
   "works": [
     {
       "id": "work-1771621176503",
@@ -59,7 +59,7 @@ export const INITIAL_DATA: {
       "date": "2025-10-01",
       "technique": "acrílica sobre tela",
       "dimensions": "30x20 cm",
-      "imageUrl": "https://res.cloudinary.com/dcxm8yd49/image/upload/v1771620670/formas-de-conexao.avif",
+      "imageUrl": "https://res.cloudinary.com/dcxm8yd49/image/upload/v1783639949/formas_de_conex%C3%A3o_site26.jpg",
       "status": "disponível",
       "isVisible": true,
       "isFeatured": false,
