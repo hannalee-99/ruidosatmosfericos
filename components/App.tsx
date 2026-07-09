@@ -13,6 +13,7 @@ import ObserverEffect from './ObserverEffect';
 import FaviconManager from './FaviconManager';
 import Footer from './Footer';
 import BackToTop from './BackToTop';
+import AdminGate, { isAdminAuthed, clearAdminAuth } from './AdminGate';
 
 // Pages (Carregadas sob demanda para otimizar TTI)
 const LandingPage = lazy(() => import('./LandingPage'));
@@ -34,6 +35,7 @@ const App: React.FC = () => {
   const [hasEntered, setHasEntered] = useState(false);
   const [view, setView] = useState<ViewState>(ViewState.LANDING);
   const [activeSlug, setActiveSlug] = useState<string | null>(null);
+  const [adminAuthed, setAdminAuthed] = useState<boolean>(isAdminAuthed());
   const { isDarkMode, toggleTheme } = useTheme();
   
   useDataSeeding();
@@ -230,7 +232,9 @@ const App: React.FC = () => {
             case ViewState.ECOS: return <PageEcos onNavigate={setView} isDarkMode={isDarkMode} />;
             case ViewState.ABOUT: return <PageAbout onNavigate={setView} isDarkMode={isDarkMode} />;
             case ViewState.CONNECT: return <PageConnect onNavigate={setView} />;
-            case ViewState.BACKOFFICE: return <PageBackoffice onLogout={() => { setView(ViewState.LANDING); }} />;
+            case ViewState.BACKOFFICE: return adminAuthed
+              ? <PageBackoffice onLogout={() => { clearAdminAuth(); setAdminAuthed(false); setView(ViewState.LANDING); }} />
+              : <AdminGate onSuccess={() => setAdminAuthed(true)} onCancel={() => setView(ViewState.LANDING)} />;
             default: return null;
           }
         })()}
