@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect, useMemo, useRef } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { storage } from '../lib/storage';
 import { Signal, SignalBlock } from '../types';
 import { DEFAULT_IMAGE } from '../constants';
@@ -201,8 +202,17 @@ const PageSinais: React.FC<PageSinaisProps> = ({
 
   if (selectedPost) {
     const readingTime = calculateReadingTime(selectedPost.blocks);
+    const firstImage = selectedPost.coverImageUrl || selectedPost.blocks.find(b => b.type === 'image')?.content || DEFAULT_IMAGE;
     return (
       <div id="post-modal-scroll" className="fixed inset-0 z-[150] bg-[#050505] [.light-mode_&]:bg-[#f4f4f4] text-white [.light-mode_&]:text-[#111] overflow-y-auto animate-in fade-in duration-500 selection:bg-[var(--accent)] selection:text-black scroll-smooth no-scrollbar">
+         <Helmet>
+           <title>{`${selectedPost.seoTitle || selectedPost.title} — ruídos atmosféricos`}</title>
+           <meta name="description" content={selectedPost.seoDescription || selectedPost.subtitle || 'captura de frequências e registros de campo'} />
+           <meta property="og:title" content={`${selectedPost.seoTitle || selectedPost.title} — ruídos atmosféricos`} />
+           <meta property="og:description" content={selectedPost.seoDescription || selectedPost.subtitle || 'captura de frequências e registros de campo'} />
+           <meta property="og:image" content={selectedPost.seoImage || firstImage} />
+           <meta property="og:url" content={`${window.location.origin}/#/sinal/${selectedPost.slug || selectedPost.id}`} />
+         </Helmet>
          {articleSchema && <JsonLd data={articleSchema} />}
          <ReadingProgress />
          <BackToTop targetId="post-modal-scroll" bottom="bottom-20" zIndex="z-[160]" />
@@ -275,7 +285,8 @@ const PageSinais: React.FC<PageSinaisProps> = ({
                <div className="mt-16 flex items-center justify-start">
                   <button 
                     onClick={() => {
-                      navigator.clipboard.writeText(window.location.href);
+                      const cleanUrl = `${window.location.origin}/sinais/${selectedPost.slug || selectedPost.id}`;
+                      navigator.clipboard.writeText(cleanUrl);
                       setShowToast(true);
                       if (selectedPost) {
                         trackLinkShared('signal', selectedPost.title);
@@ -296,6 +307,12 @@ const PageSinais: React.FC<PageSinaisProps> = ({
 
   return (
     <div className="pt-32 md:pt-40 pb-40 px-6 md:px-12 max-w-[1800px] mx-auto min-h-screen">
+      <Helmet>
+        <title>sinais — ruídos atmosféricos</title>
+        <meta name="description" content="captura de frequências e registros de campo do rito ruídos atmosféricos" />
+        <meta property="og:title" content="sinais — ruídos atmosféricos" />
+        <meta property="og:description" content="captura de frequências e registros de campo do rito ruídos atmosféricos" />
+      </Helmet>
       <header className="mb-16 md:mb-20 flex flex-col gap-8 items-start">
         <div className="flex-shrink-0 space-y-4">
           <h1 className={`font-nabla text-7xl md:text-9xl lowercase ${isDarkMode ? 'palette-matrix' : 'palette-matrix-blue'}`}>sinais</h1>

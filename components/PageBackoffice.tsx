@@ -8,6 +8,7 @@ import NeobrutalistButton from './NeobrutalistButton';
 import SignalRenderer from './SignalRenderer';
 import Toast from './Toast';
 import { useMeta } from '../lib/hooks';
+import { CardGenerator } from './CardGenerator';
 
 interface PageBackofficeProps {
   onLogout: () => void;
@@ -55,6 +56,8 @@ const PageBackoffice: React.FC<PageBackofficeProps> = ({ onLogout }) => {
   const [importCode, setImportCode] = useState('');
   const [isImporting, setIsImporting] = useState(false);
   const [isFocusMode, setIsFocusMode] = useState(false);
+  const [isWorkCardGenOpen, setIsWorkCardGenOpen] = useState(false);
+  const [isSignalCardGenOpen, setIsSignalCardGenOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState<string>('');
   const [showToast, setShowToast] = useState<boolean>(false);
 
@@ -138,6 +141,24 @@ const PageBackoffice: React.FC<PageBackofficeProps> = ({ onLogout }) => {
       setManifesto({ id: 'landing_manifesto', text: '', layers: OFFICIAL_LAYERS });
     }
     setCustomQuestions(getTemplateQuestions());
+  };
+
+  const syncWithServer = async (type: 'works' | 'signals') => {
+    try {
+      const currentData = await storage.getAll(type);
+      const res = await fetch('/api/save-data', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type, data: currentData })
+      });
+      if (res.ok) {
+        console.log(`Synced ${type} with server successfully`);
+      } else {
+        console.warn(`Server returned status ${res.status} when syncing ${type}`);
+      }
+    } catch (err) {
+      console.error(`Failed to sync ${type} with server:`, err);
+    }
   };
 
   const compressAndResizeImage = (base64Str: string): Promise<string> => {
@@ -332,7 +353,8 @@ export const INITIAL_DATA: {
         seoDescription: finalSeoDescription 
       });
       setEditingWork(null);
-      fetchData();
+      await fetchData();
+      await syncWithServer('works');
       triggerToast('matéria e mídias salvas com sucesso');
     } catch (err) {
       console.error(err);
@@ -364,7 +386,8 @@ export const INITIAL_DATA: {
         const item = newFeatured[i];
         await storage.save('works', { ...item, featuredOrder: i });
       }
-      fetchData();
+      await fetchData();
+      await syncWithServer('works');
     } finally {
       setIsSaving(false);
     }
@@ -518,7 +541,8 @@ export const INITIAL_DATA: {
       const finalSlug = editingSignal.slug || createSlug(editingSignal.title);
       await storage.save('signals', { ...editingSignal, slug: finalSlug });
       setEditingSignal(null);
-      fetchData();
+      await fetchData();
+      await syncWithServer('signals');
       triggerToast('sinal e mídias salvos com sucesso');
     } catch (err) {
       console.error(err);
@@ -530,14 +554,16 @@ export const INITIAL_DATA: {
     if (!confirm('eliminar esta matéria permanentemente?')) return;
     await storage.delete('works', id);
     setEditingWork(null);
-    fetchData();
+    await fetchData();
+    await syncWithServer('works');
   };
 
   const handleDeleteSignal = async (id: string) => {
     if (!confirm('eliminar esta transmissão permanentemente?')) return;
     await storage.delete('signals', id);
     setEditingSignal(null);
-    fetchData();
+    await fetchData();
+    await syncWithServer('signals');
   };
 
   const handleSaveProfile = async (e: React.FormEvent) => {
@@ -769,6 +795,10 @@ export const INITIAL_DATA: {
 
       // Atualiza timestamp de sincronização para evitar que o seed antigo do código rode
       localStorage.setItem('ra_last_sync', (data.lastUpdated || Date.now()).toString());
+
+      // Sync both to server
+      await syncWithServer('works');
+      await syncWithServer('signals');
 
       alert('dados importados com sucesso! a página será recarregada.');
       window.location.reload();
@@ -1117,6 +1147,19 @@ Last Typed Command,Último Comando do Terminal,O texto exato do último comando 
                         </div>
                         <p className="lowercase">as matérias na galeria usam um layout dinâmico vertical (estilo bento/mosaico). qualquer proporção de imagem é aceita (vertical, horizontal ou quadrada) e será exibida por completo sem cortes automáticos.</p>
                         <p className="opacity-60 lowercase mt-1"><strong className="text-white">resolução ideal:</strong> entre 1000px e 2000px de largura. prefira formatos leves (.webp, .jpg) para carregamento rápido.</p>
+                      </div>
+                      <div className="mt-4 pt-4 border-t border-white/5">
+                        <NeobrutalistButton 
+                          type="button" 
+                          variant="matrix" 
+                          onClick={() => setIsWorkCardGenOpen(true)}
+                          className="w-full text-xs py-2.5 flex items-center justify-center gap-2"
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 21l5.904-.813a1.996 1.996 0 001.378-.826l5.228-5.228a1.996 1.996 0 00-2.822-2.822L13.44 16.54a1.996 1.996 0 00-.826 1.378zM15 5.5l3.5 3.5" />
+                          </svg>
+                          gerar card personalizado (canvas)
+                        </NeobrutalistButton>
                       </div>
                     </div>
 
@@ -1593,6 +1636,19 @@ Last Typed Command,Último Comando do Terminal,O texto exato do último comando 
                                  className="w-full bg-black border border-white/10 p-3 rounded text-xs outline-none focus:border-[var(--accent)] h-11 resize-none" 
                                  placeholder="resumo curto para compartilhamento..."
                                />
+                             </div>
+                             <div className="pt-1.5">
+                               <NeobrutalistButton 
+                                 type="button" 
+                                 variant="matrix" 
+                                 onClick={() => setIsSignalCardGenOpen(true)}
+                                 className="w-full text-[10px] py-2 flex items-center justify-center gap-2"
+                               >
+                                 <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                                   <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 21l5.904-.813a1.996 1.996 0 001.378-.826l5.228-5.228a1.996 1.996 0 00-2.822-2.822L13.44 16.54a1.996 1.996 0 00-.826 1.378zM15 5.5l3.5 3.5" />
+                                 </svg>
+                                 gerar card personalizado (canvas)
+                               </NeobrutalistButton>
                              </div>
                           </div>
 
@@ -2340,6 +2396,32 @@ Last Typed Command,Último Comando do Terminal,O texto exato do último comando 
         )}
       </div>
       <Toast message={toastMessage} isVisible={showToast} onClose={() => setShowToast(false)} isDarkMode={true} />
+
+      {isWorkCardGenOpen && editingWork && (
+        <CardGenerator
+          initialTitle={editingWork.title || ''}
+          initialTagline={`obra // ${editingWork.year || new Date().getFullYear()}`}
+          bgImageUrl={editingWork.imageUrl}
+          onApplyImage={(dataUrl) => {
+            setEditingWork({ ...editingWork, imageUrl: dataUrl });
+          }}
+          onClose={() => setIsWorkCardGenOpen(false)}
+          toastTrigger={triggerToast}
+        />
+      )}
+
+      {isSignalCardGenOpen && editingSignal && (
+        <CardGenerator
+          initialTitle={editingSignal.title || ''}
+          initialTagline={`sinal // ${editingSignal.date || 'transmissão'}`}
+          bgImageUrl={editingSignal.coverImageUrl}
+          onApplyImage={(dataUrl) => {
+            setEditingSignal({ ...editingSignal, coverImageUrl: dataUrl });
+          }}
+          onClose={() => setIsSignalCardGenOpen(false)}
+          toastTrigger={triggerToast}
+        />
+      )}
     </div>
   );
 };

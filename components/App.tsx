@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect, useCallback, Suspense, lazy } from 'react';
+import { HelmetProvider, Helmet } from 'react-helmet-async';
 import { ViewState } from '../types';
 import { useTheme, useDataSeeding } from '../lib/hooks';
 import { initAnalytics, trackPageView, trackLandingPageViewed } from './analytics';
@@ -239,32 +240,50 @@ const App: React.FC = () => {
 
   if (!hasEntered) {
     return (
-      <div className="relative w-full h-screen bg-black overflow-hidden">
-        <FaviconManager />
-        <CustomCursor />
-        <Splash onEnter={handleEntry} />
-      </div>
+      <HelmetProvider>
+        <Helmet>
+          <title>ruídos atmosféricos</title>
+          <meta name="description" content="ruídos atmosféricos é uma experiência imersiva de arte digital e manifesto artístico. registros de presença, sensações e desequilíbrio controlado entre o físico e o digital." />
+          <meta property="og:title" content="ruídos atmosféricos" />
+          <meta property="og:description" content="uma experiência imersiva de arte digital e manifesto artístico. registros de presença e desequilíbrio controlado entre o físico e o digital." />
+          <meta property="og:image" content="https://64.media.tumblr.com/2469fc83feaecaf0b7a97fa55f6793d6/670f92e2b0934e32-bb/s2048x3072/3b1cf9f39410af90a8d0607d572f83c0024b2472.jpg" />
+        </Helmet>
+        <div className="relative w-full h-screen bg-black overflow-hidden">
+          <FaviconManager />
+          <CustomCursor />
+          <Splash onEnter={handleEntry} />
+        </div>
+      </HelmetProvider>
     );
   }
 
   return (
-    <div className="relative w-full h-[100dvh] overflow-hidden flex flex-col bg-[var(--bg)] text-[var(--text)] transition-colors duration-700">
-      <FaviconManager />
-      <CustomCursor />
-      <ObserverEffect />
+    <HelmetProvider>
+      <Helmet>
+        <title>ruídos atmosféricos</title>
+        <meta name="description" content="ruídos atmosféricos é uma experiência imersiva de arte digital e manifesto artístico. registros de presença, sensações e desequilíbrio controlado entre o físico e o digital." />
+        <meta property="og:title" content="ruídos atmosféricos" />
+        <meta property="og:description" content="uma experiência imersiva de arte digital e manifesto artístico. registros de presença e desequilíbrio controlado entre o físico e o digital." />
+        <meta property="og:image" content="https://64.media.tumblr.com/2469fc83feaecaf0b7a97fa55f6793d6/670f92e2b0934e32-bb/s2048x3072/3b1cf9f39410af90a8d0607d572f83c0024b2472.jpg" />
+      </Helmet>
+      <div className="relative w-full h-[100dvh] overflow-hidden flex flex-col bg-[var(--bg)] text-[var(--text)] transition-colors duration-700">
+        <FaviconManager />
+        <CustomCursor />
+        <ObserverEffect />
 
-      {view !== ViewState.BACKOFFICE && (
-        <Navigation currentView={view} onNavigate={setView} isDarkMode={isDarkMode} onToggleTheme={toggleTheme} />
-      )}
+        {view !== ViewState.BACKOFFICE && (
+          <Navigation currentView={view} onNavigate={setView} isDarkMode={isDarkMode} onToggleTheme={toggleTheme} />
+        )}
 
-      <main id="main-scroll" className="flex-grow relative z-10 h-full overflow-y-auto overflow-x-hidden scroll-smooth no-scrollbar">
-        <div className="min-h-[100dvh] flex flex-col">
-          <div className="flex-grow">{renderView()}</div>
-          {view !== ViewState.BACKOFFICE && <Footer />}
-        </div>
-        <BackToTop targetId="main-scroll" />
-      </main>
-    </div>
+        <main id="main-scroll" className="flex-grow relative z-10 h-full overflow-y-auto overflow-x-hidden scroll-smooth no-scrollbar">
+          <div className="min-h-[100dvh] flex flex-col">
+            <div className="flex-grow">{renderView()}</div>
+            {view !== ViewState.BACKOFFICE && <Footer />}
+          </div>
+          <BackToTop targetId="main-scroll" />
+        </main>
+      </div>
+    </HelmetProvider>
   );
 };
 

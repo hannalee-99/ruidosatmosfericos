@@ -22,6 +22,17 @@
 
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script>
+      (function() {
+        var path = window.location.pathname;
+        var match = path.match(/^\/(materia|sinais|sinal)\/([^\/]+)/);
+        if (match) {
+          var view = match[1];
+          var slug = match[2];
+          window.location.replace('/#/' + view + '/' + slug + '/');
+        }
+      })();
+    </script>
     <meta name="p:domain_verify" content="6bc6bf93d5f44140503524841aa4575f"/>
     <title>ruídos atmosféricos</title>
     <meta name="description" content="ruídos atmosféricos é uma experiência imersiva de arte digital e manifesto artístico. registros de presença, sensações e desequilíbrio controlado entre o físico e o digital.">

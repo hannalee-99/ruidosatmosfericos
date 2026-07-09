@@ -2,6 +2,7 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { motion, useAnimation, AnimatePresence } from 'framer-motion';
 import { useDrag } from '@use-gesture/react';
+import { Helmet } from 'react-helmet-async';
 import { storage } from '../lib/storage';
 import { Work, ViewState } from '../types';
 import { MONTH_NAMES, DEFAULT_IMAGE } from '../constants';
@@ -232,6 +233,14 @@ const PageMateria: React.FC<PageMateriaProps> = ({ isDarkMode, workSlug, onNavig
   if (selectedWork) {
     return (
       <div className="relative min-h-screen w-full flex flex-col items-center justify-center animate-in fade-in duration-700 bg-[var(--bg)]">
+        <Helmet>
+          <title>{`${selectedWork.seoTitle || selectedWork.title} — ruídos atmosféricos`}</title>
+          <meta name="description" content={selectedWork.seoDescription || selectedWork.description || `${selectedWork.technique}, ${selectedWork.year}`} />
+          <meta property="og:title" content={`${selectedWork.seoTitle || selectedWork.title} — ruídos atmosféricos`} />
+          <meta property="og:description" content={selectedWork.seoDescription || selectedWork.description || `${selectedWork.technique}, ${selectedWork.year}`} />
+          <meta property="og:image" content={selectedWork.imageUrl} />
+          <meta property="og:url" content={`${window.location.origin}/#/materia/${selectedWork.slug || selectedWork.id}`} />
+        </Helmet>
         {artworkSchema && <JsonLd data={artworkSchema} />}
         
         <div 
@@ -348,7 +357,8 @@ const PageMateria: React.FC<PageMateriaProps> = ({ isDarkMode, workSlug, onNavig
             <div className="pt-4 opacity-30 hover:opacity-100 transition-opacity flex gap-6">
                <button 
                   onClick={() => {
-                    navigator.clipboard.writeText(window.location.href);
+                    const cleanUrl = `${window.location.origin}/materia/${selectedWork.slug || selectedWork.id}`;
+                    navigator.clipboard.writeText(cleanUrl);
                     setShowToast(true);
                     if (selectedWork) {
                       trackLinkShared('artwork', selectedWork.title);
@@ -369,6 +379,12 @@ const PageMateria: React.FC<PageMateriaProps> = ({ isDarkMode, workSlug, onNavig
 
   return (
     <div className="pt-32 pb-40 px-6 md:px-12 max-w-[1800px] mx-auto min-h-screen">
+      <Helmet>
+        <title>matéria — ruídos atmosféricos</title>
+        <meta name="description" content="galeria de matérias de arte digital e física do rito ruídos atmosféricos" />
+        <meta property="og:title" content="matéria — ruídos atmosféricos" />
+        <meta property="og:description" content="galeria de matérias de arte digital e física do rito ruídos atmosféricos" />
+      </Helmet>
       <header className="mb-16 md:mb-24 flex flex-col gap-12 items-start">
         <div className="flex-shrink-0 space-y-4">
           <h1 className={`font-nabla text-7xl md:text-9xl lowercase ${isDarkMode ? 'palette-matrix' : 'palette-matrix-blue'}`}>matéria</h1>

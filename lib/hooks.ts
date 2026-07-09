@@ -78,38 +78,60 @@ export const useDataSeeding = () => {
         const { INITIAL_DATA } = await import('../initialData');
         const codeVersion = INITIAL_DATA.lastUpdated || 0;
 
-        if (codeVersion > lastSync) {
-          console.log("Detectada nova versão do núcleo. Sincronizando...");
-          
-          if (INITIAL_DATA.works) {
-            for (const w of INITIAL_DATA.works) await storage.save('works', w);
-          }
-          if (INITIAL_DATA.signals) {
-            for (const s of INITIAL_DATA.signals) await storage.save('signals', s);
-          }
-          if (INITIAL_DATA.about.profile) {
-            await storage.save('about', INITIAL_DATA.about.profile);
-          }
-          if (INITIAL_DATA.about.connect_config) {
-            await storage.save('about', INITIAL_DATA.about.connect_config);
-          }
-          if (INITIAL_DATA.about.landing_manifesto) {
-            await storage.save('about', INITIAL_DATA.about.landing_manifesto);
-          }
-          if (INITIAL_DATA.about.ecos_config) {
-            await storage.save('about', INITIAL_DATA.about.ecos_config);
-          }
-          if (INITIAL_DATA.about.seo_config) {
-            await storage.save('about', INITIAL_DATA.about.seo_config);
-          }
+        // Sempre tenta buscar os dados mais recentes do servidor primeiro
+        let serverWorks = null;
+        let serverSignals = null;
+        try {
+          const resWorks = await fetch('/api/works');
+          if (resWorks.ok) serverWorks = await resWorks.json();
+          const resSignals = await fetch('/api/signals');
+          if (resSignals.ok) serverSignals = await resSignals.json();
+        } catch (err) {
+          console.warn("Não foi possível buscar dados do servidor, usando dados locais de seed:", err);
+        }
 
-          localStorage.setItem('ra_last_sync', codeVersion.toString());
+        const finalWorks = serverWorks || INITIAL_DATA.works;
+        const finalSignals = serverSignals || INITIAL_DATA.signals;
+
+        if (codeVersion > lastSync || serverWorks || serverSignals) {
+          console.log("Detectada sincronização de dados. Atualizando base local...");
+          
+          if (finalWorks) {
+            // Limpa antigos para garantir integridade caso venha do servidor
+            const currentWorks = await storage.getAll('works');
+            for (const w of currentWorks) await storage.delete('works', w.id);
+            for (const w of finalWorks) await storage.save('works', w);
+          }
+          if (finalSignals) {
+            const currentSignals = await storage.getAll('signals');
+            for (const s of currentSignals) await storage.delete('signals', s.id);
+            for (const s of finalSignals) await storage.save('signals', s);
+          }
+          
+          if (codeVersion > lastSync) {
+            if (INITIAL_DATA.about.profile) {
+              await storage.save('about', INITIAL_DATA.about.profile);
+            }
+            if (INITIAL_DATA.about.connect_config) {
+              await storage.save('about', INITIAL_DATA.about.connect_config);
+            }
+            if (INITIAL_DATA.about.landing_manifesto) {
+              await storage.save('about', INITIAL_DATA.about.landing_manifesto);
+            }
+            if (INITIAL_DATA.about.ecos_config) {
+              await storage.save('about', INITIAL_DATA.about.ecos_config);
+            }
+            if (INITIAL_DATA.about.seo_config) {
+              await storage.save('about', INITIAL_DATA.about.seo_config);
+            }
+            localStorage.setItem('ra_last_sync', codeVersion.toString());
+          }
           console.log("Sincronização concluída.");
         } else {
           const works = await storage.getAll('works');
           if (works.length === 0) {
-            for (const w of INITIAL_DATA.works) await storage.save('works', w);
-            for (const s of INITIAL_DATA.signals) await storage.save('signals', s);
+            for (const w of finalWorks) await storage.save('works', w);
+            for (const s of finalSignals) await storage.save('signals', s);
             if (INITIAL_DATA.about.profile) await storage.save('about', INITIAL_DATA.about.profile);
             if (INITIAL_DATA.about.connect_config) await storage.save('about', INITIAL_DATA.about.connect_config);
             if (INITIAL_DATA.about.landing_manifesto) await storage.save('about', INITIAL_DATA.about.landing_manifesto);
