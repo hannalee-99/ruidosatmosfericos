@@ -109,6 +109,10 @@ export function injectSeoIntoHtml(html: string, meta: SeoMeta): string {
     /<meta name="description" content="[^"]*">/i,
     `<meta name="description" content="${d}">`
   );
+  out = out.replace(
+    /<link rel="canonical" href="[^"]*">/i,
+    `<link rel="canonical" href="${url}">`
+  );
 
   out = out.replace(
     /<meta property="og:title" content="[^"]*">/i,
