@@ -12,7 +12,7 @@ export const INITIAL_DATA: {
     seo_config: SeoConfig | null;
   };
 } = {
-  "lastUpdated": 1782955534698,
+  "lastUpdated": 1783563023731,
   "works": [
     {
       "id": "work-1771621176503",
@@ -287,6 +287,54 @@ export const INITIAL_DATA: {
   ],
   "signals": [
     {
+      "id": "signal-1783561456420",
+      "slug": "transmutacoes-no-samsara",
+      "title": "transmutações no samsara",
+      "subtitle": "",
+      "date": "08/07/2026",
+      "status": "publicado",
+      "views": 0,
+      "coverImageUrl": "https://res.cloudinary.com/dcxm8yd49/image/upload/v1783561653/transmutacoes.png",
+      "seoDescription": "o silêncio surge em estados de alteração contínua",
+      "blocks": [
+        {
+          "id": "b-1783561456420",
+          "type": "text",
+          "content": "combatemos os\ntentáculos mundanos descontrolados\ncom o fluxo do agora\namígdala, centro de tudo\nfluido, o meio\n\nondas ressoam\nenquanto a palavra é falha\neu dissolvo\n\no silêncio surge\nem estados de alteração contínua\n\nobservo\n\ne recomeça"
+        },
+        {
+          "id": "b-1783561923756-vulez",
+          "type": "image",
+          "content": "https://res.cloudinary.com/dcxm8yd49/image/upload/v1783392040/processos-transmutacao.jpg",
+          "caption": "rascunho e inspirações"
+        },
+        {
+          "id": "b-1783562018350-va5jw",
+          "type": "image",
+          "content": "https://res.cloudinary.com/dcxm8yd49/image/upload/v1782955076/processos_em_transmuta%C3%A7%C3%A3o_2026_Hannalee_hihad1_ad642a.avif",
+          "caption": "processos em transmutação, janeiro de 2026"
+        }
+      ],
+      "metadata": [
+        {
+          "question": "lendo",
+          "answer": "água viva da clarice lispector"
+        },
+        {
+          "question": "ouvindo",
+          "answer": "journey in satchidananda - alice coltrane"
+        },
+        {
+          "question": "observando",
+          "answer": "mundinho gatos (observar meus parceiros de existência chiquinho, björk, béla lugosi e cheetos)"
+        },
+        {
+          "question": "humor",
+          "answer": "o mesmo do craque neto comentando desclassificação da copa/26"
+        }
+      ]
+    },
+    {
       "id": "signal-1771101541489",
       "slug": "primeiratransmissao",
       "title": "primeira transmissão",
@@ -308,7 +356,7 @@ export const INITIAL_DATA: {
     "profile": {
       "id": "profile",
       "text": "apenas fluxo me movimentando sendo força de natureza autêntica",
-      "imageUrl": "https://res.cloudinary.com/dcxm8yd49/image/upload/v1771623752/yoIeu.avif",
+      "imageUrl": "https://res.cloudinary.com/dcxm8yd49/image/upload/v1783387514/esseeu.png",
       "faviconUrl": ""
     },
     "connect_config": {
@@ -692,23 +740,23 @@ export const INITIAL_DATA: {
     "ecos_config": {
       "id": "ecos_config",
       "links": [
-        { 
-          "id": "01", 
-          "title": "colab55", 
+        {
+          "id": "01",
+          "title": "colab55",
           "description": "impressões e objetos de ritos",
           "url": "https://www.colab55.com/@ruidosatmosfericos",
           "status": "ativo"
         },
-        { 
-          "id": "02", 
-          "title": "pinterest", 
+        {
+          "id": "02",
+          "title": "pinterest",
           "description": "fragmentos de processo e ruídos",
           "url": "https://br.pinterest.com/ruidosatmosfericos01/",
           "status": "ativo"
         },
-        { 
-          "id": "03", 
-          "title": "redbubble", 
+        {
+          "id": "03",
+          "title": "redbubble",
           "description": "suportes e artefatos globais",
           "url": "https://www.redbubble.com/people/rdsatmosfericos/",
           "status": "ativo"
@@ -718,8 +766,8 @@ export const INITIAL_DATA: {
     "seo_config": {
       "id": "seo_config",
       "title": "ruídos atmosféricos",
-      "description": "uma experiência imersiva de arte digital e manifesto artístico. registros de presença, sensações e desequilíbrio controlado entre o físico e o digital.",
-      "image": ""
+      "description": "registros de prática artística sobre ruído, fluxo e o outro. obras, manifesto, sinais e existência em desequilíbrio controlado. ",
+      "image": "https://res.cloudinary.com/dcxm8yd49/image/upload/v1771624476/essencia_na_ionosfera.avif"
     }
   }
 };
