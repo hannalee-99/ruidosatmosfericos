@@ -1,7 +1,8 @@
 
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Signal, SignalBlock } from '../types';
 import LazyImage from './LazyImage';
+import Lightbox from './Lightbox';
 
 const formatImageUrl = (url: string): string => {
   if (!url) return '';
@@ -309,6 +310,8 @@ type RenderGroup =
   | { type: 'embed'; id: string; content: string };
 
 const SignalRenderer: React.FC<SignalRendererProps> = ({ signal }) => {
+  const [lightboxImage, setLightboxImage] = useState<{ src: string; alt?: string } | null>(null);
+
   const processedBlocks = useMemo(() => {
     const result: RenderGroup[] = [];
     let currentGallery: SignalBlock[] = [];
@@ -338,15 +341,20 @@ const SignalRenderer: React.FC<SignalRendererProps> = ({ signal }) => {
         <div key={group.id}>
           {group.type === 'text' && <MarkdownRenderer content={group.content} />}
           {group.type === 'gallery' && (
-            <div className={`my-16 grid gap-12 ${group.images.length === 1 ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2'}`}>
+            <div className={`my-16 grid gap-12 ${group.images.length === 1 ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2'} md:-mx-16 lg:-mx-24`}>
               {group.images.map((imgBlock) => (
                 <figure key={imgBlock.id} className="relative w-full flex flex-col group/fig">
-                  <div className="relative rounded-2xl overflow-hidden shadow-2xl bg-neutral-900 [.light-mode_&]:bg-neutral-100 transition-all duration-700 hover:scale-[1.015] hover:shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
+                  <div 
+                    onClick={() => setLightboxImage({ src: formatImageUrl(imgBlock.content), alt: imgBlock.caption || 'registro visual' })}
+                    className="relative w-full cursor-zoom-in group/img-container"
+                  >
                     <LazyImage 
                       src={formatImageUrl(imgBlock.content)} 
                       alt="registro visual" 
-                      className="w-full h-auto object-cover" 
+                      className="w-full h-auto bg-transparent" 
+                      imgClassName="rounded-2xl transition-all duration-700 hover:scale-[1.015] filter drop-shadow-[0_12px_22px_rgba(0,0,0,0.65)] hover:drop-shadow-[0_22px_42px_rgba(0,0,0,0.85)]"
                       autoHeight 
+                      overflowHidden={false}
                     />
                   </div>
                   {imgBlock.caption && (
@@ -379,6 +387,14 @@ const SignalRenderer: React.FC<SignalRendererProps> = ({ signal }) => {
           </div>
         </div>
       )}
+
+      {/* Lightbox Modal para Sinais */}
+      <Lightbox 
+        isOpen={!!lightboxImage} 
+        onClose={() => setLightboxImage(null)} 
+        src={lightboxImage?.src || ''} 
+        alt={lightboxImage?.alt || ''} 
+      />
     </div>
   );
 };

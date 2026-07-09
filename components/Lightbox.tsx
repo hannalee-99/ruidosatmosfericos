@@ -121,7 +121,7 @@ const Lightbox: React.FC<LightboxProps> = ({ isOpen, onClose, src, alt }) => {
             <img
               src={src}
               alt={alt}
-              className="max-w-[90vw] max-h-[90vh] object-contain select-none pointer-events-none rounded-sm shadow-2xl"
+              className="max-w-[90vw] max-h-[90vh] object-contain select-none pointer-events-none filter drop-shadow-[0_20px_35px_rgba(0,0,0,0.85)]"
               draggable={false}
             />
           </motion.div>

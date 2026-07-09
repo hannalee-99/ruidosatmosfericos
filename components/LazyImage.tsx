@@ -6,16 +6,20 @@ interface LazyImageProps {
   src: string;
   alt: string;
   className?: string;
+  imgClassName?: string;
   objectFit?: 'cover' | 'contain' | 'none';
   autoHeight?: boolean;
+  overflowHidden?: boolean;
 }
 
 const LazyImage: React.FC<LazyImageProps> = ({ 
   src, 
   alt, 
   className = "",
+  imgClassName = "",
   objectFit = 'cover',
-  autoHeight = false
+  autoHeight = false,
+  overflowHidden = true
 }) => {
   const [isInView, setIsInView] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
@@ -64,7 +68,7 @@ const LazyImage: React.FC<LazyImageProps> = ({
   return (
     <div 
       ref={containerRef}
-      className={`relative w-full overflow-hidden bg-transparent ${autoHeight ? 'h-auto' : 'h-full'} ${className}`}
+      className={`relative w-full ${overflowHidden ? 'overflow-hidden' : 'overflow-visible'} bg-transparent ${autoHeight ? 'h-auto' : 'h-full'} ${className}`}
     >
       {!isLoaded && (
         <div 
@@ -80,7 +84,7 @@ const LazyImage: React.FC<LazyImageProps> = ({
               src={optimizedSrc}
               alt={alt}
               onLoad={handleImageLoad}
-              className={`w-full select-none ${autoHeight ? 'h-auto block' : 'h-full object-cover'} ${isLoaded ? 'opacity-100' : 'opacity-0'}`}
+              className={`w-full select-none ${autoHeight ? 'h-auto block' : 'h-full object-cover'} ${isLoaded ? 'opacity-100' : 'opacity-0'} ${imgClassName}`}
               style={!autoHeight ? { objectFit } : {}}
               draggable={false}
               onContextMenu={(e) => e.preventDefault()}

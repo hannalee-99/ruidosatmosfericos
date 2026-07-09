@@ -74,18 +74,29 @@ export const useDataSeeding = () => {
         const lastSync = parseInt(localStorage.getItem('ra_last_sync') || '0');
         
         // Carrega o initialData dinamicamente apenas quando necessário
-        // Isso remove o peso dos dados do bundle principal do site
         const { INITIAL_DATA } = await import('../initialData');
         const codeVersion = INITIAL_DATA.lastUpdated || 0;
 
-        // Sempre tenta buscar os dados mais recentes do servidor primeiro
+        // 1. Obter dados locais atuais no IndexedDB
+        const localWorks = await storage.getAll('works');
+        const localSignals = await storage.getAll('signals');
+
+        // 2. Tentar obter os dados mais atualizados do servidor
         let serverWorks = null;
         let serverSignals = null;
+        let serverFetched = false;
+
         try {
           const resWorks = await fetch('/api/works');
-          if (resWorks.ok) serverWorks = await resWorks.json();
+          if (resWorks.ok) {
+            serverWorks = await resWorks.json();
+            serverFetched = true;
+          }
           const resSignals = await fetch('/api/signals');
-          if (resSignals.ok) serverSignals = await resSignals.json();
+          if (resSignals.ok) {
+            serverSignals = await resSignals.json();
+            serverFetched = true;
+          }
         } catch (err) {
           console.warn("Não foi possível buscar dados do servidor, usando dados locais de seed:", err);
         }
@@ -93,53 +104,80 @@ export const useDataSeeding = () => {
         const finalWorks = serverWorks || INITIAL_DATA.works;
         const finalSignals = serverSignals || INITIAL_DATA.signals;
 
-        if (codeVersion > lastSync || serverWorks || serverSignals) {
-          console.log("Detectada sincronização de dados. Atualizando base local...");
-          
-          if (finalWorks) {
-            // Limpa antigos para garantir integridade caso venha do servidor
-            const currentWorks = await storage.getAll('works');
-            for (const w of currentWorks) await storage.delete('works', w.id);
-            for (const w of finalWorks) await storage.save('works', w);
-          }
-          if (finalSignals) {
-            const currentSignals = await storage.getAll('signals');
-            for (const s of currentSignals) await storage.delete('signals', s.id);
-            for (const s of finalSignals) await storage.save('signals', s);
-          }
-          
-          if (codeVersion > lastSync) {
-            if (INITIAL_DATA.about.profile) {
-              await storage.save('about', INITIAL_DATA.about.profile);
-            }
-            if (INITIAL_DATA.about.connect_config) {
-              await storage.save('about', INITIAL_DATA.about.connect_config);
-            }
-            if (INITIAL_DATA.about.landing_manifesto) {
-              await storage.save('about', INITIAL_DATA.about.landing_manifesto);
-            }
-            if (INITIAL_DATA.about.ecos_config) {
-              await storage.save('about', INITIAL_DATA.about.ecos_config);
-            }
-            if (INITIAL_DATA.about.seo_config) {
-              await storage.save('about', INITIAL_DATA.about.seo_config);
-            }
-            localStorage.setItem('ra_last_sync', codeVersion.toString());
-          }
-          console.log("Sincronização concluída.");
-        } else {
-          const works = await storage.getAll('works');
-          if (works.length === 0) {
-            for (const w of finalWorks) await storage.save('works', w);
-            for (const s of finalSignals) await storage.save('signals', s);
-            if (INITIAL_DATA.about.profile) await storage.save('about', INITIAL_DATA.about.profile);
-            if (INITIAL_DATA.about.connect_config) await storage.save('about', INITIAL_DATA.about.connect_config);
-            if (INITIAL_DATA.about.landing_manifesto) await storage.save('about', INITIAL_DATA.about.landing_manifesto);
-            if (INITIAL_DATA.about.ecos_config) await storage.save('about', INITIAL_DATA.about.ecos_config);
-            if (INITIAL_DATA.about.seo_config) await storage.save('about', INITIAL_DATA.about.seo_config);
-            localStorage.setItem('ra_last_sync', codeVersion.toString());
+        // 3. Sincronização inteligente NÃO-DESTRUTIVA (Upsert)
+        // Salva os dados do servidor ou seed localmente sem apagar os outros existentes
+        if (finalWorks) {
+          for (const w of finalWorks) {
+            await storage.save('works', w);
           }
         }
+        if (finalSignals) {
+          for (const s of finalSignals) {
+            await storage.save('signals', s);
+          }
+        }
+
+        // 4. Sincronização Automática Servidor-Cliente Bidirecional
+        // Se temos novos registros locais no IndexedDB que não estão no servidor,
+        // nós os enviamos ao servidor para mantê-lo atualizado e persistido.
+        if (serverFetched) {
+          const updatedLocalWorks = await storage.getAll('works');
+          const updatedLocalSignals = await storage.getAll('signals');
+
+          const serverWorksIds = new Set((serverWorks || []).map((w: any) => w.id));
+          const hasNewLocalWorks = updatedLocalWorks.some(w => !serverWorksIds.has(w.id));
+
+          const serverSignalsIds = new Set((serverSignals || []).map((s: any) => s.id));
+          const hasNewLocalSignals = updatedLocalSignals.some(s => !serverSignalsIds.has(s.id));
+
+          if (hasNewLocalWorks && serverWorks !== null) {
+            console.log("Detectadas obras locais novas. Sincronizando com o servidor...");
+            try {
+              await fetch('/api/save-data', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ type: 'works', data: updatedLocalWorks })
+              });
+            } catch (e) {
+              console.error("Erro ao sincronizar obras locais para o servidor:", e);
+            }
+          }
+
+          if (hasNewLocalSignals && serverSignals !== null) {
+            console.log("Detectados posts de sinais locais novos. Sincronizando com o servidor...");
+            try {
+              await fetch('/api/save-data', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ type: 'signals', data: updatedLocalSignals })
+              });
+            } catch (e) {
+              console.error("Erro ao sincronizar sinais locais para o servidor:", e);
+            }
+          }
+        }
+
+        // Sincroniza metadados estruturais do 'about' apenas se houver atualização de código
+        if (codeVersion > lastSync) {
+          if (INITIAL_DATA.about.profile) {
+            await storage.save('about', INITIAL_DATA.about.profile);
+          }
+          if (INITIAL_DATA.about.connect_config) {
+            await storage.save('about', INITIAL_DATA.about.connect_config);
+          }
+          if (INITIAL_DATA.about.landing_manifesto) {
+            await storage.save('about', INITIAL_DATA.about.landing_manifesto);
+          }
+          if (INITIAL_DATA.about.ecos_config) {
+            await storage.save('about', INITIAL_DATA.about.ecos_config);
+          }
+          if (INITIAL_DATA.about.seo_config) {
+            await storage.save('about', INITIAL_DATA.about.seo_config);
+          }
+          localStorage.setItem('ra_last_sync', codeVersion.toString());
+        }
+
+        console.log("Sincronização inteligente concluída.");
       } catch (e) {
         console.error("Data seed error", e);
       }
