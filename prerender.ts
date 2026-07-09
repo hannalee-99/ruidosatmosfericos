@@ -27,11 +27,29 @@ function loadJsonOr<T>(fileName: string, fallback: T): T {
   return fallback;
 }
 
+const SITE_URL = 'https://ruidosatmosfericos.online';
+
 function writePage(routePath: string, html: string) {
   // /materia/slug  ->  dist/materia/slug/index.html  (URL limpa)
   const outDir = path.join(DIST, routePath.replace(/^\//, ''));
   fs.mkdirSync(outDir, { recursive: true });
   fs.writeFileSync(path.join(outDir, 'index.html'), html, 'utf-8');
+}
+
+// Gera um sitemap.xml apenas com URLs limpas e reais (que o Google indexa).
+// Substitui o sitemap estático antigo, que usava URLs com hash (ignoradas
+// pelo Google).
+function writeSitemap(routes: string[]) {
+  const today = new Date().toISOString().slice(0, 10);
+  const urls = routes
+    .map(
+      (r) =>
+        `  <url>\n    <loc>${SITE_URL}${r}</loc>\n    <lastmod>${today}</lastmod>\n  </url>`
+    )
+    .join('\n');
+  const xml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls}\n</urlset>\n`;
+  fs.writeFileSync(path.join(DIST, 'sitemap.xml'), xml, 'utf-8');
+  console.log(`[prerender] sitemap.xml gerado com ${routes.length} URLs.`);
 }
 
 function run() {
@@ -47,6 +65,7 @@ function run() {
   const signals = loadJsonOr('signals-db.json', INITIAL_DATA.signals) as any[];
 
   let count = 0;
+  const sitemapRoutes: string[] = ['/']; // home
 
   // Obras (matérias)
   for (const work of works) {
@@ -56,6 +75,7 @@ function run() {
     const route = `/materia/${slug}`;
     const meta = resolveSeoMeta(route, works, signals, aboutSeo);
     writePage(route, injectSeoIntoHtml(template, meta));
+    sitemapRoutes.push(route);
     count++;
   }
 
@@ -69,9 +89,12 @@ function run() {
       const meta = resolveSeoMeta(route, works, signals, aboutSeo);
       writePage(route, injectSeoIntoHtml(template, meta));
     }
+    // Só a URL canônica (/sinais/) entra no sitemap; /sinal/ é alias
+    sitemapRoutes.push(`/sinais/${slug}`);
     count++;
   }
 
+  writeSitemap(sitemapRoutes);
   console.log(`[prerender] ${count} posts pré-renderizados com SEO em dist/.`);
 }
 
