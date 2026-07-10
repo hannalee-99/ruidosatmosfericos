@@ -1,0 +1,3 @@
+[build]
+  command = "npm run build && npx tsx prerender.ts"
+  publish = "dist"
