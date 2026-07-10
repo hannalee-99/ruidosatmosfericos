@@ -14,6 +14,7 @@ import FaviconManager from './FaviconManager';
 import Footer from './Footer';
 import BackToTop from './BackToTop';
 import AdminGate, { isAdminAuthed, clearAdminAuth } from './AdminGate';
+import { initOutboundTracking } from '../lib/outbound';
 
 // Pages (Carregadas sob demanda para otimizar TTI)
 const LandingPage = lazy(() => import('./LandingPage'));
@@ -43,6 +44,9 @@ const App: React.FC = () => {
   useEffect(() => {
     initAnalytics();
 
+    // Rastreia cliques em links de saída (externos) no Mixpanel + GA4
+    const cleanupOutbound = initOutboundTracking();
+
     // Bloquear clique direito nas imagens para evitar downloads
     const handleContextMenu = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
@@ -63,6 +67,7 @@ const App: React.FC = () => {
     document.addEventListener('dragstart', handleDragStart);
 
     return () => {
+      cleanupOutbound();
       document.removeEventListener('contextmenu', handleContextMenu);
       document.removeEventListener('dragstart', handleDragStart);
     };
