@@ -8,17 +8,26 @@ interface LightboxProps {
   onClose: () => void;
   src: string;
   alt: string;
+  images?: { src: string; alt: string }[];
+  currentIndex?: number;
+  onIndexChange?: (index: number) => void;
 }
 
-const Lightbox: React.FC<LightboxProps> = ({ isOpen, onClose, src, alt }) => {
+const Lightbox: React.FC<LightboxProps> = ({ 
+  isOpen, 
+  onClose, 
+  src, 
+  alt, 
+  images, 
+  currentIndex, 
+  onIndexChange 
+}) => {
   const [crop, setCrop] = useState({ x: 0, y: 0, scale: 1 });
 
-  // Reset zoom when closed
+  // Reset zoom when closed or when active image changes
   useEffect(() => {
-    if (!isOpen) {
-      setCrop({ x: 0, y: 0, scale: 1 });
-    }
-  }, [isOpen]);
+    setCrop({ x: 0, y: 0, scale: 1 });
+  }, [isOpen, src]);
 
   const bind = useGesture(
     {
@@ -68,17 +77,33 @@ const Lightbox: React.FC<LightboxProps> = ({ isOpen, onClose, src, alt }) => {
     return () => { document.body.style.overflow = ''; };
   }, [isOpen]);
 
-  // Handle Escape key to close
+  // Handle keyboard events (Escape to close, Left/Right for gallery navigation)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && isOpen) {
+      if (!isOpen) return;
+      
+      if (e.key === 'Escape') {
         e.stopPropagation();
         onClose();
+      } else if (e.key === 'ArrowRight' && images && currentIndex !== undefined && onIndexChange) {
+        e.stopPropagation();
+        if (currentIndex < images.length - 1) {
+          onIndexChange(currentIndex + 1);
+        } else {
+          onIndexChange(0);
+        }
+      } else if (e.key === 'ArrowLeft' && images && currentIndex !== undefined && onIndexChange) {
+        e.stopPropagation();
+        if (currentIndex > 0) {
+          onIndexChange(currentIndex - 1);
+        } else {
+          onIndexChange(images.length - 1);
+        }
       }
     };
     window.addEventListener('keydown', handleKeyDown, true);
     return () => window.removeEventListener('keydown', handleKeyDown, true);
-  }, [isOpen, onClose]);
+  }, [isOpen, onClose, images, currentIndex, onIndexChange]);
 
   return (
     <AnimatePresence>
@@ -103,6 +128,52 @@ const Lightbox: React.FC<LightboxProps> = ({ isOpen, onClose, src, alt }) => {
             </svg>
           </button>
 
+          {/* Gallery Navigation Arrows */}
+          {images && images.length > 1 && currentIndex !== undefined && onIndexChange && (
+            <>
+              {/* Left Button */}
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (currentIndex > 0) {
+                    onIndexChange(currentIndex - 1);
+                  } else {
+                    onIndexChange(images.length - 1);
+                  }
+                }}
+                className="absolute left-4 md:left-8 z-[1010] w-12 h-12 flex items-center justify-center rounded-full bg-white/5 hover:bg-white/25 text-white hover:text-[var(--accent)] transition-all border border-white/10"
+                title="imagem anterior (←)"
+              >
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M15 18l-6-6 6-6" />
+                </svg>
+              </button>
+
+              {/* Right Button */}
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (currentIndex < images.length - 1) {
+                    onIndexChange(currentIndex + 1);
+                  } else {
+                    onIndexChange(0);
+                  }
+                }}
+                className="absolute right-4 md:right-8 z-[1010] w-12 h-12 flex items-center justify-center rounded-full bg-white/5 hover:bg-white/25 text-white hover:text-[var(--accent)] transition-all border border-white/10"
+                title="próxima imagem (→)"
+              >
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M9 18l6-6-6-6" />
+                </svg>
+              </button>
+
+              {/* Counter indicator */}
+              <div className="absolute bottom-16 left-1/2 -translate-x-1/2 z-[1010] font-mono text-[10px] uppercase tracking-[0.25em] text-white/50 bg-black/40 px-3 py-1 rounded-full border border-white/5">
+                {currentIndex + 1} / {images.length}
+              </div>
+            </>
+          )}
+
           {/* Zoom Info (Mobile) */}
           <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-[1010] font-mono text-[10px] uppercase tracking-[0.2em] text-white/40 pointer-events-none">
             {crop.scale > 1 ? 'arraste para navegar // duplo clique para resetar' : 'pinça para zoom // duplo clique para ampliar'}
@@ -121,7 +192,7 @@ const Lightbox: React.FC<LightboxProps> = ({ isOpen, onClose, src, alt }) => {
             <img
               src={src}
               alt={alt}
-              className="max-w-[90vw] max-h-[90vh] object-contain select-none pointer-events-none filter drop-shadow-[0_20px_35px_rgba(0,0,0,0.85)]"
+              className="max-w-[90vw] max-h-[90vh] object-contain select-none pointer-events-none"
               draggable={false}
             />
           </motion.div>

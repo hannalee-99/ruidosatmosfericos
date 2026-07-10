@@ -652,7 +652,7 @@ export const INITIAL_DATA: {
                 "accent": true
               },
               {
-                "t": ", a forma não sustenta, o movimento escorre"
+                "t": ", a forma não sustenta, o movemento escorre"
               }
             ]
           ]

@@ -275,6 +275,8 @@ export const INITIAL_DATA: {
       status: 'rascunho',
       views: 0,
       coverImageUrl: '',
+      imageSize: 'm',
+      imageLayout: 'auto',
       seoDescription: '',
       blocks: [{ id: `b-${Date.now()}`, type: 'text', content: 'digite sua mensagem aqui...' }],
       metadata: (customQuestions.length > 0 ? customQuestions : getTemplateQuestions()).map(q => ({
@@ -1636,6 +1638,33 @@ Last Typed Command,Último Comando do Terminal,O texto exato do último comando 
                                  className="w-full bg-black border border-white/10 p-3 rounded text-xs outline-none focus:border-[var(--accent)] h-11 resize-none" 
                                  placeholder="resumo curto para compartilhamento..."
                                />
+                             </div>
+
+                             <div className="space-y-2">
+                               <label className="text-[9px] opacity-40 uppercase tracking-widest">tamanho das imagens no blogpost</label>
+                               <select 
+                                 value={editingSignal.imageSize || 'm'} 
+                                 onChange={e => setEditingSignal({...editingSignal, imageSize: e.target.value as 'p' | 'm' | 'g'})} 
+                                 className="w-full bg-black border border-white/10 p-3 rounded text-xs outline-none focus:border-[var(--accent)] text-white"
+                               >
+                                 <option value="p">pequeno (p)</option>
+                                 <option value="m">médio (m)</option>
+                                 <option value="g">grande (g)</option>
+                               </select>
+                             </div>
+
+                             <div className="space-y-2">
+                               <label className="text-[9px] opacity-40 uppercase tracking-widest">arranjo das imagens no blogpost</label>
+                               <select 
+                                 value={editingSignal.imageLayout || 'auto'} 
+                                 onChange={e => setEditingSignal({...editingSignal, imageLayout: e.target.value as 'full' | 'side' | 'gallery' | 'auto'})} 
+                                 className="w-full bg-black border border-white/10 p-3 rounded text-xs outline-none focus:border-[var(--accent)] text-white"
+                               >
+                                 <option value="auto">automático (arranjo inteligente)</option>
+                                 <option value="full">1 coluna (largura total)</option>
+                                 <option value="side">2 colunas (lado a lado)</option>
+                                 <option value="gallery">3 colunas (galeria compacta)</option>
+                               </select>
                              </div>
                              <div className="pt-1.5">
                                <NeobrutalistButton 

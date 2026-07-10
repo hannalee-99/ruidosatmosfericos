@@ -25,19 +25,27 @@
     <script>
       (function() {
         var path = window.location.pathname;
-        var match = path.match(/^\/(materia|sinais|sinal)\/([^\/]+)/);
-        if (match) {
-          var view = match[1];
-          var slug = match[2];
-          window.location.replace('/#/' + view + '/' + slug + '/');
+        if (path === '/') return;
+        
+        var cleanPath = path.replace(/^\/|\/$/g, '');
+        var parts = cleanPath.split('/');
+        var validViews = ['materia', 'sinais', 'sinal', 'manifesto', 'ecos', 'about', 'connect', 'backoffice'];
+        
+        if (parts.length > 0 && validViews.indexOf(parts[0]) !== -1) {
+          var view = parts[0];
+          var slug = parts[1] || '';
+          if (slug) {
+            window.location.replace('/#/' + view + '/' + slug + '/');
+          } else {
+            window.location.replace('/#/' + view + '/');
+          }
         }
       })();
     </script>
     <meta name="p:domain_verify" content="6bc6bf93d5f44140503524841aa4575f"/>
     <title>ruídos atmosféricos</title>
     <meta name="description" content="ruídos atmosféricos é uma experiência imersiva de arte digital e manifesto artístico. registros de presença, sensações e desequilíbrio controlado entre o físico e o digital.">
-    <link rel="canonical" href="https://ruidosatmosfericos.online">
-
+    
     <!-- Resource Hints para Performance -->
     <link rel="preconnect" href="https://res.cloudinary.com">
     <link rel="preconnect" href="https://images.unsplash.com">
@@ -51,6 +59,8 @@
     <meta property="og:title" content="ruídos atmosféricos">
     <meta property="og:description" content="uma experiência imersiva de arte digital e manifesto artístico. registros de presença e desequilíbrio controlado entre o físico e o digital.">
     <meta property="og:image" content="https://64.media.tumblr.com/2469fc83feaecaf0b7a97fa55f6793d6/670f92e2b0934e32-bb/s2048x3072/3b1cf9f39410af90a8d0607d572f83c0024b2472.jpg">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
 
     <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image">

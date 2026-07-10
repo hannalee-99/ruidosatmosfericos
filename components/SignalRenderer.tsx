@@ -3,6 +3,7 @@ import React, { useMemo, useState } from 'react';
 import { Signal, SignalBlock } from '../types';
 import LazyImage from './LazyImage';
 import Lightbox from './Lightbox';
+import FlexibleSignalGrid from './FlexibleSignalGrid';
 
 const formatImageUrl = (url: string): string => {
   if (!url) return '';
@@ -341,30 +342,11 @@ const SignalRenderer: React.FC<SignalRendererProps> = ({ signal }) => {
         <div key={group.id}>
           {group.type === 'text' && <MarkdownRenderer content={group.content} />}
           {group.type === 'gallery' && (
-            <div className={`my-16 grid gap-12 ${group.images.length === 1 ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2'} md:-mx-16 lg:-mx-24`}>
-              {group.images.map((imgBlock) => (
-                <figure key={imgBlock.id} className="relative w-full flex flex-col group/fig">
-                  <div 
-                    onClick={() => setLightboxImage({ src: formatImageUrl(imgBlock.content), alt: imgBlock.caption || 'registro visual' })}
-                    className="relative w-full cursor-zoom-in group/img-container"
-                  >
-                    <LazyImage 
-                      src={formatImageUrl(imgBlock.content)} 
-                      alt="registro visual" 
-                      className="w-full h-auto bg-transparent" 
-                      imgClassName="rounded-2xl transition-all duration-700 hover:scale-[1.015] filter drop-shadow-[0_12px_22px_rgba(0,0,0,0.65)] hover:drop-shadow-[0_22px_42px_rgba(0,0,0,0.85)]"
-                      autoHeight 
-                      overflowHidden={false}
-                    />
-                  </div>
-                  {imgBlock.caption && (
-                    <figcaption className="mt-4 font-vt text-sm tracking-widest opacity-50 group-hover/fig:opacity-80 transition-opacity lowercase border-l border-[var(--accent)] pl-3">
-                      {imgBlock.caption}
-                    </figcaption>
-                  )}
-                </figure>
-              ))}
-            </div>
+            <FlexibleSignalGrid
+              images={group.images}
+              onImageClick={(src, alt) => setLightboxImage({ src, alt })}
+              imageSize={signal.imageSize}
+            />
           )}
           {group.type === 'embed' && <SmartEmbed url={group.content} />}
         </div>

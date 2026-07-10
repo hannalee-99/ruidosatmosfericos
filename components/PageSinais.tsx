@@ -6,7 +6,7 @@ import { Signal, SignalBlock } from '../types';
 import { DEFAULT_IMAGE } from '../constants';
 import { useMeta } from '../lib/hooks';
 import { getOptimizedUrl } from '../lib/media';
-import SignalRenderer from './SignalRenderer';
+import SignalGrid from './SignalGrid';
 import JsonLd from './JsonLd';
 import BackToTop from './BackToTop';
 import Toast from './Toast';
@@ -154,20 +154,14 @@ const PageSinais: React.FC<PageSinaisProps> = ({
 
       if (!selectedPost) return;
 
-      if (e.key === 'ArrowRight' && navigation.next) {
-        e.preventDefault();
-        handleOpenPost(navigation.next);
-      } else if (e.key === 'ArrowLeft' && navigation.prev) {
-        e.preventDefault();
-        handleOpenPost(navigation.prev);
-      } else if (e.key === 'Escape') {
+      if (e.key === 'Escape') {
         e.preventDefault();
         handleClosePost();
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [selectedPost, navigation]);
+  }, [selectedPost]);
 
   const groupedPosts = useMemo(() => {
     const groups: Record<string, Signal[]> = {};
@@ -204,7 +198,7 @@ const PageSinais: React.FC<PageSinaisProps> = ({
     const readingTime = calculateReadingTime(selectedPost.blocks);
     const firstImage = selectedPost.coverImageUrl || selectedPost.blocks.find(b => b.type === 'image')?.content || DEFAULT_IMAGE;
     return (
-      <div id="post-modal-scroll" className="fixed inset-0 z-[150] bg-[#050505] [.light-mode_&]:bg-[#f4f4f4] text-white [.light-mode_&]:text-[#111] overflow-y-auto animate-in fade-in duration-500 selection:bg-[var(--accent)] selection:text-black scroll-smooth no-scrollbar">
+      <div id="post-modal-scroll" className="fixed inset-0 z-[150] bg-[var(--bg)] text-white [.light-mode_&]:text-[#111] overflow-y-auto animate-in fade-in duration-500 selection:bg-[var(--accent)] selection:text-black scroll-smooth no-scrollbar">
          <Helmet>
            <title>{`${selectedPost.seoTitle || selectedPost.title} — ruídos atmosféricos`}</title>
            <meta name="description" content={selectedPost.seoDescription || selectedPost.subtitle || 'captura de frequências e registros de campo'} />
@@ -217,30 +211,7 @@ const PageSinais: React.FC<PageSinaisProps> = ({
          <ReadingProgress />
          <BackToTop targetId="post-modal-scroll" bottom="bottom-20" zIndex="z-[160]" />
 
-         {/* Navegação por setas otimizada para Desktop/Web (combinando com Matéria) */}
-         <div className="fixed inset-y-0 left-2 md:left-8 flex items-center z-[160]">
-           {navigation.prev && (
-             <button 
-               onClick={() => handleOpenPost(navigation.prev!)}
-               className="w-10 h-10 md:w-16 md:h-16 flex items-center justify-center rounded-full bg-black/40 md:bg-white/5 backdrop-blur-sm hover:bg-[var(--accent)] hover:text-black border border-white/10 transition-all group opacity-60 md:opacity-20 hover:opacity-100"
-               title="sinal anterior (←)"
-             >
-               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
-             </button>
-           )}
-         </div>
 
-         <div className="fixed inset-y-0 right-2 md:right-8 flex items-center z-[160]">
-           {navigation.next && (
-             <button 
-               onClick={() => handleOpenPost(navigation.next!)}
-               className="w-10 h-10 md:w-16 md:h-16 flex items-center justify-center rounded-full bg-black/40 md:bg-white/5 backdrop-blur-sm hover:bg-[var(--accent)] hover:text-black border border-white/10 transition-all group opacity-60 md:opacity-20 hover:opacity-100"
-               title="próximo sinal (→)"
-             >
-               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18l6-6-6-6"/></svg>
-             </button>
-           )}
-         </div>
          
          <div className="fixed inset-0 pointer-events-none opacity-[0.03] bg-[url('https://grainy-gradients.vercel.app/noise.svg')] z-0"></div>
          
@@ -261,8 +232,8 @@ const PageSinais: React.FC<PageSinaisProps> = ({
          <div className="relative z-10 max-w-5xl mx-auto pt-64 md:pt-80 px-6 md:px-12 pb-40">
             {selectedPost.coverImageUrl && (
               <div className="w-full h-[40vh] md:h-[60vh] rounded-3xl overflow-hidden mb-16 relative">
-                 <img src={getOptimizedUrl(selectedPost.coverImageUrl)} className="w-full h-full object-cover animate-in zoom-in-105 duration-1000" alt="capa" />
-                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
+                 <img src={getOptimizedUrl(selectedPost.coverImageUrl)} className="w-full h-full object-cover bg-transparent" alt="capa" />
+                 <div className="absolute inset-0 hidden"></div>
               </div>
             )}
 
@@ -279,7 +250,7 @@ const PageSinais: React.FC<PageSinaisProps> = ({
                )}
             </header>
             <article className="max-w-3xl mx-auto pb-32">
-               <SignalRenderer signal={selectedPost} />
+               <SignalGrid signal={selectedPost} />
 
                {/* Botão de Compartilhar no Final do Artigo */}
                <div className="mt-16 flex items-center justify-start">
@@ -344,13 +315,13 @@ const PageSinais: React.FC<PageSinaisProps> = ({
                             
                             {/* Image - Now on the left of the text on desktop */}
                             {post.coverImageUrl && (
-                              <div className="w-full md:w-72 aspect-[4/3] rounded-2xl overflow-hidden flex-shrink-0 relative group-hover/item:shadow-[0_0_30px_rgba(var(--accent-rgb),0.1)] transition-all duration-700">
+                              <div className="w-full md:w-72 aspect-[4/3] rounded-2xl overflow-hidden flex-shrink-0 relative transition-all duration-300 bg-transparent">
                                 <img 
                                   src={getOptimizedUrl(post.coverImageUrl, 400)} 
                                   className="w-full h-full object-cover" 
                                   alt="thumb" 
                                 />
-                                <div className="absolute inset-0 bg-transparent group-hover/item:bg-transparent transition-colors"></div>
+                                <div className="hidden"></div>
                               </div>
                             )}
 

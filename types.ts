@@ -67,6 +67,8 @@ export interface Signal {
   status: 'rascunho' | 'publicado';
   views: number;
   coverImageUrl?: string; // Imagem de capa / Hero
+  imageSize?: 'p' | 'm' | 'g'; // Tamanho das imagens no blogpost (pequeno, médio, grande)
+  imageLayout?: 'full' | 'side' | 'gallery' | 'auto'; // Arranjo/Layout das imagens
   seoDescription?: string; // Breve descrição para SEO/Cards
   seoTitle?: string;
   seoImage?: string;
