@@ -58,8 +58,28 @@ function run() {
     process.exit(1);
   }
 
-  const template = fs.readFileSync(TEMPLATE_PATH, 'utf-8');
+  let template = fs.readFileSync(TEMPLATE_PATH, 'utf-8');
+
+  // Auto-cura de roteamento: garante que a rota /bio esteja no redirect do
+  // index.html (o AI Studio nem sempre inclui 'bio' em validViews, o que faria
+  // o link da bio do Instagram cair na home em vez de abrir a página bio).
+  if (!/validViews\s*=\s*\[[^\]]*'bio'/.test(template)) {
+    template = template.replace(
+      /(var validViews = \[[^\]]*)\]/,
+      `$1, 'bio']`
+    );
+  }
+
   const aboutSeo = INITIAL_DATA.about.seo_config;
+
+  // Dados para o card dedicado da página bio (link-in-bio do Instagram).
+  const bioCfg: any = (INITIAL_DATA.about as any).bio_config;
+  const profile: any = INITIAL_DATA.about.profile;
+  const bioMeta = {
+    title: bioCfg?.profileTitle || undefined, // cai no nome do site se vazio
+    description: bioCfg?.bio || undefined,
+    image: profile?.imageUrl || aboutSeo?.image || undefined,
+  };
 
   const works = loadJsonOr('works-db.json', INITIAL_DATA.works) as any[];
   const signals = loadJsonOr('signals-db.json', INITIAL_DATA.signals) as any[];
@@ -72,6 +92,11 @@ function run() {
   // sem esses ajustes.
   const homeMeta = resolveSeoMeta('/', works, signals, aboutSeo);
   fs.writeFileSync(TEMPLATE_PATH, injectSeoIntoHtml(template, homeMeta), 'utf-8');
+
+  // Bio: card dedicado (foto de perfil + bio) para o link da bio do Instagram.
+  const bioSeo = resolveSeoMeta('/bio', works, signals, aboutSeo, bioMeta);
+  writePage('/bio', injectSeoIntoHtml(template, bioSeo));
+  sitemapRoutes.push('/bio');
 
   // Obras (matérias)
   for (const work of works) {

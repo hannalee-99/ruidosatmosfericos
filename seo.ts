@@ -46,7 +46,8 @@ export function resolveSeoMeta(
   reqPath: string,
   works: any[],
   signals: any[],
-  aboutSeo?: { title?: string; description?: string; image?: string } | null
+  aboutSeo?: { title?: string; description?: string; image?: string } | null,
+  bio?: { title?: string; description?: string; image?: string } | null
 ): SeoMeta {
   const cleanPath = reqPath.replace(/\/$/, ''); // remove barra final
 
@@ -63,8 +64,14 @@ export function resolveSeoMeta(
   const isMateria = cleanPath.startsWith('/materia/');
   const isSinais =
     cleanPath.startsWith('/sinais/') || cleanPath.startsWith('/sinal/');
+  const isBio = cleanPath === '/bio';
 
-  if (isMateria) {
+  if (isBio) {
+    // Card dedicado da página link-in-bio (link da bio do Instagram).
+    title = bio?.title || SITE_NAME;
+    description = bio?.description || description;
+    image = bio?.image || image;
+  } else if (isMateria) {
     const slug = cleanPath.substring('/materia/'.length);
     const work = works.find((w) => w.slug === slug || w.id === slug);
     if (work) {
