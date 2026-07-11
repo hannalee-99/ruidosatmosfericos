@@ -13,7 +13,7 @@ export const INITIAL_DATA: {
     seo_config: SeoConfig | null;
   };
 } = {
-  "lastUpdated": 1783794139978,
+  "lastUpdated": 1783794542338,
   "works": [
     {
       "id": "work-1771621176503",
