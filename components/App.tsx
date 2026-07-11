@@ -13,6 +13,8 @@ import ObserverEffect from './ObserverEffect';
 import FaviconManager from './FaviconManager';
 import Footer from './Footer';
 import BackToTop from './BackToTop';
+import AdminGate, { isAdminAuthed, clearAdminAuth } from './AdminGate';
+import { initOutboundTracking } from '../lib/outbound';
 
 // Pages (Carregadas sob demanda para otimizar TTI)
 const LandingPage = lazy(() => import('./LandingPage'));
@@ -46,12 +48,16 @@ const App: React.FC = () => {
     setView(targetView);
   }, [view]);
   const [activeSlug, setActiveSlug] = useState<string | null>(null);
+  const [adminAuthed, setAdminAuthed] = useState<boolean>(isAdminAuthed());
   const { isDarkMode, toggleTheme } = useTheme();
   
   useDataSeeding();
 
   useEffect(() => {
     initAnalytics();
+
+    // Rastreia cliques em links de saída (externos) no Mixpanel + GA4
+    const cleanupOutbound = initOutboundTracking();
 
     // Bloquear clique direito nas imagens para evitar downloads
     const handleContextMenu = (e: MouseEvent) => {
@@ -73,6 +79,7 @@ const App: React.FC = () => {
     document.addEventListener('dragstart', handleDragStart);
 
     return () => {
+      cleanupOutbound();
       document.removeEventListener('contextmenu', handleContextMenu);
       document.removeEventListener('dragstart', handleDragStart);
     };
@@ -243,7 +250,9 @@ const App: React.FC = () => {
             case ViewState.BIO: return <PageBio onNavigate={handleNavigate} isDarkMode={isDarkMode} />;
             case ViewState.ABOUT: return <PageAbout onNavigate={handleNavigate} isDarkMode={isDarkMode} />;
             case ViewState.CONNECT: return <PageConnect onNavigate={handleNavigate} />;
-            case ViewState.BACKOFFICE: return <PageBackoffice onLogout={() => { handleNavigate(ViewState.LANDING); }} />;
+            case ViewState.BACKOFFICE: return adminAuthed
+              ? <PageBackoffice onLogout={() => { clearAdminAuth(); setAdminAuthed(false); handleNavigate(ViewState.LANDING); }} />
+              : <AdminGate onSuccess={() => setAdminAuthed(true)} onCancel={() => handleNavigate(ViewState.LANDING)} />;
             default: return null;
           }
         })()}
