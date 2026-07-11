@@ -92,7 +92,7 @@ const PageBio: React.FC<PageBioProps> = ({ onNavigate, isDarkMode }) => {
   const inactiveLinks = visibleLinks.filter(l => l.status !== 'ativo');
 
   return (
-    <div className="relative w-full min-h-screen flex flex-col bg-[var(--bg)] text-white [.light-mode_&]:text-[#111] py-20 px-4 md:px-8 selection:bg-[var(--accent)] selection:text-black overflow-x-hidden">
+    <div className="relative w-full min-h-screen flex flex-col bg-[var(--bg)] text-white [.light-mode_&]:text-[#111] pt-24 pb-20 md:pt-32 md:pb-24 px-4 md:px-8 selection:bg-[var(--accent)] selection:text-black overflow-x-hidden">
       {/* Immersive Background Layers */}
       <div className="fixed inset-0 pointer-events-none z-0">
         <div className="absolute inset-0 opacity-[0.03] bg-[url('https://grainy-gradients.vercel.app/noise.svg')]"></div>
