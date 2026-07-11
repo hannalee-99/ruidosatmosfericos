@@ -517,15 +517,15 @@ export const SignalGrid: React.FC<SignalGridProps> = ({ signal }) => {
                           setLightboxIndex(idx !== -1 ? idx : 0);
                         }}
                         className="relative w-full cursor-zoom-in overflow-hidden rounded-2xl bg-transparent transition-all duration-300"
+                        style={ratio ? { aspectRatio: ratio } : {}}
                       >
                         <LazyImage
                           src={formatImageUrl(img.content)}
                           alt={img.caption || "registro visual"}
-                          className={`w-full h-auto bg-transparent transition-all duration-300 ${
-                            chosenLayout === 'full' && !isVertical ? 'max-h-[85vh] object-cover' : ''
-                          }`}
-                          imgClassName="rounded-2xl w-full h-auto object-cover transition-all duration-300"
-                          autoHeight={chosenLayout !== 'full' || isVertical}
+                          className="w-full h-full bg-transparent transition-all duration-300"
+                          imgClassName="rounded-2xl w-full h-full object-cover transition-all duration-300"
+                          autoHeight={false}
+                          objectFit="cover"
                           overflowHidden={false}
                         />
                       </div>

@@ -215,15 +215,15 @@ const FlexibleSignalGrid: React.FC<FlexibleSignalGridProps> = ({ images, onImage
               <div
                 onClick={() => onImageClick(formatImageUrl(imgBlock.content), imgBlock.caption || 'registro visual')}
                 className="relative w-full cursor-zoom-in overflow-hidden rounded-2xl bg-transparent transition-all duration-300"
+                style={ratio ? { aspectRatio: ratio } : {}}
               >
                 <LazyImage
                   src={formatImageUrl(imgBlock.content)}
                   alt={imgBlock.caption || "registro visual"}
-                  className={`w-full h-auto bg-transparent transition-all duration-300 ${
-                    layoutMode === 'full' && !isVertical ? 'max-h-[80vh] object-cover' : ''
-                  }`}
-                  imgClassName="rounded-2xl transition-all duration-300"
-                  autoHeight={layoutMode !== 'full' || isVertical}
+                  className="w-full h-full bg-transparent transition-all duration-300"
+                  imgClassName="rounded-2xl transition-all duration-300 object-cover"
+                  autoHeight={false}
+                  objectFit="cover"
                   overflowHidden={false}
                 />
               </div>
