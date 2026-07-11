@@ -157,8 +157,11 @@ export const useDataSeeding = () => {
           }
         }
 
-        // Sincroniza metadados estruturais do 'about' apenas se houver atualização de código
-        if (codeVersion > lastSync) {
+        // Sincroniza metadados estruturais do 'about' apenas se houver atualização de código ou se o bio_config estiver ausente
+        const existingBioConfig = await storage.get('about', 'bio_config');
+        const forceBioConfigSync = !existingBioConfig;
+
+        if (codeVersion > lastSync || forceBioConfigSync) {
           if (INITIAL_DATA.about.profile) {
             await storage.save('about', INITIAL_DATA.about.profile);
           }
@@ -171,10 +174,13 @@ export const useDataSeeding = () => {
           if (INITIAL_DATA.about.ecos_config) {
             await storage.save('about', INITIAL_DATA.about.ecos_config);
           }
+          if (INITIAL_DATA.about.bio_config) {
+            await storage.save('about', INITIAL_DATA.about.bio_config);
+          }
           if (INITIAL_DATA.about.seo_config) {
             await storage.save('about', INITIAL_DATA.about.seo_config);
           }
-          localStorage.setItem('ra_last_sync', codeVersion.toString());
+          localStorage.setItem('ra_last_sync', Math.max(codeVersion, lastSync || 0).toString());
         }
 
         console.log("Sincronização inteligente concluída.");
