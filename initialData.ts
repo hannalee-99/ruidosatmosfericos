@@ -13,7 +13,7 @@ export const INITIAL_DATA: {
     seo_config: SeoConfig | null;
   };
 } = {
-  "lastUpdated": 1783640450792,
+  "lastUpdated": 1783794139978,
   "works": [
     {
       "id": "work-1771621176503",
@@ -295,7 +295,7 @@ export const INITIAL_DATA: {
       "date": "08/07/2026",
       "status": "publicado",
       "views": 0,
-      "coverImageUrl": "https://res.cloudinary.com/dcxm8yd49/image/upload/v1783561653/transmutacoes.png",
+      "coverImageUrl": "https://res.cloudinary.com/dcxm8yd49/image/upload/v1783793973/ruidosss.png",
       "seoDescription": "o silêncio surge em estados de alteração contínua",
       "blocks": [
         {
@@ -304,16 +304,16 @@ export const INITIAL_DATA: {
           "content": "combatemos os\ntentáculos mundanos descontrolados\ncom o fluxo do agora\namígdala, centro de tudo\nfluido, o meio\n\nondas ressoam\nenquanto a palavra é falha\neu dissolvo\n\no silêncio surge\nem estados de alteração contínua\n\nobservo\n\ne recomeça"
         },
         {
-          "id": "b-1783561923756-vulez",
-          "type": "image",
-          "content": "https://res.cloudinary.com/dcxm8yd49/image/upload/v1783392040/processos-transmutacao.jpg",
-          "caption": "rascunho e inspirações"
-        },
-        {
           "id": "b-1783562018350-va5jw",
           "type": "image",
           "content": "https://res.cloudinary.com/dcxm8yd49/image/upload/v1782955076/processos_em_transmuta%C3%A7%C3%A3o_2026_Hannalee_hihad1_ad642a.avif",
           "caption": "processos em transmutação, janeiro de 2026"
+        },
+        {
+          "id": "b-1783561923756-vulez",
+          "type": "image",
+          "content": "https://res.cloudinary.com/dcxm8yd49/image/upload/v1783392040/processos-transmutacao.jpg",
+          "caption": "rascunho e inspirações"
         }
       ],
       "metadata": [
@@ -333,7 +333,8 @@ export const INITIAL_DATA: {
           "question": "humor",
           "answer": "o mesmo do craque neto comentando desclassificação da copa/26"
         }
-      ]
+      ],
+      "imageLayout": "full"
     },
     {
       "id": "signal-1771101541489",
@@ -653,7 +654,7 @@ export const INITIAL_DATA: {
                 "accent": true
               },
               {
-                "t": ", a forma não sustenta, o movemento escorre"
+                "t": ", a forma não sustenta, o movimento escorre"
               }
             ]
           ]
@@ -766,20 +767,25 @@ export const INITIAL_DATA: {
     },
     "bio_config": {
       "id": "bio_config",
-      "bio": "fragmentos, ruídos e ritos atmosféricos. objetos de estudo e presença.",
+      "bio": "espere (espero) nada\naprecie (aprecio) tudo | \nexpressões por Hannalee",
+      "profileTitle": "ruídos atmosféricos",
+      "profileHandle": "@ruidosatmosfericos",
+      "footerText": "ruídos atmosféricos // todos os direitos reservados",
+      "backButtonText": "← voltar ao mainframe",
       "links": [
         {
           "id": "01",
-          "title": "site oficial",
-          "description": "portfólio, manifesto e sinais atmosféricos",
-          "url": "https://ruidosatmosfericos.com",
+          "title": "caneca formas de conexão",
+          "description": "para ser seu totem de combustível diário ",
+          "url": "https://www.colab55.com/@ruidosatmosfericos/mugs/formas-de-conexao",
           "status": "ativo",
-          "emoji": "⚡"
+          "emoji": "☕",
+          "isFeatured": true
         },
         {
           "id": "02",
           "title": "colab55",
-          "description": "impressões e objetos de ritos",
+          "description": "lojinha com impressões e objetos de ritos",
           "url": "https://www.colab55.com/@ruidosatmosfericos",
           "status": "ativo",
           "emoji": "🎨"
@@ -797,7 +803,7 @@ export const INITIAL_DATA: {
     "seo_config": {
       "id": "seo_config",
       "title": "ruídos atmosféricos",
-      "description": "registros de prática artística sobre ruído, fluxo e o outro. obras, manifesto, sinais e existência em desequilíbrio controlado. ",
+      "description": "registros de existência e prática artística sobre ruídos, fluxo, vazio, o eu e o outro. ",
       "image": "https://res.cloudinary.com/dcxm8yd49/image/upload/v1771624476/essencia_na_ionosfera.avif"
     }
   }
