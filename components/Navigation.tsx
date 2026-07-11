@@ -46,10 +46,11 @@ const Navigation: React.FC<NavigationProps> = ({
     [ViewState.ECOS]: 'ecos',
     [ViewState.ABOUT]: 'esse eu',
     [ViewState.CONNECT]: 'contato',
-    [ViewState.BACKOFFICE]: 'fluxo'
+    [ViewState.BACKOFFICE]: 'fluxo',
+    [ViewState.BIO]: 'bio'
   };
 
-  const navItems = Object.values(ViewState).filter(v => v !== ViewState.BACKOFFICE);
+  const navItems = Object.values(ViewState).filter(v => v !== ViewState.BACKOFFICE && v !== ViewState.BIO);
 
   const handleLogoClick = () => {
     trackGenericClick('logo_home', 'navigation', { 'From View': currentView });

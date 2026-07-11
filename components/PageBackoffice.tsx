@@ -2,13 +2,15 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import mixpanel from 'mixpanel-browser';
 import { storage } from '../lib/storage';
-import { Work, Signal, SignalBlock, SignalBlockType, AboutData, ConnectConfig, ViewState, ManifestoConfig, EcosConfig, EcoLink, SeoConfig } from '../types';
+import { Work, Signal, SignalBlock, SignalBlockType, AboutData, ConnectConfig, ViewState, ManifestoConfig, EcosConfig, BioConfig, EcoLink, SeoConfig } from '../types';
 import { DEFAULT_LAYERS as OFFICIAL_LAYERS } from './PageManifestoV2';
 import NeobrutalistButton from './NeobrutalistButton';
 import SignalRenderer from './SignalRenderer';
 import Toast from './Toast';
 import { useMeta } from '../lib/hooks';
 import { CardGenerator } from './CardGenerator';
+import { GripVertical, Eye, EyeOff, ArrowUpRight, Sparkles, Smartphone, ExternalLink, Share2 } from 'lucide-react';
+import { DEFAULT_IMAGE } from '../constants';
 
 interface PageBackofficeProps {
   onLogout: () => void;
@@ -47,6 +49,8 @@ const PageBackoffice: React.FC<PageBackofficeProps> = ({ onLogout }) => {
   const [connect, setConnect] = useState<ConnectConfig>({ id: 'connect_config', email: '', sobreText: '', links: [] });
   const [ecosConfig, setEcosConfig] = useState<EcosConfig>({ id: 'ecos_config', links: [] });
   const [ecosSavedSuccess, setEcosSavedSuccess] = useState(false);
+  const [bioConfig, setBioConfig] = useState<BioConfig>({ id: 'bio_config', links: [] });
+  const [bioSavedSuccess, setBioSavedSuccess] = useState(false);
   const [seoConfig, setSeoConfig] = useState<SeoConfig>({ id: 'seo_config', title: 'ruídos atmosféricos', description: '', image: '' });
   const [seoSavedSuccess, setSeoSavedSuccess] = useState(false);
   const [manifesto, setManifesto] = useState<ManifestoConfig>({ id: 'landing_manifesto', text: '' });
@@ -60,6 +64,31 @@ const PageBackoffice: React.FC<PageBackofficeProps> = ({ onLogout }) => {
   const [isSignalCardGenOpen, setIsSignalCardGenOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState<string>('');
   const [showToast, setShowToast] = useState<boolean>(false);
+  const [draggedIdx, setDraggedIdx] = useState<number | null>(null);
+  const [showHiddenInPreview, setShowHiddenInPreview] = useState<boolean>(false);
+
+  const handleDragStart = (e: React.DragEvent, index: number) => {
+    setDraggedIdx(index);
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', index.toString());
+  };
+
+  const handleDragOver = (e: React.DragEvent, index: number) => {
+    e.preventDefault();
+    if (draggedIdx === null || draggedIdx === index) return;
+    
+    const updated = [...bioConfig.links];
+    const draggedItem = updated[draggedIdx];
+    updated.splice(draggedIdx, 1);
+    updated.splice(index, 0, draggedItem);
+    
+    setDraggedIdx(index);
+    setBioConfig({ ...bioConfig, links: updated });
+  };
+
+  const handleDragEnd = () => {
+    setDraggedIdx(null);
+  };
 
   const triggerToast = (msg: string) => {
     setToastMessage(msg);
@@ -82,13 +111,14 @@ const PageBackoffice: React.FC<PageBackofficeProps> = ({ onLogout }) => {
   }, []);
 
   const fetchData = async () => {
-    const [w, s, p, c, m, ec, seo] = await Promise.all([
+    const [w, s, p, c, m, ec, bc, seo] = await Promise.all([
       storage.getAll('works'),
       storage.getAll('signals'),
       storage.get('about', 'profile'),
       storage.get('about', 'connect_config'),
       storage.get('about', 'landing_manifesto'),
       storage.get('about', 'ecos_config'),
+      storage.get('about', 'bio_config'),
       storage.get('about', 'seo_config')
     ]);
     setWorks(w.sort((a, b) => b.date.localeCompare(a.date)));
@@ -126,6 +156,44 @@ const PageBackoffice: React.FC<PageBackofficeProps> = ({ onLogout }) => {
             description: 'suportes e artefatos globais',
             url: 'https://www.redbubble.com/people/rdsatmosfericos/',
             status: 'ativo'
+          }
+        ]
+      });
+    }
+    if (bc) {
+      setBioConfig(bc);
+    } else {
+      setBioConfig({
+        id: 'bio_config',
+        bio: 'fragmentos, ruídos e ritos atmosféricos. objetos de estudo e presença.',
+        profileTitle: 'ruídos atmosféricos',
+        profileHandle: '@ruidosatmosfericos',
+        footerText: 'ruídos atmosféricos // todos os direitos reservados',
+        backButtonText: '← voltar ao portal principal',
+        links: [
+          { 
+            id: '01', 
+            title: 'site oficial', 
+            description: 'portfólio, manifesto e sinais atmosféricos',
+            url: 'https://ruidosatmosfericos.com',
+            status: 'ativo',
+            emoji: '⚡'
+          },
+          { 
+            id: '02', 
+            title: 'colab55', 
+            description: 'impressões e objetos de ritos',
+            url: 'https://www.colab55.com/@ruidosatmosfericos',
+            status: 'ativo',
+            emoji: '🎨'
+          },
+          { 
+            id: '03', 
+            title: 'pinterest', 
+            description: 'fragmentos de processo e ruídos',
+            url: 'https://br.pinterest.com/ruidosatmosfericos01/',
+            status: 'ativo',
+            emoji: '📌'
           }
         ]
       });
@@ -229,11 +297,12 @@ const PageBackoffice: React.FC<PageBackofficeProps> = ({ onLogout }) => {
         connect_config: connect, 
         landing_manifesto: manifesto, 
         ecos_config: ecosConfig,
+        bio_config: bioConfig,
         seo_config: seoConfig 
       }
     };
 
-    setExportCode(`import { Work, Signal, AboutData, ConnectConfig, ManifestoConfig, EcosConfig, SeoConfig } from './types';
+    setExportCode(`import { Work, Signal, AboutData, ConnectConfig, ManifestoConfig, EcosConfig, BioConfig, SeoConfig } from './types';
 
 export const INITIAL_DATA: {
   lastUpdated: number;
@@ -244,6 +313,7 @@ export const INITIAL_DATA: {
     connect_config: ConnectConfig | null;
     landing_manifesto: ManifestoConfig | null;
     ecos_config: EcosConfig | null;
+    bio_config?: BioConfig | null;
     seo_config: SeoConfig | null;
   };
 } = ${JSON.stringify(data, null, 2)};`);
@@ -622,6 +692,21 @@ export const INITIAL_DATA: {
     } finally { setIsSaving(false); }
   };
 
+  const handleSaveBio = async (e: React.FormEvent) => {
+    if (e) e.preventDefault();
+    setIsSaving(true);
+    try {
+      await storage.save('about', bioConfig);
+      fetchData();
+      setBioSavedSuccess(true);
+      setTimeout(() => setBioSavedSuccess(false), 3000);
+      triggerToast('links da bio salvos com sucesso');
+    } catch (err) {
+      console.error(err);
+      triggerToast('erro ao salvar links da bio');
+    } finally { setIsSaving(false); }
+  };
+
   const handleSaveSeo = async (e: React.FormEvent) => {
     if (e) e.preventDefault();
     setIsSaving(true);
@@ -793,6 +878,7 @@ export const INITIAL_DATA: {
       if (data.about.connect_config) await storage.save('about', data.about.connect_config);
       if (data.about.landing_manifesto) await storage.save('about', data.about.landing_manifesto);
       if (data.about.ecos_config) await storage.save('about', data.about.ecos_config);
+      if (data.about.bio_config) await storage.save('about', data.about.bio_config);
       if (data.about.seo_config) await storage.save('about', data.about.seo_config);
 
       // Atualiza timestamp de sincronização para evitar que o seed antigo do código rode
@@ -995,7 +1081,7 @@ Last Typed Command,Último Comando do Terminal,O texto exato do último comando 
     return textContent.split(/\s+/).filter(word => word.length > 0).length;
   }, [editingSignal]);
 
-  const tabs = [ViewState.MATERIA, ViewState.SINAIS, 'questions', ViewState.ECOS, ViewState.MANIFESTO, ViewState.ABOUT, ViewState.CONNECT, 'seo', 'sincronizar'];
+  const tabs = [ViewState.MATERIA, ViewState.SINAIS, 'questions', ViewState.ECOS, ViewState.BIO, ViewState.MANIFESTO, ViewState.ABOUT, ViewState.CONNECT, 'seo', 'sincronizar'];
   
   // Mapeamento de ViewState para Label amigável (consistente com Navigation.tsx)
   const tabLabels: Record<string, string> = {
@@ -1003,6 +1089,7 @@ Last Typed Command,Último Comando do Terminal,O texto exato do último comando 
     [ViewState.SINAIS]: 'sinais',
     'questions': 'perguntas',
     [ViewState.ECOS]: 'ecos',
+    [ViewState.BIO]: 'link na bio',
     [ViewState.MANIFESTO]: 'manifesto',
     [ViewState.ABOUT]: 'esse eu',
     [ViewState.CONNECT]: 'contato',
@@ -1897,13 +1984,13 @@ Last Typed Command,Último Comando do Terminal,O texto exato do último comando 
           </div>
         )}
 
-         {activeTab === ViewState.ECOS && (
+        {activeTab === ViewState.ECOS && (
           <div className="space-y-8 animate-in fade-in max-w-4xl mx-auto pb-32">
             <form onSubmit={handleSaveEcos} className="bg-white/5 p-8 rounded-2xl border border-white/10 space-y-6">
               <header className="border-b border-white/10 pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                  <div>
-                   <h2 className="text-sm font-electrolize text-[var(--accent)] tracking-[0.2em] uppercase">gerenciar botões /// ecos</h2>
-                   <p className="text-[10px] opacity-40 mt-1">configure os links de transmissão, objetos e UTMs exibidos na página "ecos".</p>
+                   <h2 className="text-sm font-electrolize text-[var(--accent)] tracking-[0.2em] uppercase">gerenciar links do ecos (#ecos)</h2>
+                   <p className="text-[10px] opacity-40 mt-1">configure os canais e redes exibidos na aba de ecos do site.</p>
                  </div>
                  <button 
                    type="button"
@@ -1913,7 +2000,9 @@ Last Typed Command,Último Comando do Terminal,O texto exato do último comando 
                        title: 'novo canal',
                        description: 'descrição curta do canal ou rede...',
                        url: '',
-                       status: 'ativo'
+                       status: 'ativo',
+                       emoji: '🔗',
+                       isFeatured: false
                      };
                      setEcosConfig({
                        ...ecosConfig,
@@ -1922,9 +2011,21 @@ Last Typed Command,Último Comando do Terminal,O texto exato do último comando 
                    }}
                    className="text-[10px] bg-white/10 hover:bg-white/20 border border-white/10 px-4 py-2 rounded-full transition-all lowercase flex items-center gap-2 text-white"
                  >
-                   + novo link
+                   + novo link do ecos
                  </button>
               </header>
+
+              {/* Bio Curta do Ecos */}
+              <div className="bg-white/[0.02] p-6 rounded-xl border border-white/5 space-y-3">
+                <label className="text-xs font-electrolize text-[var(--accent)] uppercase tracking-wider block">biografia curta do ecos</label>
+                <textarea
+                  value={ecosConfig.bio || ''}
+                  onChange={e => setEcosConfig({ ...ecosConfig, bio: e.target.value })}
+                  placeholder="ex: fragmentos, ruídos e ritos atmosféricos. objetos de estudo e presença."
+                  className="w-full bg-black/60 border border-white/10 rounded-lg p-3 text-xs text-white outline-none focus:border-[var(--accent)] h-20 resize-none lowercase"
+                />
+                <p className="text-[9px] opacity-30">esta biografia curta é exibida no topo da sua página de ecos (<strong>#ecos</strong>).</p>
+              </div>
 
               <div className="space-y-6">
                 {(ecosConfig.links || []).map((link, idx) => (
@@ -1932,8 +2033,12 @@ Last Typed Command,Último Comando do Terminal,O texto exato do último comando 
                     <div className="flex justify-between items-center border-b border-white/5 pb-3">
                       <div className="flex items-center gap-2">
                         <span className="font-mono text-white/20 text-xs font-bold">#{String(idx + 1).padStart(2, '0')}</span>
-                        <span className="text-[10px] uppercase tracking-widest bg-[var(--accent)]/10 text-[var(--accent)] px-2 py-0.5 rounded">
-                          {link.status}
+                        <span className={`text-[10px] uppercase tracking-widest px-2 py-0.5 rounded font-bold ${
+                          link.isFeatured 
+                            ? 'bg-[var(--accent)] text-black' 
+                            : 'bg-white/10 text-white/60'
+                        }`}>
+                          {link.status} {link.isFeatured ? '• destaque' : ''}
                         </span>
                       </div>
                       <div className="flex gap-2">
@@ -1981,8 +2086,9 @@ Last Typed Command,Último Comando do Terminal,O texto exato do último comando 
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="space-y-1">
+                    <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
+                      {/* Título */}
+                      <div className="space-y-1 md:col-span-4">
                         <label className="text-[10px] uppercase tracking-wider text-white/40">título</label>
                         <input 
                           type="text"
@@ -1996,7 +2102,23 @@ Last Typed Command,Último Comando do Terminal,O texto exato do último comando 
                         />
                       </div>
 
-                      <div className="space-y-1">
+                      {/* Emoji */}
+                      <div className="space-y-1 md:col-span-2">
+                        <label className="text-[10px] uppercase tracking-wider text-white/40">emoji / ícone</label>
+                        <input 
+                          type="text"
+                          value={link.emoji || ''}
+                          onChange={e => {
+                            const updated = ecosConfig.links.map(l => l.id === link.id ? { ...l, emoji: e.target.value } : l);
+                            setEcosConfig({ ...ecosConfig, links: updated });
+                          }}
+                          className="w-full bg-black/60 border border-white/10 rounded-lg p-2.5 text-xs text-white outline-none focus:border-[var(--accent)] text-center"
+                          placeholder="ex: 🛒, 📌, 🎨, ☕"
+                        />
+                      </div>
+
+                      {/* Status */}
+                      <div className="space-y-1 md:col-span-3">
                         <label className="text-[10px] uppercase tracking-wider text-white/40">status</label>
                         <select
                           value={link.status}
@@ -2011,7 +2133,25 @@ Last Typed Command,Último Comando do Terminal,O texto exato do último comando 
                         </select>
                       </div>
 
-                      <div className="space-y-1 md:col-span-2">
+                      {/* Destaque */}
+                      <div className="space-y-1 md:col-span-3 flex flex-col justify-end pb-1.5">
+                        <label className="text-[10px] uppercase tracking-wider text-white/40 mb-2">destaque (efeito pulsante)</label>
+                        <label className="relative inline-flex items-center cursor-pointer select-none">
+                          <input 
+                            type="checkbox" 
+                            checked={!!link.isFeatured}
+                            onChange={e => {
+                              const updated = ecosConfig.links.map(l => l.id === link.id ? { ...l, isFeatured: e.target.checked } : l);
+                              setEcosConfig({ ...ecosConfig, links: updated });
+                            }}
+                            className="sr-only peer"
+                          />
+                          <div className="w-9 h-5 bg-white/10 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[var(--accent)]"></div>
+                          <span className="ml-3 text-[10px] text-white/60 peer-checked:text-[var(--accent)] font-mono lowercase">destacar link</span>
+                        </label>
+                      </div>
+
+                      <div className="space-y-1 md:col-span-12">
                         <label className="text-[10px] uppercase tracking-wider text-white/40">descrição do canal / artefato</label>
                         <input 
                           type="text"
@@ -2025,7 +2165,7 @@ Last Typed Command,Último Comando do Terminal,O texto exato do último comando 
                         />
                       </div>
 
-                      <div className="space-y-1 md:col-span-2">
+                      <div className="space-y-1 md:col-span-12">
                         <label className="text-[10px] uppercase tracking-wider text-white/40">url de destino (adicione seus links utm aqui)</label>
                         <input 
                           type="text"
@@ -2044,7 +2184,7 @@ Last Typed Command,Último Comando do Terminal,O texto exato do último comando 
 
                 {(ecosConfig.links || []).length === 0 && (
                   <div className="text-center py-12 border border-dashed border-white/10 rounded-xl opacity-30 text-xs lowercase">
-                    nenhum link cadastrado. clique em "+ novo link" acima para iniciar.
+                    nenhum link cadastrado no ecos. clique em "+ novo link do ecos" acima para iniciar.
                   </div>
                 )}
               </div>
@@ -2067,6 +2207,524 @@ Last Typed Command,Último Comando do Terminal,O texto exato do último comando 
                 </div>
               </div>
             </form>
+          </div>
+        )}
+
+        {activeTab === ViewState.BIO && (
+          <div className="animate-in fade-in max-w-7xl mx-auto pb-32">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+              
+              {/* Left Column: Form Editor (7/12 cols) */}
+              <div className="lg:col-span-7 space-y-6">
+                <form onSubmit={handleSaveBio} className="bg-white/5 p-8 rounded-2xl border border-white/10 space-y-6">
+                  <header className="border-b border-white/10 pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                     <div>
+                       <h2 className="text-sm font-electrolize text-[var(--accent)] tracking-[0.2em] uppercase">gerenciar link na bio (#bio - instagram)</h2>
+                       <p className="text-[10px] opacity-40 mt-1">configure a sua biografia curta e os links rápidos para as redes e canais na página instagram-style.</p>
+                     </div>
+                     <button 
+                       type="button"
+                       onClick={() => {
+                         const newLink: EcoLink = {
+                           id: `bio-${Date.now()}`,
+                           title: 'novo link rápido',
+                           description: 'descrição curta do link...',
+                           url: '',
+                           status: 'ativo',
+                           emoji: '🔗',
+                           isFeatured: false,
+                           visible: true
+                         };
+                         setBioConfig({
+                           ...bioConfig,
+                           links: [...(bioConfig.links || []), newLink]
+                         });
+                       }}
+                       className="text-[10px] bg-white/10 hover:bg-white/20 border border-white/10 px-4 py-2 rounded-full transition-all lowercase flex items-center gap-2 text-white"
+                     >
+                       + novo link da bio
+                     </button>
+                  </header>
+
+                  {/* Configurações Globais da Bio */}
+                  <div className="bg-white/[0.02] p-6 rounded-xl border border-white/5 space-y-4">
+                    <h3 className="text-xs font-electrolize text-[var(--accent)] uppercase tracking-wider block border-b border-white/5 pb-2">informações do perfil e rodapé</h3>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-1">
+                        <label className="text-[10px] uppercase tracking-wider text-white/40">título do perfil</label>
+                        <input 
+                          type="text"
+                          value={bioConfig.profileTitle ?? ''}
+                          onChange={e => setBioConfig({ ...bioConfig, profileTitle: e.target.value })}
+                          className="w-full bg-black/60 border border-white/10 rounded-lg p-2.5 text-xs text-white outline-none focus:border-[var(--accent)] lowercase"
+                          placeholder="ex: ruídos atmosféricos"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-[10px] uppercase tracking-wider text-white/40">nome de usuário (@)</label>
+                        <input 
+                          type="text"
+                          value={bioConfig.profileHandle ?? ''}
+                          onChange={e => setBioConfig({ ...bioConfig, profileHandle: e.target.value })}
+                          className="w-full bg-black/60 border border-white/10 rounded-lg p-2.5 text-xs text-white outline-none focus:border-[var(--accent)] lowercase"
+                          placeholder="ex: @ruidosatmosfericos"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="text-[10px] uppercase tracking-wider text-white/40">biografia curta</label>
+                      <textarea
+                        value={bioConfig.bio || ''}
+                        onChange={e => setBioConfig({ ...bioConfig, bio: e.target.value })}
+                        placeholder="ex: fragmentos, ruídos e ritos atmosféricos. objetos de estudo e presença."
+                        className="w-full bg-black/60 border border-white/10 rounded-lg p-3 text-xs text-white outline-none focus:border-[var(--accent)] h-20 resize-none lowercase"
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-1">
+                        <label className="text-[10px] uppercase tracking-wider text-white/40">texto do rodapé da bio</label>
+                        <input 
+                          type="text"
+                          value={bioConfig.footerText ?? ''}
+                          onChange={e => setBioConfig({ ...bioConfig, footerText: e.target.value })}
+                          className="w-full bg-black/60 border border-white/10 rounded-lg p-2.5 text-xs text-white outline-none focus:border-[var(--accent)]"
+                          placeholder="ex: ruídos atmosféricos // todos os direitos reservados"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-[10px] uppercase tracking-wider text-white/40">texto do botão de retorno</label>
+                        <input 
+                          type="text"
+                          value={bioConfig.backButtonText ?? ''}
+                          onChange={e => setBioConfig({ ...bioConfig, backButtonText: e.target.value })}
+                          className="w-full bg-black/60 border border-white/10 rounded-lg p-2.5 text-xs text-white outline-none focus:border-[var(--accent)]"
+                          placeholder="ex: ← voltar ao portal principal"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="space-y-6">
+                    {(bioConfig.links || []).map((link, idx) => (
+                      <div 
+                        key={link.id} 
+                        onDragOver={(e) => handleDragOver(e, idx)}
+                        onDragEnd={handleDragEnd}
+                        className={`p-6 bg-black/40 border rounded-xl space-y-4 relative group transition-all duration-200 ${
+                          draggedIdx === idx 
+                            ? 'border-[var(--accent)] bg-black/80 scale-[0.99] opacity-50 shadow-[0_0_15px_rgba(var(--accent-rgb),0.2)]' 
+                            : 'border-white/5 hover:border-white/15'
+                        }`}
+                      >
+                        <div className="flex justify-between items-center border-b border-white/5 pb-3">
+                          <div className="flex items-center gap-2">
+                            {/* Drag Handle */}
+                            <div 
+                              draggable
+                              onDragStart={(e) => handleDragStart(e, idx)}
+                              className="cursor-grab active:cursor-grabbing p-1.5 hover:bg-white/5 rounded text-white/40 hover:text-[var(--accent)] transition-colors flex items-center justify-center"
+                              title="arrastar para reordenar"
+                            >
+                              <GripVertical className="w-3.5 h-3.5" />
+                            </div>
+
+                            <span className="font-mono text-white/20 text-xs font-bold">#{String(idx + 1).padStart(2, '0')}</span>
+                            <span className={`text-[10px] uppercase tracking-widest px-2 py-0.5 rounded font-bold ${
+                              link.isFeatured 
+                                ? 'bg-[var(--accent)] text-black' 
+                                : 'bg-white/10 text-white/60'
+                            }`}>
+                              {link.status} {link.isFeatured ? '• destaque' : ''}
+                            </span>
+
+                            {link.visible === false && (
+                              <span className="text-[10px] uppercase tracking-widest px-2 py-0.5 rounded font-bold bg-red-500/10 text-red-400 border border-red-500/20">
+                                oculto
+                              </span>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-2">
+                            {/* Visibility Toggle Button */}
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const isCurrentlyVisible = link.visible !== false;
+                                const updated = bioConfig.links.map(l => 
+                                  l.id === link.id ? { ...l, visible: !isCurrentlyVisible } : l
+                                );
+                                setBioConfig({ ...bioConfig, links: updated });
+                              }}
+                              className={`p-1.5 px-2.5 rounded font-mono text-[9px] uppercase flex items-center gap-1.5 transition-all ${
+                                link.visible !== false
+                                  ? 'text-[var(--accent)] bg-[var(--accent)]/10 border border-[var(--accent)]/20 hover:bg-[var(--accent)]/20'
+                                  : 'text-white/40 bg-white/5 border border-white/10 hover:bg-white/10'
+                              }`}
+                              title={link.visible !== false ? "ocultar link da página pública" : "mostrar link na página pública"}
+                            >
+                              {link.visible !== false ? (
+                                <>
+                                  <Eye className="w-3.5 h-3.5" />
+                                  <span>visível</span>
+                                </>
+                              ) : (
+                                <>
+                                  <EyeOff className="w-3.5 h-3.5 opacity-60" />
+                                  <span className="opacity-60">oculto</span>
+                                </>
+                              )}
+                            </button>
+
+                            <button
+                              type="button"
+                              disabled={idx === 0}
+                              onClick={() => {
+                                const updated = [...bioConfig.links];
+                                const temp = updated[idx];
+                                updated[idx] = updated[idx - 1];
+                                updated[idx - 1] = temp;
+                                setBioConfig({ ...bioConfig, links: updated });
+                              }}
+                              className="p-1 text-white/40 hover:text-white disabled:opacity-20 text-xs"
+                              title="subir"
+                            >
+                              ↑
+                            </button>
+                            <button
+                              type="button"
+                              disabled={idx === (bioConfig.links || []).length - 1}
+                              onClick={() => {
+                                const updated = [...bioConfig.links];
+                                const temp = updated[idx];
+                                updated[idx] = updated[idx + 1];
+                                updated[idx + 1] = temp;
+                                setBioConfig({ ...bioConfig, links: updated });
+                              }}
+                              className="p-1 text-white/40 hover:text-white disabled:opacity-20 text-xs"
+                              title="descer"
+                            >
+                              ↓
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const updated = bioConfig.links.filter(l => l.id !== link.id);
+                                setBioConfig({ ...bioConfig, links: updated });
+                              }}
+                              className="p-1 text-red-500/50 hover:text-red-500 text-xs ml-2"
+                              title="remover"
+                            >
+                              remover
+                            </button>
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
+                          {/* Título */}
+                          <div className="space-y-1 md:col-span-4">
+                            <label className="text-[10px] uppercase tracking-wider text-white/40">título</label>
+                            <input 
+                              type="text"
+                              value={link.title}
+                              onChange={e => {
+                                const updated = bioConfig.links.map(l => l.id === link.id ? { ...l, title: e.target.value } : l);
+                                setBioConfig({ ...bioConfig, links: updated });
+                              }}
+                              className="w-full bg-black/60 border border-white/10 rounded-lg p-2.5 text-xs text-white outline-none focus:border-[var(--accent)] lowercase"
+                              placeholder="ex: site oficial, colab55..."
+                            />
+                          </div>
+
+                          {/* Emoji */}
+                          <div className="space-y-1 md:col-span-2">
+                            <label className="text-[10px] uppercase tracking-wider text-white/40">emoji / ícone</label>
+                            <input 
+                              type="text"
+                              value={link.emoji || ''}
+                              onChange={e => {
+                                const updated = bioConfig.links.map(l => l.id === link.id ? { ...l, emoji: e.target.value } : l);
+                                setBioConfig({ ...bioConfig, links: updated });
+                              }}
+                              className="w-full bg-black/60 border border-white/10 rounded-lg p-2.5 text-xs text-white outline-none focus:border-[var(--accent)] text-center"
+                              placeholder="ex: 🛒, 📌, 🎨, ☕"
+                            />
+                          </div>
+
+                          {/* Status */}
+                          <div className="space-y-1 md:col-span-3">
+                            <label className="text-[10px] uppercase tracking-wider text-white/40">status</label>
+                            <select
+                              value={link.status}
+                              onChange={e => {
+                                const updated = bioConfig.links.map(l => l.id === link.id ? { ...l, status: e.target.value } : l);
+                                setBioConfig({ ...bioConfig, links: updated });
+                              }}
+                              className="w-full bg-black/60 border border-white/10 rounded-lg p-2.5 text-xs text-white outline-none focus:border-[var(--accent)] lowercase"
+                            >
+                              <option value="ativo">ativo (botão visível e funcional)</option>
+                              <option value="mapeando">mapeando (placeholder esmaecido)</option>
+                            </select>
+                          </div>
+
+                          {/* Destaque */}
+                          <div className="space-y-1 md:col-span-3 flex flex-col justify-end pb-1.5">
+                            <label className="text-[10px] uppercase tracking-wider text-white/40 mb-2">destaque (efeito pulsante)</label>
+                            <label className="relative inline-flex items-center cursor-pointer select-none">
+                              <input 
+                                type="checkbox" 
+                                checked={!!link.isFeatured}
+                                onChange={e => {
+                                  const updated = bioConfig.links.map(l => l.id === link.id ? { ...l, isFeatured: e.target.checked } : l);
+                                  setBioConfig({ ...bioConfig, links: updated });
+                                }}
+                                className="sr-only peer"
+                              />
+                              <div className="w-9 h-5 bg-white/10 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[var(--accent)]"></div>
+                              <span className="ml-3 text-[10px] text-white/60 peer-checked:text-[var(--accent)] font-mono lowercase">destacar link</span>
+                            </label>
+                          </div>
+
+                          <div className="space-y-1 md:col-span-12">
+                            <label className="text-[10px] uppercase tracking-wider text-white/40">descrição do canal / artefato</label>
+                            <input 
+                              type="text"
+                              value={link.description}
+                              onChange={e => {
+                                const updated = bioConfig.links.map(l => l.id === link.id ? { ...l, description: e.target.value } : l);
+                                setBioConfig({ ...bioConfig, links: updated });
+                              }}
+                              className="w-full bg-black/60 border border-white/10 rounded-lg p-2.5 text-xs text-white outline-none focus:border-[var(--accent)] lowercase"
+                              placeholder="ex: portfólio imersivo, impressões e fragmentos..."
+                            />
+                          </div>
+
+                          <div className="space-y-1 md:col-span-12">
+                            <label className="text-[10px] uppercase tracking-wider text-white/40">url de destino</label>
+                            <input 
+                              type="text"
+                              value={link.url}
+                              onChange={e => {
+                                const updated = bioConfig.links.map(l => l.id === link.id ? { ...l, url: e.target.value } : l);
+                                setBioConfig({ ...bioConfig, links: updated });
+                              }}
+                              className="w-full bg-black/60 border border-white/10 rounded-lg p-2.5 text-xs text-white outline-none focus:border-[var(--accent)]"
+                              placeholder="ex: https://site.com/?utm_source=instagram-bio&utm_medium=click"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+
+                    {(bioConfig.links || []).length === 0 && (
+                      <div className="text-center py-12 border border-dashed border-white/10 rounded-xl opacity-30 text-xs lowercase">
+                        nenhum link cadastrado no link na bio. clique em "+ novo link da bio" acima para iniciar.
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="pt-6 border-t border-white/10 flex flex-col sm:flex-row gap-4 items-center justify-between">
+                    <p className="text-[10px] opacity-40 text-center sm:text-left">
+                      as alterações salvas se refletirão diretamente na página de links rápidos do instagram (<strong>#bio</strong>).
+                    </p>
+                    <div className="flex gap-4 items-center">
+                      {bioSavedSuccess && (
+                        <span className="text-[10px] text-[var(--accent)] font-mono tracking-wider animate-pulse">[configurações de bio salvas!]</span>
+                      )}
+                      <button 
+                        type="submit"
+                        disabled={isSaving}
+                        className="bg-[var(--accent)] text-black px-6 py-2.5 rounded-full hover:scale-105 transition-all text-xs font-mono tracking-wider uppercase font-bold disabled:opacity-50"
+                      >
+                        {isSaving ? 'salvando...' : 'salvar botões do link na bio'}
+                      </button>
+                    </div>
+                  </div>
+                </form>
+              </div>
+
+              {/* Right Column: Live Preview (5/12 cols) */}
+              <div className="lg:col-span-5 lg:sticky lg:top-24 space-y-6">
+                <div className="bg-white/5 p-6 rounded-2xl border border-white/10 space-y-4">
+                  <header className="flex items-center justify-between border-b border-white/10 pb-3">
+                    <div className="flex items-center gap-2">
+                      <Smartphone className="w-4 h-4 text-[var(--accent)]" />
+                      <h3 className="text-xs font-mono uppercase tracking-wider text-white">live preview</h3>
+                    </div>
+                    <a 
+                      href="/#bio" 
+                      target="_blank" 
+                      rel="noopener noreferrer" 
+                      className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-[var(--accent)]/10 hover:bg-[var(--accent)]/20 border border-[var(--accent)]/30 text-[10px] text-[var(--accent)] font-bold transition-all font-mono lowercase whitespace-nowrap shadow-[0_0_10px_rgba(var(--accent-rgb),0.1)] hover:shadow-[0_0_15px_rgba(var(--accent-rgb),0.25)]"
+                    >
+                      ir para a bio ↗
+                    </a>
+                  </header>
+
+                  <div className="flex items-center justify-between text-[10px] text-white/50 bg-white/[0.02] px-3 py-2 rounded-lg border border-white/5">
+                    <span className="font-mono lowercase">visualização do smartphone</span>
+                    <label className="flex items-center gap-2 cursor-pointer select-none">
+                      <input 
+                        type="checkbox" 
+                        checked={showHiddenInPreview}
+                        onChange={e => setShowHiddenInPreview(e.target.checked)}
+                        className="sr-only peer"
+                      />
+                      <div className="w-7 h-4 bg-white/10 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-[var(--accent)] relative"></div>
+                      <span className="font-mono text-[9px] lowercase">ocultos</span>
+                    </label>
+                  </div>
+
+                  {/* Device mock */}
+                  <div className="relative mx-auto w-full max-w-[310px] aspect-[9/18] rounded-[36px] border-4 border-white/10 bg-black/90 p-4 shadow-[0_0_30px_rgba(0,0,0,0.8),0_0_20px_rgba(var(--accent-rgb),0.05)] overflow-y-auto overflow-x-hidden select-none scrollbar-none" style={{ maxHeight: '550px' }}>
+                    {/* Speaker/Camera notch */}
+                    <div className="absolute top-2 left-1/2 -translate-x-1/2 w-24 h-4 bg-black rounded-full z-20 flex items-center justify-center border border-white/5">
+                      <div className="w-8 h-1 bg-white/20 rounded-full"></div>
+                    </div>
+
+                    {/* Preview Content */}
+                    <div className="pt-4 flex flex-col items-center h-full relative z-10 text-center">
+                      
+                      {/* Avatar & Title */}
+                      <div className="flex flex-col items-center mb-4">
+                        <div className="relative mb-2 mt-2">
+                          <div className="absolute -inset-1 rounded-full bg-gradient-to-r from-[var(--accent)]/40 to-yellow-500/20 opacity-70 blur-sm animate-pulse"></div>
+                          <div className="relative w-14 h-14 rounded-full overflow-hidden border border-[var(--accent)] bg-black">
+                            <img 
+                              src={profile?.imageUrl || DEFAULT_IMAGE} 
+                              alt="profile" 
+                              className="w-full h-full object-cover"
+                              referrerPolicy="no-referrer"
+                            />
+                          </div>
+                        </div>
+
+                        <h4 className="font-electrolize text-[11px] tracking-tight text-white font-semibold flex items-center gap-1 lowercase">
+                          {bioConfig.profileTitle || 'ruídos atmosféricos'}
+                          <div className="w-1.5 h-1.5 rounded-full bg-[var(--accent)] shadow-[0_0_6px_var(--accent)] animate-pulse"></div>
+                        </h4>
+                        <p className="font-mono text-[8px] uppercase tracking-wider opacity-40 mt-0.5 lowercase">
+                          {bioConfig.profileHandle || '@ruidosatmosfericos'}
+                        </p>
+                        <p className="font-mono text-[9px] opacity-60 mt-2 leading-relaxed max-w-[220px] lowercase px-2">
+                          {bioConfig.bio || 'fragmentos, ruídos e ritos atmosféricos. objetos de estudo e presença.'}
+                        </p>
+                      </div>
+
+                      {/* Links Stack */}
+                      <div className="w-full space-y-2.5 flex flex-col">
+                        
+                        {/* Main website link */}
+                        <div className="relative w-full">
+                          <div className="absolute -inset-0.5 rounded-lg bg-gradient-to-r from-[var(--accent)] to-teal-500 opacity-20 blur-[1px]"></div>
+                          <div className="relative w-full flex items-center justify-between p-2.5 bg-black/95 border border-[var(--accent)]/80 rounded-xl text-left">
+                            <div className="flex items-center gap-2">
+                              <span className="text-base">⚡</span>
+                              <div>
+                                <h5 className="font-electrolize text-[9px] text-[var(--accent)] tracking-tight leading-tight font-bold lowercase">
+                                  entrar no site (experiência completa)
+                                </h5>
+                                <p className="font-mono text-[7px] text-white/45 mt-0.5 lowercase">
+                                  portfólio imersivo e ritos atmosféricos
+                                </p>
+                              </div>
+                            </div>
+                            <ArrowUpRight className="w-3 h-3 text-[var(--accent)] opacity-60 flex-shrink-0" />
+                          </div>
+                        </div>
+
+                        {/* Custom Links */}
+                        {(() => {
+                          const linksToRender = (bioConfig.links || []).filter(l => l.visible !== false || showHiddenInPreview);
+                          
+                          if (linksToRender.length === 0) {
+                            return (
+                              <div className="text-[9px] font-mono opacity-30 border border-dashed border-white/10 rounded-xl py-6 lowercase">
+                                nenhum link visível
+                              </div>
+                            );
+                          }
+
+                          return linksToRender.map((link) => {
+                            const isAtivo = link.status === 'ativo';
+                            const isFeatured = link.isFeatured;
+                            const isOculto = link.visible === false;
+
+                            return (
+                              <div 
+                                key={link.id}
+                                className={`relative w-full border rounded-xl p-2.5 text-left transition-all duration-300 ${
+                                  isOculto
+                                    ? 'bg-red-500/5 border-red-500/20 opacity-45 border-dashed'
+                                    : !isAtivo
+                                      ? 'bg-white/[0.01] border-white/5 opacity-35'
+                                      : isFeatured
+                                        ? 'bg-white/10 border-[var(--accent)]/60 shadow-[0_0_8px_rgba(var(--accent-rgb),0.05)]'
+                                        : 'bg-white/5 border-white/10'
+                                }`}
+                              >
+                                {isFeatured && !isOculto && (
+                                  <div className="absolute -inset-0.5 rounded-xl bg-gradient-to-r from-[var(--accent)] via-yellow-500 to-[var(--accent)] opacity-10 blur-sm"></div>
+                                )}
+
+                                <div className="relative flex items-center justify-between gap-2">
+                                  <div className="flex items-center gap-2 min-w-0">
+                                    {link.emoji ? (
+                                      <span className="text-sm select-none">{link.emoji}</span>
+                                    ) : (
+                                      <span className="text-xs select-none text-[var(--accent)]">🔗</span>
+                                    )}
+                                    <div className="min-w-0">
+                                      <h5 className="font-electrolize text-[9px] text-white tracking-tight leading-tight flex items-center gap-1.5 lowercase">
+                                        <span className="truncate max-w-[120px]">{link.title || 'sem título'}</span>
+                                        {isFeatured && !isOculto && (
+                                          <span className="text-[6px] uppercase bg-[var(--accent)] text-black px-1 rounded font-bold">
+                                            destaque
+                                          </span>
+                                        )}
+                                        {isOculto && (
+                                          <span className="text-[5px] uppercase bg-red-500/20 text-red-400 px-1 rounded font-bold border border-red-500/20">
+                                            oculto
+                                          </span>
+                                        )}
+                                      </h5>
+                                      {link.description && (
+                                        <p className="font-mono text-[7px] text-white/40 mt-0.5 truncate max-w-[150px] lowercase">
+                                          {link.description}
+                                        </p>
+                                      )}
+                                      {!isAtivo && (
+                                        <p className="font-mono text-[6px] text-[var(--accent)]/60 mt-0.5 italic lowercase">
+                                          [{link.status}]
+                                        </p>
+                                      )}
+                                    </div>
+                                  </div>
+                                  {isAtivo && !isOculto && (
+                                    <ArrowUpRight className="w-2.5 h-2.5 text-white/40 flex-shrink-0" />
+                                  )}
+                                </div>
+                              </div>
+                            );
+                          });
+                        })()}
+
+                      </div>
+
+                      {/* Footer mock */}
+                      <footer className="mt-auto pt-6 pb-2 text-center w-full">
+                        <p className="font-mono text-[7px] text-white/20 select-none">
+                          {bioConfig.footerText || 'ruídos atmosféricos // todos os direitos reservados'}
+                        </p>
+                      </footer>
+
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
           </div>
         )}
 

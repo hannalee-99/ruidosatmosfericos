@@ -13,8 +13,6 @@ import ObserverEffect from './ObserverEffect';
 import FaviconManager from './FaviconManager';
 import Footer from './Footer';
 import BackToTop from './BackToTop';
-import AdminGate, { isAdminAuthed, clearAdminAuth } from './AdminGate';
-import { initOutboundTracking } from '../lib/outbound';
 
 // Pages (Carregadas sob demanda para otimizar TTI)
 const LandingPage = lazy(() => import('./LandingPage'));
@@ -22,6 +20,7 @@ const PageMateria = lazy(() => import('./PageMateria'));
 const PageManifesto = lazy(() => import('./PageManifestoV2'));
 const PageSinais = lazy(() => import('./PageSinais'));
 const PageEcos = lazy(() => import('./PageEcos'));
+const PageBio = lazy(() => import('./PageBio'));
 const PageAbout = lazy(() => import('./PageAbout'));
 const PageConnect = lazy(() => import('./PageConnect'));
 const PageBackoffice = lazy(() => import('./PageBackoffice'));
@@ -33,19 +32,26 @@ const PageLoader = () => (
 );
 
 const App: React.FC = () => {
-  const [hasEntered, setHasEntered] = useState(false);
+  const [hasEntered, setHasEntered] = useState(() => {
+    // Se inicializar direto no bio, já pula o splash para mostrar a página de links do instagram instantaneamente
+    const hash = window.location.hash.replace(/^#\/?/, '').replace(/\/$/, '');
+    return hash === 'bio' || hash.startsWith('bio/');
+  });
   const [view, setView] = useState<ViewState>(ViewState.LANDING);
+
+  const handleNavigate = useCallback((targetView: ViewState) => {
+    if (view === ViewState.BIO && targetView === ViewState.LANDING) {
+      setHasEntered(false);
+    }
+    setView(targetView);
+  }, [view]);
   const [activeSlug, setActiveSlug] = useState<string | null>(null);
-  const [adminAuthed, setAdminAuthed] = useState<boolean>(isAdminAuthed());
   const { isDarkMode, toggleTheme } = useTheme();
   
   useDataSeeding();
 
   useEffect(() => {
     initAnalytics();
-
-    // Rastreia cliques em links de saída (externos) no Mixpanel + GA4
-    const cleanupOutbound = initOutboundTracking();
 
     // Bloquear clique direito nas imagens para evitar downloads
     const handleContextMenu = (e: MouseEvent) => {
@@ -67,7 +73,6 @@ const App: React.FC = () => {
     document.addEventListener('dragstart', handleDragStart);
 
     return () => {
-      cleanupOutbound();
       document.removeEventListener('contextmenu', handleContextMenu);
       document.removeEventListener('dragstart', handleDragStart);
     };
@@ -230,16 +235,15 @@ const App: React.FC = () => {
       <Suspense fallback={<PageLoader />}>
         {(() => {
           switch (view) {
-            case ViewState.LANDING: return <LandingPage onNavigate={setView} onSignalSelect={setActiveSlug} isDarkMode={isDarkMode} />;
-            case ViewState.MATERIA: return <PageMateria isDarkMode={isDarkMode} workSlug={activeSlug} onNavigate={setView} onWorkSelect={setActiveSlug} />;
-            case ViewState.MANIFESTO: return <PageManifesto onNavigate={setView} />;
+            case ViewState.LANDING: return <LandingPage onNavigate={handleNavigate} onSignalSelect={setActiveSlug} isDarkMode={isDarkMode} />;
+            case ViewState.MATERIA: return <PageMateria isDarkMode={isDarkMode} workSlug={activeSlug} onNavigate={handleNavigate} onWorkSelect={setActiveSlug} />;
+            case ViewState.MANIFESTO: return <PageManifesto onNavigate={handleNavigate} />;
             case ViewState.SINAIS: return <PageSinais isDarkMode={isDarkMode} activeSignalSlug={activeSlug} onSignalSelect={setActiveSlug} />;
-            case ViewState.ECOS: return <PageEcos onNavigate={setView} isDarkMode={isDarkMode} />;
-            case ViewState.ABOUT: return <PageAbout onNavigate={setView} isDarkMode={isDarkMode} />;
-            case ViewState.CONNECT: return <PageConnect onNavigate={setView} />;
-            case ViewState.BACKOFFICE: return adminAuthed
-              ? <PageBackoffice onLogout={() => { clearAdminAuth(); setAdminAuthed(false); setView(ViewState.LANDING); }} />
-              : <AdminGate onSuccess={() => setAdminAuthed(true)} onCancel={() => setView(ViewState.LANDING)} />;
+            case ViewState.ECOS: return <PageEcos onNavigate={handleNavigate} isDarkMode={isDarkMode} />;
+            case ViewState.BIO: return <PageBio onNavigate={handleNavigate} isDarkMode={isDarkMode} />;
+            case ViewState.ABOUT: return <PageAbout onNavigate={handleNavigate} isDarkMode={isDarkMode} />;
+            case ViewState.CONNECT: return <PageConnect onNavigate={handleNavigate} />;
+            case ViewState.BACKOFFICE: return <PageBackoffice onLogout={() => { handleNavigate(ViewState.LANDING); }} />;
             default: return null;
           }
         })()}

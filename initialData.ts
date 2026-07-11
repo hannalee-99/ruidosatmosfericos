@@ -1,4 +1,4 @@
-import { Work, Signal, AboutData, ConnectConfig, ManifestoConfig, EcosConfig, SeoConfig } from './types';
+import { Work, Signal, AboutData, ConnectConfig, ManifestoConfig, EcosConfig, BioConfig, SeoConfig } from './types';
 
 export const INITIAL_DATA: {
   lastUpdated: number;
@@ -9,6 +9,7 @@ export const INITIAL_DATA: {
     connect_config: ConnectConfig | null;
     landing_manifesto: ManifestoConfig | null;
     ecos_config: EcosConfig | null;
+    bio_config?: BioConfig | null;
     seo_config: SeoConfig | null;
   };
 } = {
@@ -760,6 +761,36 @@ export const INITIAL_DATA: {
           "description": "suportes e artefatos globais",
           "url": "https://www.redbubble.com/people/rdsatmosfericos/",
           "status": "ativo"
+        }
+      ]
+    },
+    "bio_config": {
+      "id": "bio_config",
+      "bio": "fragmentos, ruídos e ritos atmosféricos. objetos de estudo e presença.",
+      "links": [
+        {
+          "id": "01",
+          "title": "site oficial",
+          "description": "portfólio, manifesto e sinais atmosféricos",
+          "url": "https://ruidosatmosfericos.com",
+          "status": "ativo",
+          "emoji": "⚡"
+        },
+        {
+          "id": "02",
+          "title": "colab55",
+          "description": "impressões e objetos de ritos",
+          "url": "https://www.colab55.com/@ruidosatmosfericos",
+          "status": "ativo",
+          "emoji": "🎨"
+        },
+        {
+          "id": "03",
+          "title": "pinterest",
+          "description": "fragmentos de processo e ruídos",
+          "url": "https://br.pinterest.com/ruidosatmosfericos01/",
+          "status": "ativo",
+          "emoji": "📌"
         }
       ]
     },

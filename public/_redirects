@@ -1,4 +1,0 @@
-# Netlify: arquivos estáticos existentes (incl. /materia/slug/index.html
-# pré-renderizados) são servidos primeiro. Só cai no fallback SPA quando
-# a rota não corresponde a nenhum arquivo.
-/*    /index.html    200

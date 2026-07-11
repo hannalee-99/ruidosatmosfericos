@@ -7,7 +7,8 @@ export enum ViewState {
   ECOS = 'ecos',
   ABOUT = 'esse eu',          
   CONNECT = 'conectar',
-  BACKOFFICE = 'fluxo'
+  BACKOFFICE = 'fluxo',
+  BIO = 'bio'
 }
 
 export type GalleryItemType = 'image' | 'video';
@@ -113,11 +114,25 @@ export interface EcoLink {
   description: string;
   url: string;
   status: 'ativo' | 'mapeando' | string;
+  isFeatured?: boolean;
+  emoji?: string;
+  visible?: boolean;
 }
 
 export interface EcosConfig {
   id: string; // 'ecos_config'
   links: EcoLink[];
+  bio?: string;
+}
+
+export interface BioConfig {
+  id: string; // 'bio_config'
+  links: EcoLink[];
+  bio?: string;
+  profileTitle?: string;
+  profileHandle?: string;
+  footerText?: string;
+  backButtonText?: string;
 }
 
 export interface SeoConfig {
