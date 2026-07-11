@@ -133,6 +133,10 @@ export interface BioConfig {
   profileHandle?: string;
   footerText?: string;
   backButtonText?: string;
+  premiumLinkText?: string;
+  premiumLinkDesc?: string;
+  premiumLinkEmoji?: string;
+  premiumLinkVisible?: boolean;
 }
 
 export interface SeoConfig {

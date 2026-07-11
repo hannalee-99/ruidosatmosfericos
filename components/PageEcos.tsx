@@ -68,7 +68,7 @@ const PageEcos: React.FC<PageEcosProps> = ({ onNavigate, isDarkMode }) => {
   };
 
   return (
-    <div className="relative w-full min-h-screen flex flex-col items-center justify-start py-24 md:py-32 px-6 md:px-12 overflow-hidden animate-in fade-in duration-700">
+    <div className="relative w-full min-h-screen flex flex-col items-center justify-center pt-36 pb-24 md:pt-48 md:pb-32 px-6 md:px-12 overflow-hidden animate-in fade-in duration-700">
       <Helmet>
         <title>ecos — ruídos atmosféricos</title>
         <meta name="description" content="canais de transmissão, suportes físicos e ecos no espaço digital de ruídos atmosféricos" />
@@ -139,16 +139,18 @@ const PageEcos: React.FC<PageEcosProps> = ({ onNavigate, isDarkMode }) => {
                       <div className="flex-shrink-0 flex items-center">
                         <button 
                           onClick={() => handleLinkClick(link.title, link.url)}
-                          className="group/cli relative flex items-center gap-2 font-mono text-[10px] md:text-xs tracking-widest lowercase transition-all duration-300 active:scale-95 text-left bg-transparent border-none outline-none pb-2 pt-1 cursor-pointer"
+                          className="group/cli relative flex flex-col items-start font-mono text-[10px] md:text-xs tracking-widest lowercase transition-all duration-300 active:scale-95 text-left bg-transparent border-none outline-none pb-2 pt-1 cursor-pointer"
                         >
-                          <span className="text-[var(--accent)] font-bold">visitante@ruidos:~$</span>
-                          <span className="text-white [.light-mode_&]:text-black opacity-85 group-hover/cli:opacity-100 text-glow-accent">
-                            sintonizar --{link.title.replace(/\s+/g, '-').toLowerCase()}
-                          </span>
-                          <span className="w-1.5 h-3.5 bg-[var(--accent)] animate-cursor-blink shadow-[0_0_8px_var(--accent)]"></span>
+                          <div className="flex items-center gap-2">
+                            <span className="text-[var(--accent)] font-bold">visitante@ruidos:~$</span>
+                            <span className="text-white [.light-mode_&]:text-black opacity-85 group-hover/cli:opacity-100 text-glow-accent">
+                              sintonizar --{link.title.replace(/\s+/g, '-').toLowerCase()}
+                            </span>
+                            <span className="w-1.5 h-3.5 bg-[var(--accent)] animate-cursor-blink shadow-[0_0_8px_var(--accent)]"></span>
+                          </div>
                           
-                          {/* Pulsing neon underline line */}
-                          <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-[var(--accent)] animate-neon-line shadow-[0_0_10px_var(--accent)] rounded-full"></div>
+                          {/* Hover expanding line */}
+                          <div className="h-px bg-[var(--accent)] w-0 group-hover/cli:w-full transition-all duration-700 mt-2 self-stretch"></div>
                         </button>
                       </div>
                     </div>

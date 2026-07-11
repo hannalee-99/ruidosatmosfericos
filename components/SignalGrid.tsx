@@ -532,11 +532,6 @@ export const SignalGrid: React.FC<SignalGridProps> = ({ signal }) => {
                       {img.caption && (
                         <figcaption className="mt-4 font-vt text-sm tracking-widest opacity-50 group-hover/fig:opacity-80 transition-opacity lowercase border-l border-[var(--accent)] pl-3 text-neutral-300 [.light-mode_&]:text-neutral-700">
                           {img.caption}
-                          {ratio && (
-                            <span className="block mt-1 font-mono text-[9px] opacity-30 select-none">
-                              fração: {ratio.toFixed(2)} ({isVertical ? 'vertical' : ratio > 1.25 ? 'horizontal' : 'quadrado'})
-                            </span>
-                          )}
                         </figcaption>
                       )}
                     </figure>

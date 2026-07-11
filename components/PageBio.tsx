@@ -163,33 +163,35 @@ const PageBio: React.FC<PageBioProps> = ({ onNavigate, isDarkMode }) => {
         <div className="w-full space-y-4 flex flex-col">
           
           {/* MAIN WEBSITE LINK (SPECIAL REDIRECT - GETS THE WHOLE EXPERIENCE) */}
-          <motion.div
-            initial={{ opacity: 0, y: 15 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="relative"
-          >
-            {/* Background neon pulse for premium link */}
-            <div className="absolute -inset-0.5 rounded-2xl bg-gradient-to-r from-[var(--accent)] to-teal-500 opacity-20 blur-sm"></div>
-            
-            <button
-              onClick={() => onNavigate(ViewState.LANDING)}
-              className="relative w-full flex items-center justify-between p-5 bg-black/80 hover:bg-black/90 border-2 border-[var(--accent)] rounded-2xl transition-all duration-300 shadow-[0_0_15px_rgba(var(--accent-rgb),0.15)] group/btn"
+          {(bioConfig.premiumLinkVisible !== false) && (
+            <motion.div
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+              className="relative"
             >
-              <div className="flex items-center gap-4 text-left">
-                <span className="text-2xl">⚡</span>
-                <div>
-                  <h3 className="font-electrolize text-base text-[var(--accent)] tracking-tight lowercase leading-tight font-bold group-hover/btn:translate-x-1 transition-transform">
-                    entrar no site (experiência completa)
-                  </h3>
-                  <p className="font-mono text-[10px] text-white/50 lowercase mt-0.5">
-                    acesso completo com splash screen e portfólio imersivo
-                  </p>
+              {/* Background neon pulse for premium link */}
+              <div className="absolute -inset-0.5 rounded-2xl bg-gradient-to-r from-[var(--accent)] to-teal-500 opacity-20 blur-sm"></div>
+              
+              <button
+                onClick={() => onNavigate(ViewState.LANDING)}
+                className="relative w-full flex items-center justify-between p-5 bg-black/80 hover:bg-black/90 border-2 border-[var(--accent)] rounded-2xl transition-all duration-300 shadow-[0_0_15px_rgba(var(--accent-rgb),0.15)] group/btn"
+              >
+                <div className="flex items-center gap-4 text-left">
+                  <span className="text-2xl">{bioConfig.premiumLinkEmoji ?? '⚡'}</span>
+                  <div>
+                    <h3 className="font-electrolize text-base text-[var(--accent)] tracking-tight lowercase leading-tight font-bold group-hover/btn:translate-x-1 transition-transform">
+                      {bioConfig.premiumLinkText ?? 'entrar no site (experiência completa)'}
+                    </h3>
+                    <p className="font-mono text-[10px] text-white/50 lowercase mt-0.5">
+                      {bioConfig.premiumLinkDesc ?? 'acesso completo com splash screen e portfólio imersivo'}
+                    </p>
+                  </div>
                 </div>
-              </div>
-              <ArrowUpRight className="w-4 h-4 text-[var(--accent)] opacity-60 group-hover/btn:opacity-100 group-hover/btn:translate-x-0.5 group-hover/btn:-translate-y-0.5 transition-all flex-shrink-0" />
-            </button>
-          </motion.div>
+                <ArrowUpRight className="w-4 h-4 text-[var(--accent)] opacity-60 group-hover/btn:opacity-100 group-hover/btn:translate-x-0.5 group-hover/btn:-translate-y-0.5 transition-all flex-shrink-0" />
+              </button>
+            </motion.div>
+          )}
 
           {/* DYNAMIC USER-ADDED LINKS */}
           <AnimatePresence mode="popLayout">

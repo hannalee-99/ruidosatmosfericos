@@ -252,6 +252,24 @@ const PageSinais: React.FC<PageSinaisProps> = ({
             <article className="max-w-3xl mx-auto pb-32">
                <SignalGrid signal={selectedPost} />
 
+               {/* Bloco de Metadados de Campo (estilo DeviantArt Journal) */}
+               {selectedPost.metadata && selectedPost.metadata.some(m => m.answer?.trim()) && (
+                 <div className="mt-20 p-6 md:p-8 rounded-2xl bg-white/[0.02] [.light-mode_&]:bg-black/[0.02] backdrop-blur-sm space-y-6 max-w-xl transition-all duration-500 hover:bg-white/[0.04] [.light-mode_&]:hover:bg-black/[0.03]">
+                   <div className="flex items-center gap-3">
+                     <span className="w-1.5 h-1.5 rounded-full bg-[var(--accent)] animate-pulse" />
+                     <h5 className="font-vt text-[10px] tracking-[0.25em] uppercase text-[var(--accent)] opacity-80">metadados de campo // registros adicionais</h5>
+                   </div>
+                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4 font-mono text-[11px] md:text-xs lowercase">
+                     {selectedPost.metadata.filter(m => m.answer?.trim()).map((item, idx) => (
+                       <div key={idx} className="flex flex-col gap-1">
+                         <span className="opacity-40 uppercase tracking-widest text-[8px]">{item.question}</span>
+                         <span className="opacity-80 font-medium pl-1 text-[var(--accent)] [.light-mode_&]:text-teal-600">{item.answer}</span>
+                       </div>
+                     ))}
+                   </div>
+                 </div>
+               )}
+
                {/* Botão de Compartilhar no Final do Artigo */}
                <div className="mt-16 flex items-center justify-start">
                   <button 

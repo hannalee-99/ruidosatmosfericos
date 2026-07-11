@@ -2305,6 +2305,56 @@ Last Typed Command,Último Comando do Terminal,O texto exato do último comando 
                         />
                       </div>
                     </div>
+
+                    {/* Configuração do Link Principal (Experiência Completa) */}
+                    <div className="pt-4 border-t border-white/5 space-y-4">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                        <h4 className="text-[10px] font-electrolize text-[var(--accent)] uppercase tracking-wider">link principal (experiência completa)</h4>
+                        <label className="flex items-center gap-2 cursor-pointer select-none">
+                          <input 
+                            type="checkbox"
+                            checked={bioConfig.premiumLinkVisible !== false}
+                            onChange={e => setBioConfig({ ...bioConfig, premiumLinkVisible: e.target.checked })}
+                            className="rounded bg-black border-white/20 text-[var(--accent)] focus:ring-0 w-3.5 h-3.5"
+                          />
+                          <span className="text-[10px] uppercase tracking-wider text-white/60">exibir este link na bio</span>
+                        </label>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
+                        <div className="md:col-span-2 space-y-1">
+                          <label className="text-[10px] uppercase tracking-wider text-white/40">emoji/ícone</label>
+                          <input 
+                            type="text"
+                            value={bioConfig.premiumLinkEmoji ?? '⚡'}
+                            onChange={e => setBioConfig({ ...bioConfig, premiumLinkEmoji: e.target.value })}
+                            className="w-full bg-black/60 border border-white/10 rounded-lg p-2.5 text-xs text-center text-white outline-none focus:border-[var(--accent)]"
+                            placeholder="⚡"
+                          />
+                        </div>
+                        <div className="md:col-span-10 space-y-1">
+                          <label className="text-[10px] uppercase tracking-wider text-white/40">título do link</label>
+                          <input 
+                            type="text"
+                            value={bioConfig.premiumLinkText ?? 'entrar no site (experiência completa)'}
+                            onChange={e => setBioConfig({ ...bioConfig, premiumLinkText: e.target.value })}
+                            className="w-full bg-black/60 border border-white/10 rounded-lg p-2.5 text-xs text-white outline-none focus:border-[var(--accent)] lowercase"
+                            placeholder="ex: entrar no site (experiência completa)"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="space-y-1">
+                        <label className="text-[10px] uppercase tracking-wider text-white/40">subtítulo/descrição curta</label>
+                        <input 
+                          type="text"
+                          value={bioConfig.premiumLinkDesc ?? 'acesso completo com splash screen e portfólio imersivo'}
+                          onChange={e => setBioConfig({ ...bioConfig, premiumLinkDesc: e.target.value })}
+                          className="w-full bg-black/60 border border-white/10 rounded-lg p-2.5 text-xs text-white outline-none focus:border-[var(--accent)] lowercase"
+                          placeholder="ex: acesso completo com splash screen e portfólio imersivo"
+                        />
+                      </div>
+                    </div>
                   </div>
 
                   <div className="space-y-6">
@@ -2616,23 +2666,25 @@ Last Typed Command,Último Comando do Terminal,O texto exato do último comando 
                       <div className="w-full space-y-2.5 flex flex-col">
                         
                         {/* Main website link */}
-                        <div className="relative w-full">
-                          <div className="absolute -inset-0.5 rounded-lg bg-gradient-to-r from-[var(--accent)] to-teal-500 opacity-20 blur-[1px]"></div>
-                          <div className="relative w-full flex items-center justify-between p-2.5 bg-black/95 border border-[var(--accent)]/80 rounded-xl text-left">
-                            <div className="flex items-center gap-2">
-                              <span className="text-base">⚡</span>
-                              <div>
-                                <h5 className="font-electrolize text-[9px] text-[var(--accent)] tracking-tight leading-tight font-bold lowercase">
-                                  entrar no site (experiência completa)
-                                </h5>
-                                <p className="font-mono text-[7px] text-white/45 mt-0.5 lowercase">
-                                  portfólio imersivo e ritos atmosféricos
-                                </p>
+                        {(bioConfig.premiumLinkVisible !== false || showHiddenInPreview) && (
+                          <div className={`relative w-full ${bioConfig.premiumLinkVisible === false ? 'opacity-40 border-dashed border-red-500/20' : ''}`}>
+                            <div className="absolute -inset-0.5 rounded-lg bg-gradient-to-r from-[var(--accent)] to-teal-500 opacity-20 blur-[1px]"></div>
+                            <div className="relative w-full flex items-center justify-between p-2.5 bg-black/95 border border-[var(--accent)]/80 rounded-xl text-left">
+                              <div className="flex items-center gap-2">
+                                <span className="text-base">{bioConfig.premiumLinkEmoji ?? '⚡'}</span>
+                                <div>
+                                  <h5 className="font-electrolize text-[9px] text-[var(--accent)] tracking-tight leading-tight font-bold lowercase">
+                                    {bioConfig.premiumLinkText ?? 'entrar no site (experiência completa)'}
+                                  </h5>
+                                  <p className="font-mono text-[7px] text-white/45 mt-0.5 lowercase">
+                                    {bioConfig.premiumLinkDesc ?? 'portfólio imersivo e ritos atmosféricos'}
+                                  </p>
+                                </div>
                               </div>
+                              <ArrowUpRight className="w-3 h-3 text-[var(--accent)] opacity-60 flex-shrink-0" />
                             </div>
-                            <ArrowUpRight className="w-3 h-3 text-[var(--accent)] opacity-60 flex-shrink-0" />
                           </div>
-                        </div>
+                        )}
 
                         {/* Custom Links */}
                         {(() => {

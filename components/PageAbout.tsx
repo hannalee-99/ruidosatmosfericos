@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { storage } from '../lib/storage';
 import { AboutData, ViewState } from '../types';
@@ -91,17 +90,22 @@ const PageAbout: React.FC<PageAboutProps> = ({ onNavigate, isDarkMode }) => {
            </div>
 
            {/* Botão Estilo Terminal CLI */}
-            <div className="pt-4 md:pt-8 flex items-center">
+           <div className="pt-4 md:pt-8 flex items-center">
              <button 
                 onClick={() => {
                   trackGenericClick('contato_iniciar_sobre', 'button', { 'From Page': 'esse eu' });
                   onNavigate(ViewState.CONNECT);
                 }}
-                className="group flex items-center gap-2 font-mono text-[10px] md:text-xs tracking-widest lowercase transition-all duration-300 active:scale-95"
+                className="group relative flex flex-col items-start font-mono text-[10px] md:text-xs tracking-widest lowercase transition-all duration-300 active:scale-95 cursor-pointer"
              >
-                <span className="text-[var(--accent)] font-bold">visitante@ruidos:~$</span>
-                <span className="text-white [.light-mode_&]:text-black opacity-80 group-hover:opacity-100 text-glow-accent">contato --iniciar</span>
-                <span className="w-1 h-3.5 bg-[var(--accent)] animate-pulse shadow-[0_0_5px_var(--accent)]"></span>
+                <div className="flex items-center gap-2">
+                   <span className="text-[var(--accent)] font-bold">visitante@ruidos:~$</span>
+                   <span className="text-white [.light-mode_&]:text-black opacity-80 group-hover:opacity-100 text-glow-accent">contato --iniciar</span>
+                   <span className="w-1 h-3.5 bg-[var(--accent)] animate-pulse shadow-[0_0_5px_var(--accent)]"></span>
+                </div>
+                
+                {/* Hover expanding line */}
+                <div className="h-px bg-[var(--accent)] w-0 group-hover:w-full transition-all duration-700 mt-2 self-stretch shadow-[0_0_5px_var(--accent)]"></div>
              </button>
            </div>
         </div>

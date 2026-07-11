@@ -417,11 +417,16 @@ const PageManifestoV2: React.FC<{ onNavigate: (view: ViewState) => void }> = ({ 
                     trackGenericClick('contato_iniciar_manifesto', 'button', { 'From Page': 'manifesto' });
                     onNavigate(ViewState.CONNECT);
                   }}
-                  className="group flex items-center gap-2 font-mono text-[10px] md:text-xs tracking-widest lowercase transition-all duration-300 active:scale-95"
+                  className="group relative flex flex-col items-start font-mono text-[10px] md:text-xs tracking-widest lowercase transition-all duration-300 active:scale-95 cursor-pointer"
                 >
-                  <span className="text-[#9ff85d] font-bold">visitante@ruidos:~$</span>
-                  <span className="text-white opacity-80 group-hover:opacity-100 text-glow">contato --iniciar</span>
-                  <span className="w-1 h-3.5 bg-[#9ff85d] animate-pulse shadow-[0_0_5px_#9ff85d]"></span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[#9ff85d] font-bold">visitante@ruidos:~$</span>
+                    <span className="text-white opacity-80 group-hover:opacity-100 text-glow">contato --iniciar</span>
+                    <span className="w-1 h-3.5 bg-[#9ff85d] animate-pulse shadow-[0_0_5px_#9ff85d]"></span>
+                  </div>
+                  
+                  {/* Hover expanding line */}
+                  <div className="h-px bg-[#9ff85d] w-0 group-hover:w-full transition-all duration-700 mt-2 self-stretch shadow-[0_0_5px_#9ff85d]"></div>
                 </button>
              </div>
              <button 

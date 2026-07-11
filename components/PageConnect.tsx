@@ -113,8 +113,14 @@ const PageConnect: React.FC<PageConnectProps> = ({ onNavigate }) => {
         addLine(
           <div className="p-4 border border-white/20 [.light-mode_&]:border-black/20 rounded bg-white/5 [.light-mode_&]:bg-black/5 mt-2">
             <span className="opacity-60 block text-xs mb-2 uppercase tracking-widest">canal de voz ativo:</span>
-            <a href={`mailto:${connectConfig.email}`} onClick={() => trackSocialLinkClicked('Email', `mailto:${connectConfig.email}`, 'email')} className="text-xl md:text-2xl text-[var(--accent)] underline hover:no-underline">
-              {connectConfig.email}
+            <a 
+              href={`mailto:${connectConfig.email}`} 
+              onClick={() => trackSocialLinkClicked('Email', `mailto:${connectConfig.email}`, 'email')} 
+              className="group relative inline-block text-xl md:text-2xl text-[var(--accent)] transition-all"
+            >
+              <span>{connectConfig.email}</span>
+              {/* Hover expanding line */}
+              <div className="h-px bg-[var(--accent)] w-0 group-hover:w-full transition-all duration-700 mt-1"></div>
             </a>
           </div>, 
           'success'
@@ -128,10 +134,19 @@ const PageConnect: React.FC<PageConnectProps> = ({ onNavigate }) => {
       setTimeout(() => {
         if (connectConfig.links && connectConfig.links.length > 0) {
           addLine(
-            <div className="flex flex-wrap gap-4 mt-2">
+            <div className="flex flex-wrap gap-6 mt-2">
               {connectConfig.links.map((link) => (
-                <a key={link.id} href={link.url} onClick={() => trackSocialLinkClicked(link.label, link.url, link.label.toLowerCase())} target="_blank" rel="noopener noreferrer" className="text-[var(--accent)] underline hover:no-underline font-vt text-lg">
-                  {link.label}
+                <a 
+                  key={link.id} 
+                  href={link.url} 
+                  onClick={() => trackSocialLinkClicked(link.label, link.url, link.label.toLowerCase())} 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className="group relative inline-block text-[var(--accent)] font-vt text-lg"
+                >
+                  <span>{link.label}</span>
+                  {/* Hover expanding line */}
+                  <div className="h-px bg-[var(--accent)] w-0 group-hover:w-full transition-all duration-700 mt-1"></div>
                 </a>
               ))}
             </div>,
