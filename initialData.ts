@@ -13,7 +13,7 @@ export const INITIAL_DATA: {
     seo_config: SeoConfig | null;
   };
 } = {
-  "lastUpdated": 1783640450792,
+  "lastUpdated": 1783823384361,
   "works": [
     {
       "id": "work-1771621176503",
@@ -60,7 +60,7 @@ export const INITIAL_DATA: {
       "date": "2025-10-01",
       "technique": "acrílica sobre tela",
       "dimensions": "30x20 cm",
-      "imageUrl": "https://res.cloudinary.com/dcxm8yd49/image/upload/v1783639949/formas_de_conex%C3%A3o_site26.jpg",
+      "imageUrl": "https://res.cloudinary.com/dcxm8yd49/image/upload/v1782955071/formas_de_conexao_site.avif",
       "status": "disponível",
       "isVisible": true,
       "isFeatured": false,
@@ -116,7 +116,7 @@ export const INITIAL_DATA: {
       "dimensions": "50x50 cm",
       "imageUrl": "https://res.cloudinary.com/dcxm8yd49/image/upload/v1771624972/processamento_de_emocoes.avif",
       "status": "disponível",
-      "isVisible": true,
+      "isVisible": false,
       "isFeatured": false,
       "featuredOrder": 999,
       "views": 0,
