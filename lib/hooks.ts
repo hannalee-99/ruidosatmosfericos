@@ -101,58 +101,90 @@ export const useDataSeeding = () => {
           console.warn("Não foi possível buscar dados do servidor, usando dados locais de seed:", err);
         }
 
-        const finalWorks = serverWorks || INITIAL_DATA.works;
-        const finalSignals = serverSignals || INITIAL_DATA.signals;
+        const isCodeUpdated = codeVersion > lastSync;
 
-        // 3. Sincronização inteligente NÃO-DESTRUTIVA (Upsert)
-        // Salva os dados do servidor ou seed localmente sem apagar os outros existentes
-        if (finalWorks) {
-          for (const w of finalWorks) {
-            await storage.save('works', w);
+        if (isCodeUpdated) {
+          console.log(`[DataSeeding] Código atualizado detectado (versão ${codeVersion} > ${lastSync}). Forçando atualização dos dados locais e do servidor.`);
+          
+          // 1. Remover itens locais órfãos que não estão mais no INITIAL_DATA
+          const initialWorksIds = new Set((INITIAL_DATA.works || []).map((w: any) => w.id));
+          for (const lw of localWorks) {
+            if (!initialWorksIds.has(lw.id)) {
+              await storage.delete('works', lw.id);
+            }
           }
-        }
-        if (finalSignals) {
-          for (const s of finalSignals) {
-            await storage.save('signals', s);
-          }
-        }
-
-        // 4. Sincronização Automática Servidor-Cliente Bidirecional
-        // Se temos novos registros locais no IndexedDB que não estão no servidor,
-        // nós os enviamos ao servidor para mantê-lo atualizado e persistido.
-        if (serverFetched) {
-          const updatedLocalWorks = await storage.getAll('works');
-          const updatedLocalSignals = await storage.getAll('signals');
-
-          const serverWorksIds = new Set((serverWorks || []).map((w: any) => w.id));
-          const hasNewLocalWorks = updatedLocalWorks.some(w => !serverWorksIds.has(w.id));
-
-          const serverSignalsIds = new Set((serverSignals || []).map((s: any) => s.id));
-          const hasNewLocalSignals = updatedLocalSignals.some(s => !serverSignalsIds.has(s.id));
-
-          if (hasNewLocalWorks && serverWorks !== null) {
-            console.log("Detectadas obras locais novas. Sincronizando com o servidor...");
-            try {
-              await fetch('/api/save-data', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ type: 'works', data: updatedLocalWorks })
-              });
-            } catch (e) {
-              console.error("Erro ao sincronizar obras locais para o servidor:", e);
+          const initialSignalsIds = new Set((INITIAL_DATA.signals || []).map((s: any) => s.id));
+          for (const ls of localSignals) {
+            if (!initialSignalsIds.has(ls.id)) {
+              await storage.delete('signals', ls.id);
             }
           }
 
-          if (hasNewLocalSignals && serverSignals !== null) {
-            console.log("Detectados posts de sinais locais novos. Sincronizando com o servidor...");
-            try {
-              await fetch('/api/save-data', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ type: 'signals', data: updatedLocalSignals })
-              });
-            } catch (e) {
-              console.error("Erro ao sincronizar sinais locais para o servidor:", e);
+          // 2. Salvar todos do INITIAL_DATA no IndexedDB
+          if (INITIAL_DATA.works) {
+            for (const w of INITIAL_DATA.works) {
+              await storage.save('works', w);
+            }
+          }
+          if (INITIAL_DATA.signals) {
+            for (const s of INITIAL_DATA.signals) {
+              await storage.save('signals', s);
+            }
+          }
+
+          // 3. Persistir nova versão no servidor
+          try {
+            await fetch('/api/save-data', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ type: 'works', data: INITIAL_DATA.works })
+            });
+            await fetch('/api/save-data', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ type: 'signals', data: INITIAL_DATA.signals })
+            });
+          } catch (e) {
+            console.error("Erro ao sincronizar INITIAL_DATA atualizado para o servidor:", e);
+          }
+        } else {
+          // Sincronização em estado normal (codeVersion <= lastSync)
+          if (serverFetched) {
+            // Sincronização estrita com o servidor (deleta localmente o que foi deletado do servidor)
+            if (serverWorks !== null) {
+              const serverWorksIds = new Set(serverWorks.map((w: any) => w.id));
+              for (const lw of localWorks) {
+                if (!serverWorksIds.has(lw.id)) {
+                  await storage.delete('works', lw.id);
+                }
+              }
+              for (const w of serverWorks) {
+                await storage.save('works', w);
+              }
+            }
+
+            if (serverSignals !== null) {
+              const serverSignalsIds = new Set(serverSignals.map((s: any) => s.id));
+              for (const ls of localSignals) {
+                if (!serverSignalsIds.has(ls.id)) {
+                  await storage.delete('signals', ls.id);
+                }
+              }
+              for (const s of serverSignals) {
+                await storage.save('signals', s);
+              }
+            }
+          } else {
+            // Se o servidor não pôde ser consultado, carrega do INITIAL_DATA sem apagar locais
+            if (INITIAL_DATA.works) {
+              for (const w of INITIAL_DATA.works) {
+                await storage.save('works', w);
+              }
+            }
+            if (INITIAL_DATA.signals) {
+              for (const s of INITIAL_DATA.signals) {
+                await storage.save('signals', s);
+              }
             }
           }
         }
@@ -161,7 +193,7 @@ export const useDataSeeding = () => {
         const existingBioConfig = await storage.get('about', 'bio_config');
         const forceBioConfigSync = !existingBioConfig;
 
-        if (codeVersion > lastSync || forceBioConfigSync) {
+        if (isCodeUpdated || forceBioConfigSync) {
           if (INITIAL_DATA.about.profile) {
             await storage.save('about', INITIAL_DATA.about.profile);
           }

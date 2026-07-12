@@ -84,6 +84,13 @@ const PageBio: React.FC<PageBioProps> = ({ onNavigate, isDarkMode }) => {
 
   const formatImageUrl = (url: string) => {
     if (!url || url.trim() === '') return DEFAULT_IMAGE;
+    if (url.startsWith('data:image')) return url;
+    if (url.includes('drive.google.com')) {
+      const match = url.match(/\/d\/(.+?)\/(view|edit)?/) || url.match(/[?&]id=(.+?)(&|$)/);
+      if (match && match[1]) {
+        return `https://drive.google.com/uc?export=view&id=${match[1]}`;
+      }
+    }
     return url;
   };
 
