@@ -13,7 +13,7 @@ export const INITIAL_DATA: {
     seo_config: SeoConfig | null;
   };
 } = {
-  "lastUpdated": 1783640450792,
+  "lastUpdated": 1783818778391,
   "works": [
     {
       "id": "work-1771621176503",
@@ -766,15 +766,17 @@ export const INITIAL_DATA: {
     },
     "bio_config": {
       "id": "bio_config",
-      "bio": "fragmentos, ruídos e ritos atmosféricos. objetos de estudo e presença.",
+      "bio": "espere (espero) nada\naprecie (aprecio) tudo | \nexpressões por Hannalee",
       "links": [
         {
-          "id": "01",
-          "title": "site oficial",
-          "description": "portfólio, manifesto e sinais atmosféricos",
-          "url": "https://ruidosatmosfericos.com",
+          "id": "bio-1783812374400",
+          "title": "caneca formas de conexão",
+          "description": "um totem essencial para o combustível diário",
+          "url": "https://www.colab55.com/@ruidosatmosfericos/mugs/formas-de-conexao",
           "status": "ativo",
-          "emoji": "⚡"
+          "emoji": "",
+          "isFeatured": true,
+          "visible": true
         },
         {
           "id": "02",
@@ -792,7 +794,9 @@ export const INITIAL_DATA: {
           "status": "ativo",
           "emoji": "📌"
         }
-      ]
+      ],
+      "premiumLinkText": "explorar os ruídos atmosféricos ",
+      "premiumLinkDesc": ""
     },
     "seo_config": {
       "id": "seo_config",
