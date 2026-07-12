@@ -523,9 +523,9 @@ export const SignalGrid: React.FC<SignalGridProps> = ({ signal }) => {
                           src={formatImageUrl(img.content)}
                           alt={img.caption || "registro visual"}
                           className="w-full h-full bg-transparent transition-all duration-300"
-                          imgClassName="rounded-2xl w-full h-full object-cover transition-all duration-300"
+                          imgClassName="rounded-2xl w-full h-full object-contain transition-all duration-300"
                           autoHeight={false}
-                          objectFit="cover"
+                          objectFit="contain"
                           overflowHidden={false}
                         />
                       </div>

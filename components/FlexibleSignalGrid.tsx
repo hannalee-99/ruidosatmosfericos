@@ -221,9 +221,9 @@ const FlexibleSignalGrid: React.FC<FlexibleSignalGridProps> = ({ images, onImage
                   src={formatImageUrl(imgBlock.content)}
                   alt={imgBlock.caption || "registro visual"}
                   className="w-full h-full bg-transparent transition-all duration-300"
-                  imgClassName="rounded-2xl transition-all duration-300 object-cover"
+                  imgClassName="rounded-2xl transition-all duration-300 object-contain"
                   autoHeight={false}
-                  objectFit="cover"
+                  objectFit="contain"
                   overflowHidden={false}
                 />
               </div>

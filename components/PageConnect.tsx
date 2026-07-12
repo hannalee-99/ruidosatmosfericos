@@ -27,7 +27,7 @@ const PageConnect: React.FC<PageConnectProps> = ({ onNavigate }) => {
   
   const [connectConfig, setConnectConfig] = useState<ConnectConfig>({
     id: 'connect_config',
-    email: 'contato@ruidos.atmosfericos',
+    email: 'oi.hannalee@gmail.com',
     sobreText: "ruídos atmosféricos // v3.1 // sistema de gestão existencial",
     links: []
   });
@@ -112,7 +112,7 @@ const PageConnect: React.FC<PageConnectProps> = ({ onNavigate }) => {
       setTimeout(() => {
         addLine(
           <div className="p-4 border border-white/20 [.light-mode_&]:border-black/20 rounded bg-white/5 [.light-mode_&]:bg-black/5 mt-2">
-            <span className="opacity-60 block text-xs mb-2 uppercase tracking-widest">canal de voz ativo:</span>
+            <span className="opacity-60 block text-xs mb-2 uppercase tracking-widest">canal ativo:</span>
             <a 
               href={`mailto:${connectConfig.email}`} 
               onClick={() => trackSocialLinkClicked('Email', `mailto:${connectConfig.email}`, 'email')} 

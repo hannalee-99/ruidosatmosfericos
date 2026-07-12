@@ -231,9 +231,12 @@ const PageSinais: React.FC<PageSinaisProps> = ({
 
          <div className="relative z-10 max-w-5xl mx-auto pt-64 md:pt-80 px-6 md:px-12 pb-40">
             {selectedPost.coverImageUrl && (
-              <div className="w-full h-[40vh] md:h-[60vh] rounded-3xl overflow-hidden mb-16 relative">
-                 <img src={getOptimizedUrl(selectedPost.coverImageUrl)} className="w-full h-full object-cover bg-transparent" alt="capa" />
-                 <div className="absolute inset-0 hidden"></div>
+              <div className="w-full flex justify-center items-center mb-16">
+                 <img 
+                   src={getOptimizedUrl(selectedPost.coverImageUrl)} 
+                   className="max-w-full h-auto max-h-[65vh] object-contain rounded-2xl" 
+                   alt="capa" 
+                 />
               </div>
             )}
 
@@ -333,10 +336,10 @@ const PageSinais: React.FC<PageSinaisProps> = ({
                             
                             {/* Image - Now on the left of the text on desktop */}
                             {post.coverImageUrl && (
-                              <div className="w-full md:w-72 aspect-[4/3] rounded-2xl overflow-hidden flex-shrink-0 relative transition-all duration-300 bg-transparent">
+                              <div className="w-full md:w-72 aspect-[4/3] rounded-2xl overflow-hidden flex-shrink-0 relative transition-all duration-300 bg-transparent flex items-center justify-start">
                                 <img 
                                   src={getOptimizedUrl(post.coverImageUrl, 400)} 
-                                  className="w-full h-full object-cover" 
+                                  className="w-full h-full object-contain object-left" 
                                   alt="thumb" 
                                 />
                                 <div className="hidden"></div>

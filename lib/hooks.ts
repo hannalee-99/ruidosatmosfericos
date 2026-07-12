@@ -84,6 +84,7 @@ export const useDataSeeding = () => {
         // 2. Tentar obter os dados mais atualizados do servidor
         let serverWorks = null;
         let serverSignals = null;
+        let serverAbout = null;
         let serverFetched = false;
 
         try {
@@ -96,6 +97,10 @@ export const useDataSeeding = () => {
           if (resSignals.ok) {
             serverSignals = await resSignals.json();
             serverFetched = true;
+          }
+          const resAbout = await fetch('/api/about');
+          if (resAbout.ok) {
+            serverAbout = await resAbout.json();
           }
         } catch (err) {
           console.warn("Não foi possível buscar dados do servidor, usando dados locais de seed:", err);
@@ -131,6 +136,14 @@ export const useDataSeeding = () => {
               await storage.save('signals', s);
             }
           }
+          if (INITIAL_DATA.about) {
+            if (INITIAL_DATA.about.profile) await storage.save('about', INITIAL_DATA.about.profile);
+            if (INITIAL_DATA.about.connect_config) await storage.save('about', INITIAL_DATA.about.connect_config);
+            if (INITIAL_DATA.about.landing_manifesto) await storage.save('about', INITIAL_DATA.about.landing_manifesto);
+            if (INITIAL_DATA.about.ecos_config) await storage.save('about', INITIAL_DATA.about.ecos_config);
+            if (INITIAL_DATA.about.bio_config) await storage.save('about', INITIAL_DATA.about.bio_config);
+            if (INITIAL_DATA.about.seo_config) await storage.save('about', INITIAL_DATA.about.seo_config);
+          }
 
           // 3. Persistir nova versão no servidor
           try {
@@ -143,6 +156,11 @@ export const useDataSeeding = () => {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ type: 'signals', data: INITIAL_DATA.signals })
+            });
+            await fetch('/api/save-data', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ type: 'about', data: INITIAL_DATA.about })
             });
           } catch (e) {
             console.error("Erro ao sincronizar INITIAL_DATA atualizado para o servidor:", e);
@@ -174,6 +192,15 @@ export const useDataSeeding = () => {
                 await storage.save('signals', s);
               }
             }
+
+            if (serverAbout !== null) {
+              if (serverAbout.profile) await storage.save('about', serverAbout.profile);
+              if (serverAbout.connect_config) await storage.save('about', serverAbout.connect_config);
+              if (serverAbout.landing_manifesto) await storage.save('about', serverAbout.landing_manifesto);
+              if (serverAbout.ecos_config) await storage.save('about', serverAbout.ecos_config);
+              if (serverAbout.bio_config) await storage.save('about', serverAbout.bio_config);
+              if (serverAbout.seo_config) await storage.save('about', serverAbout.seo_config);
+            }
           } else {
             // Se o servidor não pôde ser consultado, carrega do INITIAL_DATA sem apagar locais
             if (INITIAL_DATA.works) {
@@ -186,34 +213,19 @@ export const useDataSeeding = () => {
                 await storage.save('signals', s);
               }
             }
+            if (INITIAL_DATA.about) {
+              if (INITIAL_DATA.about.profile) await storage.save('about', INITIAL_DATA.about.profile);
+              if (INITIAL_DATA.about.connect_config) await storage.save('about', INITIAL_DATA.about.connect_config);
+              if (INITIAL_DATA.about.landing_manifesto) await storage.save('about', INITIAL_DATA.about.landing_manifesto);
+              if (INITIAL_DATA.about.ecos_config) await storage.save('about', INITIAL_DATA.about.ecos_config);
+              if (INITIAL_DATA.about.bio_config) await storage.save('about', INITIAL_DATA.about.bio_config);
+              if (INITIAL_DATA.about.seo_config) await storage.save('about', INITIAL_DATA.about.seo_config);
+            }
           }
         }
 
-        // Sincroniza metadados estruturais do 'about' apenas se houver atualização de código ou se o bio_config estiver ausente
-        const existingBioConfig = await storage.get('about', 'bio_config');
-        const forceBioConfigSync = !existingBioConfig;
-
-        if (isCodeUpdated || forceBioConfigSync) {
-          if (INITIAL_DATA.about.profile) {
-            await storage.save('about', INITIAL_DATA.about.profile);
-          }
-          if (INITIAL_DATA.about.connect_config) {
-            await storage.save('about', INITIAL_DATA.about.connect_config);
-          }
-          if (INITIAL_DATA.about.landing_manifesto) {
-            await storage.save('about', INITIAL_DATA.about.landing_manifesto);
-          }
-          if (INITIAL_DATA.about.ecos_config) {
-            await storage.save('about', INITIAL_DATA.about.ecos_config);
-          }
-          if (INITIAL_DATA.about.bio_config) {
-            await storage.save('about', INITIAL_DATA.about.bio_config);
-          }
-          if (INITIAL_DATA.about.seo_config) {
-            await storage.save('about', INITIAL_DATA.about.seo_config);
-          }
-          localStorage.setItem('ra_last_sync', Math.max(codeVersion, lastSync || 0).toString());
-        }
+        // Garante que o timestamp de sincronia esteja gravado
+        localStorage.setItem('ra_last_sync', Math.max(codeVersion, lastSync || 0).toString());
 
         console.log("Sincronização inteligente concluída.");
       } catch (e) {

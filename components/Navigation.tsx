@@ -141,7 +141,7 @@ const Navigation: React.FC<NavigationProps> = ({
       </nav>
 
       <div 
-        className="fixed inset-0 z-[190] bg-black/98 [.light-mode_&]:bg-[#f2f2f2]/98 backdrop-blur-3xl lg:hidden flex flex-col items-start justify-center transition-[clip-path] duration-1000"
+        className="fixed inset-0 z-[190] bg-black [.light-mode_&]:bg-[#f2f2f2] lg:hidden flex flex-col items-start justify-center transition-[clip-path] duration-1000"
         style={{
            clipPath: isMobileMenuOpen ? 'circle(150% at calc(100% - 40px) 40px)' : 'circle(0% at calc(100% - 40px) 40px)',
            pointerEvents: isMobileMenuOpen ? 'auto' : 'none',

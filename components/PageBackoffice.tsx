@@ -229,8 +229,73 @@ const PageBackoffice: React.FC<PageBackofficeProps> = ({ onLogout }) => {
     }
   };
 
+  const validateAndVerifyImageFile = (file: File): Promise<{ base64: string; width: number; height: number }> => {
+    return new Promise((resolve, reject) => {
+      // 1. Verificar tipo básico do navegador
+      if (!file.type.startsWith('image/')) {
+        reject(new Error('o arquivo selecionado não é uma imagem válida.'));
+        return;
+      }
+
+      // 2. Limite de tamanho razoável (ex: 15MB) para evitar estouro de memória no navegador
+      const MAX_SIZE_BYTES = 15 * 1024 * 1024; // 15MB
+      if (file.size > MAX_SIZE_BYTES) {
+        reject(new Error('imagem muito grande. o limite máximo é de 15MB.'));
+        return;
+      }
+
+      // 3. Verificação de cabeçalho binário (Magic Numbers) para integridade real
+      const headerReader = new FileReader();
+      headerReader.onload = (e) => {
+        const arr = new Uint8Array(e.target?.result as ArrayBuffer);
+        if (arr.length < 4) {
+          reject(new Error('arquivo inválido ou corrompido (tamanho insuficiente).'));
+          return;
+        }
+
+        // Assinaturas mágicas comuns
+        const isPng = arr[0] === 0x89 && arr[1] === 0x50 && arr[2] === 0x4e && arr[3] === 0x47;
+        const isJpeg = arr[0] === 0xff && arr[1] === 0xd8 && arr[2] === 0xff;
+        const isGif = arr[0] === 0x47 && arr[1] === 0x49 && arr[2] === 0x46;
+        const isWebp = arr[0] === 0x52 && arr[1] === 0x49 && arr[2] === 0x46 && arr[3] === 0x46; // "RIFF"
+        const isSvg = arr[0] === 0x3c && (arr[1] === 0x3f || arr[1] === 0x73); // "<?" ou "<s" de <svg
+
+        if (!isPng && !isJpeg && !isGif && !isWebp && !isSvg) {
+          reject(new Error('formato de imagem não suportado ou cabeçalho corrompido.'));
+          return;
+        }
+
+        // 4. Carregamento completo e verificação de decodificação visual (Image element)
+        const contentReader = new FileReader();
+        contentReader.onload = (evt) => {
+          const base64 = evt.target?.result as string;
+          const img = new Image();
+          img.src = base64;
+          img.onload = () => {
+            if (img.naturalWidth === 0 || img.naturalHeight === 0) {
+              reject(new Error('a imagem possui dimensões inválidas ou está corrompida.'));
+            } else {
+              resolve({ base64, width: img.naturalWidth, height: img.naturalHeight });
+            }
+          };
+          img.onerror = () => {
+            reject(new Error('arquivo de imagem corrompido ou impossível de decodificar.'));
+          };
+        };
+        contentReader.onerror = () => {
+          reject(new Error('falha na leitura do conteúdo do arquivo.'));
+        };
+        contentReader.readAsDataURL(file);
+      };
+      headerReader.onerror = () => {
+        reject(new Error('falha na leitura dos cabeçalhos do arquivo.'));
+      };
+      headerReader.readAsArrayBuffer(file.slice(0, 8)); // Lê apenas os primeiros 8 bytes para performance
+    });
+  };
+
   const compressAndResizeImage = (base64Str: string): Promise<string> => {
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
       const img = new Image();
       img.src = base64Str;
       img.onload = () => {
@@ -247,7 +312,10 @@ const PageBackoffice: React.FC<PageBackofficeProps> = ({ onLogout }) => {
         canvas.width = width;
         canvas.height = height;
         const ctx = canvas.getContext('2d');
-        if (!ctx) { resolve(base64Str); return; }
+        if (!ctx) { 
+          reject(new Error('não foi possível obter o contexto 2D do canvas.')); 
+          return; 
+        }
         
         ctx.drawImage(img, 0, 0, width, height);
         // Tenta converter para WebP (fallback para JPEG)
@@ -257,7 +325,7 @@ const PageBackoffice: React.FC<PageBackofficeProps> = ({ onLogout }) => {
         }
         resolve(compressed);
       };
-      img.onerror = () => resolve(base64Str);
+      img.onerror = () => reject(new Error('falha ao processar e otimizar imagem.'));
     });
   };
 
@@ -266,25 +334,26 @@ const PageBackoffice: React.FC<PageBackofficeProps> = ({ onLogout }) => {
     if (!file || !editingWork) return;
 
     setIsProcessingImage(true);
-    const reader = new FileReader();
-    reader.onload = async (event) => {
-      try {
-        const base64 = event.target?.result as string;
-        const optimized = await compressAndResizeImage(base64);
-        setEditingWork({ ...editingWork, imageUrl: optimized });
-        triggerToast('mídia carregada e otimizada');
-      } catch (err) {
-        console.error(err);
-        triggerToast('erro ao processar mídia');
-      } finally {
-        setIsProcessingImage(false);
-      }
-    };
-    reader.onerror = () => {
-      triggerToast('erro ao carregar arquivo de mídia');
+    try {
+      // 1. Validar e verificar a integridade da imagem (Magic numbers + decodificação visual)
+      const { base64 } = await validateAndVerifyImageFile(file);
+      
+      // 2. Otimizar e redimensionar a imagem validada de forma segura
+      const optimized = await compressAndResizeImage(base64);
+      
+      // 3. Atualizar o estado da obra sendo editada
+      setEditingWork({ ...editingWork, imageUrl: optimized });
+      triggerToast('imagem verificada e otimizada com sucesso');
+    } catch (err: any) {
+      console.error(err);
+      triggerToast(err.message || 'imagem corrompida ou inválida');
+    } finally {
       setIsProcessingImage(false);
-    };
-    reader.readAsDataURL(file);
+      // Limpar o valor do input para permitir novo upload do mesmo arquivo se necessário
+      if (e.target) {
+        e.target.value = '';
+      }
+    }
   };
 
   const generateExportCode = () => {
@@ -414,6 +483,10 @@ export const INITIAL_DATA: {
   const handleSaveWork = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingWork) return;
+    if (!editingWork.imageUrl || editingWork.imageUrl.trim() === '') {
+      triggerToast('erro: a imagem da matéria é obrigatória');
+      return;
+    }
     setIsSaving(true);
     try {
       const finalSlug = editingWork.slug || createSlug(editingWork.title);
@@ -638,11 +711,27 @@ export const INITIAL_DATA: {
     await syncWithServer('signals');
   };
 
+  const syncAboutToServer = async (key: string, data: any) => {
+    try {
+      await fetch('/api/save-data', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: 'about',
+          data: { [key]: data }
+        })
+      });
+    } catch (e) {
+      console.error('Erro ao sincronizar dados com o servidor:', e);
+    }
+  };
+
   const handleSaveProfile = async (e: React.FormEvent) => {
     if (e) e.preventDefault();
     setIsSaving(true);
     try {
       await storage.save('about', profile);
+      await syncAboutToServer('profile', profile);
       fetchData();
       triggerToast('perfil salvo com sucesso');
     } catch (err) {
@@ -656,6 +745,7 @@ export const INITIAL_DATA: {
     setIsSaving(true);
     try {
       await storage.save('about', connect);
+      await syncAboutToServer('connect_config', connect);
       fetchData();
       triggerToast('configurações salvas com sucesso');
     } catch (err) {
@@ -668,7 +758,9 @@ export const INITIAL_DATA: {
     if (e) e.preventDefault();
     setIsSaving(true);
     try {
-      await storage.save('about', { ...manifesto, isCustomized: true });
+      const updatedManifesto = { ...manifesto, isCustomized: true };
+      await storage.save('about', updatedManifesto);
+      await syncAboutToServer('landing_manifesto', updatedManifesto);
       fetchData();
       triggerToast('sistema de manifesto atualizado');
     } catch (err) {
@@ -682,6 +774,7 @@ export const INITIAL_DATA: {
     setIsSaving(true);
     try {
       await storage.save('about', ecosConfig);
+      await syncAboutToServer('ecos_config', ecosConfig);
       fetchData();
       setEcosSavedSuccess(true);
       setTimeout(() => setEcosSavedSuccess(false), 3000);
@@ -697,6 +790,7 @@ export const INITIAL_DATA: {
     setIsSaving(true);
     try {
       await storage.save('about', bioConfig);
+      await syncAboutToServer('bio_config', bioConfig);
       fetchData();
       setBioSavedSuccess(true);
       setTimeout(() => setBioSavedSuccess(false), 3000);
@@ -712,6 +806,7 @@ export const INITIAL_DATA: {
     setIsSaving(true);
     try {
       await storage.save('about', seoConfig);
+      await syncAboutToServer('seo_config', seoConfig);
 
       // Manipulação direta de DOM para atualizar as tags <meta> do index.html em tempo real
       if (typeof document !== 'undefined') {
@@ -817,17 +912,29 @@ export const INITIAL_DATA: {
     try {
       let content = importCode.trim();
       
-      // Se for o arquivo completo, precisamos pegar o objeto de DADOS, não a definição de TIPOS
-      if (content.includes('= {')) {
-        // Procuramos o '=' e pegamos o '{' que vem depois dele
+      // Se for o arquivo completo ou export do TS, extraímos o objeto INITIAL_DATA robustamente
+      if (content.includes('INITIAL_DATA')) {
+        const idx = content.indexOf('INITIAL_DATA');
+        const equalIndex = content.indexOf('=', idx);
+        if (equalIndex !== -1) {
+          const start = content.indexOf('{', equalIndex);
+          let end = content.lastIndexOf('};');
+          if (end === -1) {
+            end = content.lastIndexOf('}');
+          }
+          if (start !== -1 && end !== -1 && end > start) {
+            content = content.substring(start, end + 1);
+          }
+        }
+      } else if (content.includes('= {') || content.includes('=\n{') || content.includes('=  {')) {
         const equalIndex = content.indexOf('=');
         const start = content.indexOf('{', equalIndex);
-        const end = content.lastIndexOf('};');
-        
-        if (start !== -1 && end !== -1) {
+        let end = content.lastIndexOf('};');
+        if (end === -1) {
+          end = content.lastIndexOf('}');
+        }
+        if (start !== -1 && end !== -1 && end > start) {
           content = content.substring(start, end + 1);
-        } else if (start !== -1) {
-          content = content.substring(start);
         }
       }
 
@@ -845,6 +952,14 @@ export const INITIAL_DATA: {
           cleanJson = cleanJson.substring(firstBrace);
         }
       }
+
+      // Converte strings de aspas simples para aspas duplas, escapando aspas duplas internas se necessário
+      cleanJson = cleanJson.replace(/'([^'\\]*(?:\\.[^'\\]*)*)'/g, (match, p1) => {
+        const escapedContent = p1
+          .replace(/"/g, '\\"')
+          .replace(/\\'/g, "'");
+        return `"${escapedContent}"`;
+      });
 
       // Tenta converter chaves não aspeadas (comum em JS/TS manual) para JSON válido
       cleanJson = cleanJson.replace(/([{,]\s*)([a-zA-Z0-9_]+)\s*:/g, '$1"$2":');
@@ -887,6 +1002,19 @@ export const INITIAL_DATA: {
       // Sync both to server
       await syncWithServer('works');
       await syncWithServer('signals');
+
+      // Sincronizar 'about' também com o servidor!
+      if (data.about) {
+        try {
+          await fetch('/api/save-data', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ type: 'about', data: data.about })
+          });
+        } catch (aboutErr) {
+          console.error('Erro ao salvar metadados about no servidor durante importação:', aboutErr);
+        }
+      }
 
       alert('dados importados com sucesso! a página será recarregada.');
       window.location.reload();
@@ -1226,7 +1354,7 @@ Last Typed Command,Último Comando do Terminal,O texto exato do último comando 
                         />
                       </div>
                       <div className="space-y-2">
-                        <label className="text-[9px] opacity-40 uppercase tracking-widest block">url da imagem (opcional)</label>
+                        <label className="text-[9px] opacity-40 uppercase tracking-widest block">url da imagem (obrigatório)</label>
                         <input type="text" value={editingWork.imageUrl} onChange={e => setEditingWork({...editingWork, imageUrl: e.target.value})} className="w-full bg-black border border-white/10 p-3 rounded-md outline-none text-[10px] focus:border-[var(--accent)] font-mono" placeholder="https://..." />
                       </div>
                       <div className="p-3 bg-white/[0.02] border border-white/5 rounded-lg space-y-1 text-[10px] text-neutral-400 font-mono leading-relaxed mt-2">

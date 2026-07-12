@@ -55,9 +55,19 @@ function getDynamicHtml(reqUrl: string, html: string): string {
     console.error('Erro ao ler signals-db.json para SEO:', e);
   }
 
-  let title = INITIAL_DATA.about.seo_config?.title || "ruídos atmosféricos";
-  let description = INITIAL_DATA.about.seo_config?.description || "uma experiência imersiva de arte digital e manifesto artístico. registros de presença, sensações e desequilíbrio controlado entre o físico e o digital.";
-  let imageUrl = INITIAL_DATA.about.seo_config?.image || "https://64.media.tumblr.com/2469fc83feaecaf0b7a97fa55f6793d6/670f92e2b0934e32-bb/s2048x3072/3b1cf9f39410af90a8d0607d572f83c0024b2472.jpg";
+  let about = INITIAL_DATA.about;
+  try {
+    const aboutPath = path.join(process.cwd(), 'about-db.json');
+    if (fs.existsSync(aboutPath)) {
+      about = JSON.parse(fs.readFileSync(aboutPath, 'utf-8'));
+    }
+  } catch (e) {
+    console.error('Erro ao ler about-db.json para SEO:', e);
+  }
+
+  let title = about.seo_config?.title || "ruídos atmosféricos";
+  let description = about.seo_config?.description || "uma experiência imersiva de arte digital e manifesto artístico. registros de presença, sensações e desequilíbrio controlado entre o físico e o digital.";
+  let imageUrl = about.seo_config?.image || "https://64.media.tumblr.com/2469fc83feaecaf0b7a97fa55f6793d6/670f92e2b0934e32-bb/s2048x3072/3b1cf9f39410af90a8d0607d572f83c0024b2472.jpg";
   
   // Procura imagem padrão se não configurada
   if (!imageUrl || imageUrl.trim() === '') {
@@ -161,19 +171,51 @@ async function startServer() {
       }
     });
 
+    // API para retornar metadados "about" (lê about-db.json ou fallback para INITIAL_DATA.about)
+    app.get('/api/about', (req, res) => {
+      try {
+        const aboutPath = path.join(process.cwd(), 'about-db.json');
+        if (fs.existsSync(aboutPath)) {
+          const data = JSON.parse(fs.readFileSync(aboutPath, 'utf-8'));
+          return res.json(data);
+        }
+        res.json(INITIAL_DATA.about);
+      } catch (err) {
+        console.error('Erro ao ler base de dados do sobre (about):', err);
+        res.json(INITIAL_DATA.about);
+      }
+    });
+
     // API para persistir alterações do Backoffice no servidor
     app.post('/api/save-data', (req, res) => {
       try {
         const { type, data } = req.body;
-        if (type !== 'works' && type !== 'signals') {
+        if (type !== 'works' && type !== 'signals' && type !== 'about') {
           return res.status(400).json({ error: 'Tipo inválido de dados.' });
         }
-        const fileName = type === 'works' ? 'works-db.json' : 'signals-db.json';
+        
+        const fileName = type === 'works' ? 'works-db.json' : (type === 'signals' ? 'signals-db.json' : 'about-db.json');
         const filePath = path.join(process.cwd(), fileName);
         
-        fs.writeFileSync(filePath, JSON.stringify(data, null, 2), 'utf-8');
-        console.log(`[API] Sucesso ao gravar ${data.length} itens do tipo ${type} em ${fileName}`);
-        res.json({ success: true, count: data.length });
+        let finalData = data;
+        if (type === 'about') {
+          let currentAbout: any = {};
+          if (fs.existsSync(filePath)) {
+            try {
+              currentAbout = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
+            } catch (e) {
+              currentAbout = { ...INITIAL_DATA.about };
+            }
+          } else {
+            currentAbout = { ...INITIAL_DATA.about };
+          }
+          // Mescla as informações recebidas (pode ser parcial)
+          finalData = { ...currentAbout, ...data };
+        }
+
+        fs.writeFileSync(filePath, JSON.stringify(finalData, null, 2), 'utf-8');
+        console.log(`[API] Sucesso ao gravar dados do tipo ${type} em ${fileName}`);
+        res.json({ success: true });
       } catch (err) {
         console.error('Erro no endpoint de save-data:', err);
         res.status(500).json({ error: 'Erro ao persistir dados no servidor.' });

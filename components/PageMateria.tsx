@@ -59,29 +59,41 @@ const PageMateria: React.FC<PageMateriaProps> = ({ isDarkMode, workSlug, onNavig
     const fetchWorks = async () => {
       try {
         const all: Work[] = await storage.getAll('works');
-        const visible = all.filter(w => w.isVisible).sort((a, b) => b.date.localeCompare(a.date));
-        setWorks(visible);
+        const visible = all.filter(w => w.isVisible);
         
-        if (workSlug) {
-          const work = visible.find(w => w.slug === workSlug || w.id === workSlug);
-          if (work) {
-            setSelectedWork(work);
-            updateMeta({
-              title: work.seoTitle || work.title,
-              description: work.seoDescription || work.description || `${work.technique}, ${work.year}`,
-              image: work.imageUrl
-            });
-          }
-        } else {
-          setSelectedWork(null);
-          resetMeta();
+        // Fisher-Yates algorithm for uniform random shuffling
+        const shuffled = [...visible];
+        for (let i = shuffled.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
         }
+        
+        setWorks(shuffled);
       } catch (e) {
         console.error("Erro ao carregar obras:", e);
       }
     };
     fetchWorks();
-  }, [workSlug, updateMeta, resetMeta]);
+  }, []);
+
+  useEffect(() => {
+    if (works.length === 0) return;
+
+    if (workSlug) {
+      const work = works.find(w => w.slug === workSlug || w.id === workSlug);
+      if (work) {
+        setSelectedWork(work);
+        updateMeta({
+          title: work.seoTitle || work.title,
+          description: work.seoDescription || work.description || `${work.technique}, ${work.year}`,
+          image: work.imageUrl
+        });
+      }
+    } else {
+      setSelectedWork(null);
+      resetMeta();
+    }
+  }, [workSlug, works, updateMeta, resetMeta]);
 
   useEffect(() => {
     if (selectedWork) {
@@ -255,18 +267,22 @@ const PageMateria: React.FC<PageMateriaProps> = ({ isDarkMode, workSlug, onNavig
           style={{ backgroundImage: `url(${formatImageUrl(selectedWork.imageUrl)})`, backgroundSize: 'cover', backgroundPosition: 'center' }}
         ></div>
 
-        {/* Botão de Retorno Inteligente (mesmo dos Sinais) */}
+        {/* Botão de Retorno Inteligente (Estilo Terminal CLI) */}
         <div 
            className={`fixed top-24 left-6 md:top-32 md:left-12 z-[110] flex items-center gap-6 transition-all duration-700 ease-[cubic-bezier(0.2,0.8,0.2,1)] ${showBackButton ? 'opacity-100 translate-y-0 pointer-events-auto' : 'opacity-0 -translate-y-8 pointer-events-none blur-sm'}`}
          >
             <button 
               onClick={handleBack} 
-              className="group flex items-center gap-3 bg-black/60 [.light-mode_&]:bg-white/60 backdrop-blur-xl p-1 pr-6 rounded-full border border-white/10 [.light-mode_&]:border-black/10 hover:border-[var(--accent)] transition-all shadow-2xl"
+              className="group relative flex flex-col items-start font-mono text-[10px] md:text-xs tracking-widest lowercase transition-all duration-300 active:scale-95 cursor-pointer bg-transparent border-none outline-none pb-2 pt-1"
             >
-               <div className="w-10 h-10 rounded-full bg-[var(--accent)] text-black flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+               <div className="flex items-center gap-2">
+                  <span className="text-[var(--accent)] font-bold">visitante@ruidos:~$</span>
+                  <span className="text-white [.light-mode_&]:text-black opacity-80 group-hover:opacity-100 transition-opacity">materia --voltar</span>
+                  <span className="w-1.5 h-3.5 bg-[var(--accent)] animate-pulse shadow-[0_0_5px_var(--accent)]"></span>
                </div>
-               <span className="font-mono text-[10px] uppercase tracking-widest opacity-60 group-hover:opacity-100 transition-opacity">voltar para matéria</span>
+               
+               {/* Hover expanding line */}
+               <div className="h-px bg-[var(--accent)] w-0 group-hover:w-full transition-all duration-700 mt-2 self-stretch shadow-[0_0_5px_var(--accent)]"></div>
             </button>
          </div>
 
@@ -374,7 +390,7 @@ const PageMateria: React.FC<PageMateriaProps> = ({ isDarkMode, workSlug, onNavig
                   className="font-vt text-[10px] tracking-widest flex items-center gap-2 uppercase border-b border-current border-opacity-20 pb-1"
                >
                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
-                 link
+                 compartilhar
                </button>
             </div>
           </div>
@@ -421,30 +437,40 @@ const PageMateria: React.FC<PageMateriaProps> = ({ isDarkMode, workSlug, onNavig
       </header>
 
       <div className="columns-1 md:columns-2 lg:columns-3 gap-8 space-y-8 max-w-[1600px] mx-auto">
-        {filteredWorks.map((work) => (
-          <div 
-            key={work.id} 
-            className="break-inside-avoid mb-8 group relative flex flex-col gap-4 cursor-pointer"
-            onClick={() => handleWorkClick(work)}
-          >
-            <div className="overflow-hidden rounded-2xl bg-transparent border-none">
-              <LazyImage 
-                src={formatImageUrl(work.imageUrl)} 
-                alt={work.title}
-                className="w-full h-auto transition-transform duration-1000"
-                autoHeight={true}
-              />
-            </div>
-            <div className="flex flex-col gap-1 px-2">
-              <div className="flex justify-between items-baseline">
-                <h2 className="font-electrolize text-xl md:text-2xl lowercase leading-none">{work.title}</h2>
-                <span className="font-mono text-[10px] opacity-40">{work.year}</span>
+        <AnimatePresence mode="popLayout">
+          {filteredWorks.map((work, index) => (
+            <motion.div 
+              key={`${work.id}-${filterYear}`} 
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -15 }}
+              transition={{ 
+                duration: 0.6, 
+                ease: [0.215, 0.610, 0.355, 1.0],
+                delay: Math.min(index * 0.04, 0.2)
+              }}
+              className="break-inside-avoid mb-8 group relative flex flex-col gap-4 cursor-pointer"
+              onClick={() => handleWorkClick(work)}
+            >
+              <div className="overflow-hidden rounded-2xl bg-transparent border-none">
+                <LazyImage 
+                  src={formatImageUrl(work.imageUrl)} 
+                  alt={work.title}
+                  className="w-full h-auto transition-transform duration-1000"
+                  autoHeight={true}
+                />
               </div>
-              <p className="font-mono text-[10px] opacity-40 uppercase tracking-widest">{work.technique}</p>
-              <div className="h-px bg-[var(--accent)] w-0 group-hover:w-full transition-all duration-700 mt-2"></div>
-            </div>
-          </div>
-        ))}
+              <div className="flex flex-col gap-1 px-2">
+                <div className="flex justify-between items-baseline">
+                  <h2 className="font-electrolize text-xl md:text-2xl lowercase leading-none">{work.title}</h2>
+                  <span className="font-mono text-[10px] opacity-40">{work.year}</span>
+                </div>
+                <p className="font-mono text-[10px] opacity-40 uppercase tracking-widest">{work.technique}</p>
+                <div className="h-px bg-[var(--accent)] w-0 group-hover:w-full transition-all duration-700 mt-2"></div>
+              </div>
+            </motion.div>
+          ))}
+        </AnimatePresence>
 
         {filteredWorks.length === 0 && (
           <div className="col-span-full py-40 text-center">
