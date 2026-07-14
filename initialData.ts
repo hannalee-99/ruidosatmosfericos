@@ -13,7 +13,7 @@ export const INITIAL_DATA: {
     seo_config: SeoConfig | null;
   };
 } = {
-  "lastUpdated": 1783988393539,
+  "lastUpdated": 1783989584012,
   "works": [
     {
       "id": "work-1771621176503",
@@ -291,17 +291,17 @@ export const INITIAL_DATA: {
       "id": "signal-1783561456420",
       "slug": "transmutacoes-no-samsara",
       "title": "transmutações no samsara",
-      "subtitle": "",
+      "subtitle": "tudo passa...",
       "date": "08/07/2026",
       "status": "publicado",
       "views": 0,
-      "coverImageUrl": "https://res.cloudinary.com/dcxm8yd49/image/upload/v1783561653/transmutacoes.png",
+      "coverImageUrl": "https://res.cloudinary.com/dcxm8yd49/image/upload/v1783989305/transmutando_pwnpc6.png",
       "seoDescription": "o silêncio surge em estados de alteração contínua",
       "blocks": [
         {
           "id": "b-1783561456420",
           "type": "text",
-          "content": "combatemos os\ntentáculos mundanos descontrolados\ncom o fluxo do agora\namígdala, centro de tudo\nfluido, o meio\n\nondas ressoam\nenquanto a palavra é falha\neu dissolvo\n\no silêncio surge\nem estados de alteração contínua\n\nobservo\n\ne recomeça"
+          "content": "\ncombatemos os\ntentáculos mundanos descontrolados\ncom o fluxo do agora\namígdala, centro de tudo\nfluido, o meio\n\nondas ressoam\nenquanto a palavra é falha\neu dissolvo\n\no silêncio surge\nem estados de alteração contínua\n\nobservo\n\ne recomeça"
         },
         {
           "id": "b-1783561923756-vulez",
@@ -333,7 +333,8 @@ export const INITIAL_DATA: {
           "question": "humor",
           "answer": "o mesmo do craque neto comentando desclassificação da copa/26"
         }
-      ]
+      ],
+      "imageLayout": "full"
     },
     {
       "id": "signal-1771101541489",
