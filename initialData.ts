@@ -13,7 +13,7 @@ export const INITIAL_DATA: {
     seo_config: SeoConfig | null;
   };
 } = {
-  "lastUpdated": 1783640450792,
+  "lastUpdated": 1783988393539,
   "works": [
     {
       "id": "work-1771621176503",
@@ -60,7 +60,7 @@ export const INITIAL_DATA: {
       "date": "2025-10-01",
       "technique": "acrílica sobre tela",
       "dimensions": "30x20 cm",
-      "imageUrl": "https://res.cloudinary.com/dcxm8yd49/image/upload/v1783639949/formas_de_conex%C3%A3o_site26.jpg",
+      "imageUrl": "https://res.cloudinary.com/dcxm8yd49/image/upload/v1782955071/formas_de_conexao_site.avif",
       "status": "disponível",
       "isVisible": true,
       "isFeatured": false,
@@ -99,7 +99,7 @@ export const INITIAL_DATA: {
       "imageUrl": "https://res.cloudinary.com/dcxm8yd49/image/upload/v1771624476/essencia_na_ionosfera.avif",
       "status": "disponível",
       "isVisible": true,
-      "isFeatured": true,
+      "isFeatured": false,
       "featuredOrder": 2,
       "views": 0,
       "description": "flutuando...",
@@ -116,7 +116,7 @@ export const INITIAL_DATA: {
       "dimensions": "50x50 cm",
       "imageUrl": "https://res.cloudinary.com/dcxm8yd49/image/upload/v1771624972/processamento_de_emocoes.avif",
       "status": "disponível",
-      "isVisible": true,
+      "isVisible": false,
       "isFeatured": false,
       "featuredOrder": 999,
       "views": 0,
@@ -347,7 +347,7 @@ export const INITIAL_DATA: {
         {
           "id": "b-1771101541489",
           "type": "text",
-          "content": "fui uma pré-adolescente fascinada por qualquer possibilidade de customizar coisas: cortava todos os uniformes da escola, fazia as próprias capas de caderno, meus próprios icons no photoshop 6.bolinha e lembro como se fosse agora quando conheci o templates by marina e entendi que poderia criar meu sítio digital~~~. passava horasss editando o meu blogger pra ficar com a minha cara que já tinha muita dessa essência aqui que você tá vendo nesse espaço. do dropsdemorango.blogger.com lá em 2004, fotolog, livejournal, deviantart, até o blogpost, onde fiz minha primeira url **ruidosatmosfericos**\n**esse nome**\nera 2007 quando ouvi **ruídos atmosféricos** pela primeira vez. a tv tava ligada na cultura de madrugada por algum motivo, o tema era a poluição sonora na atmosfera, os ruídos atmosféricos meteorológicos. a expressão me prendeu, fiquei obcecada, comecei a imaginar que eu mesma estava contribuindo com esses ruídos de uma forma energética, biológica e filosófica com a boa bagunça que a mente de uma pessoa de 16 anos (que curtia entender de física quântica e fazer autoanálise de questões existenciais que só quem viveu sabe) pode proporcionar.\npois bem, tenho me sentido sem um espaço na internet já faz um tempo. estou online ativamente desde 2003, embarcando nos primeiros trens de toda novidade que surgiu. boa parte das minhas maiores amizades iniciaram online por fóruns e comunidades no orkut (viva topicão na comunidade do nine inch nails que servia apenas pra gente falar as maiores bobeiras possíveis sobre trent reznor e cia), pra mim estar online é manter viva essa minha vida social que sempre foi pacatíssima onde moro. mas não me sinto mais em casa como já me senti um dia, as redes sociais são mecanismos de consumir energia mental em troca de atenção e dinheiro e atenção é o novo petróleo junto com dados, que é outra coisa que as redes também captam de nós em uma troca bem injusta, enfim, eu não me vejo mais nesses lugares, mas me mantenho para evitar isolamento e motivos maiores.\nentão uni minha força fuçeira de coisas nerd e criei esse sítio digital aqui sozinha, um espaço que tenho vontade de ter desde quando me entendo por gente conectada. \npossivelmente escreverei para ninguém ler, mas como uma saudosa twitteira, não me importo! mas se você estiver até aqui lendo isso aqui, **welcome to my crib! 💜**"
+          "content": "fui uma pré-adolescente fascinada por qualquer possibilidade de customizar coisas: cortava todos os uniformes da escola, fazia as próprias capas de caderno, meus próprios icons no photoshop 6.bolinha e lembro como se fosse agora quando conheci o templates by marina e entendi que poderia criar meu sítio digital~~~. passava horasss editando o meu blogger pra ficar com a minha cara que já tinha muita dessa essência aqui que você tá vendo nesse espaço. do dropsdemorango.blogger.com lá em 2004, fotolog, livejournal, deviantart, até o blogpost, onde fiz minha primeira url **ruidosatmosfericos**\n\n**esse nome**\nera 2007 quando ouvi **ruídos atmosféricos** pela primeira vez. a tv tava ligada na cultura de madrugada por algum motivo, o tema era a poluição sonora na atmosfera, os ruídos atmosféricos meteorológicos. a expressão me prendeu, fiquei obcecada, comecei a imaginar que eu mesma estava contribuindo com esses ruídos de uma forma energética, biológica e filosófica com a boa bagunça que a mente de uma pessoa de 16 anos (que curtia entender de física quântica e fazer autoanálise de questões existenciais que só quem viveu sabe) pode proporcionar.\n\npois bem, tenho me sentido sem um espaço na internet já faz um tempo. estou online ativamente desde 2003, embarcando nos primeiros trens de toda novidade que surgiu. boa parte das minhas maiores amizades iniciaram online por fóruns e comunidades no orkut (viva topicão na comunidade do nine inch nails que servia apenas pra gente falar as maiores bobeiras possíveis sobre trent reznor e cia), pra mim estar online é manter viva essa minha vida social que sempre foi pacatíssima onde moro. mas não me sinto mais em casa como já me senti um dia, as redes sociais são mecanismos de consumir energia mental em troca de atenção e dinheiro e atenção é o novo petróleo junto com dados, que é outra coisa que as redes também captam de nós em uma troca bem injusta, enfim, eu não me vejo mais nesses lugares, mas me mantenho para evitar isolamento e motivos maiores.\n\nentão uni minha força fuçeira de coisas nerd e criei esse sítio digital aqui sozinha, um espaço que tenho vontade de ter desde quando me entendo por gente conectada. \n\npossivelmente escreverei para ninguém ler, mas como uma saudosa twitteira, não me importo! mas se você estiver até aqui lendo isso aqui, **welcome to my crib! 💜**"
         }
       ],
       "coverImageUrl": ""
@@ -766,15 +766,16 @@ export const INITIAL_DATA: {
     },
     "bio_config": {
       "id": "bio_config",
-      "bio": "fragmentos, ruídos e ritos atmosféricos. objetos de estudo e presença.",
+      "bio": "espere (espero) nada, \naprecie (aprecio) tudo | \nexpressões por Hannalee",
       "links": [
         {
           "id": "01",
-          "title": "site oficial",
-          "description": "portfólio, manifesto e sinais atmosféricos",
-          "url": "https://ruidosatmosfericos.com",
+          "title": "caneca formas de conexão ",
+          "description": "",
+          "url": "https://www.colab55.com/@ruidosatmosfericos/mugs/formas-de-conexao",
           "status": "ativo",
-          "emoji": "⚡"
+          "emoji": "🍵",
+          "isFeatured": true
         },
         {
           "id": "02",
@@ -792,12 +793,14 @@ export const INITIAL_DATA: {
           "status": "ativo",
           "emoji": "📌"
         }
-      ]
+      ],
+      "premiumLinkText": "explorar os ruídos atmosféricos",
+      "premiumLinkDesc": ""
     },
     "seo_config": {
       "id": "seo_config",
       "title": "ruídos atmosféricos",
-      "description": "registros de prática artística sobre ruído, fluxo e o outro. obras, manifesto, sinais e existência em desequilíbrio controlado. ",
+      "description": "há 13 bilhões de anos sou matéria em reorganização: quarks, léptons, partículas, hoje atravessados \npor fluidos terráqueos emitindo ruídos atmosféricos",
       "image": "https://res.cloudinary.com/dcxm8yd49/image/upload/v1771624476/essencia_na_ionosfera.avif"
     }
   }
